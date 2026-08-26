@@ -17,7 +17,9 @@
     "joi": "^17.11.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "pg": "^8.23.0",
+    "tweetsodium": "^0.0.4"
   },
   "engines": {
     "node": ">=18.0.0"
