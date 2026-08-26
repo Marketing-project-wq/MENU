@@ -1,15 +1,10 @@
-name: Run DB Migration & Seed
+name: Seed Database
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'supabase/schema.sql'
-      - 'supabase/seed.sql'
 
 jobs:
-  migrate:
+  seed:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,11 +14,11 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install pg
-        run: npm install pg
+      - name: Install dependencies
+        run: npm install
 
-      - name: Run schema + seed
+      - name: Seed recipes via REST API
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: node scripts/migrate.js
+        run: node scripts/seed.js
