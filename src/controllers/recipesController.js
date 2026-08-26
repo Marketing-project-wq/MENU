@@ -1,4 +1,4 @@
-const { supabase } = require('../lib/supabase');
+const { getSupabase } = require('../lib/supabase');
 
 const VALID_CATEGORIES = ['breakfast', 'lunch', 'dinner', 'snack', 'drink'];
 
@@ -10,7 +10,7 @@ async function list(req, res, next) {
     const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
     const offset = (pageNum - 1) * limitNum;
 
-    let query = supabase
+    let query = getSupabase()
       .from('recipes')
       .select('id, name, category, calories, protein_g, carbs_g, fat_g, image_url, prep_time_min', { count: 'exact' })
       .eq('is_active', true)
@@ -45,6 +45,7 @@ async function list(req, res, next) {
 async function getById(req, res, next) {
   try {
     const { id } = req.params;
+    const supabase = getSupabase();
 
     const { data, error } = await supabase
       .from('recipes')
@@ -64,7 +65,6 @@ async function getById(req, res, next) {
       return res.status(404).json({ error: 'Resep tidak ditemukan.' });
     }
 
-    // Attach favorite status if user is logged in
     let is_favorited = false;
     if (req.user) {
       const { data: fav } = await supabase

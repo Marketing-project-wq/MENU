@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { supabase } = require('../lib/supabase');
+const { getSupabase } = require('../lib/supabase');
 
 const MEALS = ['breakfast', 'lunch', 'dinner', 'snack'];
 
@@ -8,7 +8,6 @@ const genericPlanSchema = Joi.object({
   days: Joi.number().integer().min(1).max(7).default(1),
 });
 
-// Distribute calories across meals (rough split: 30/35/25/10)
 function splitCalories(total) {
   return {
     breakfast: Math.round(total * 0.30),
@@ -19,8 +18,7 @@ function splitCalories(total) {
 }
 
 async function fetchBestMatch(category, targetCalories) {
-  // Find the recipe closest to the target calories for this meal slot
-  const { data } = await supabase
+  const { data } = await getSupabase()
     .from('recipes')
     .select('id, name, calories, protein_g, carbs_g, fat_g, image_url, prep_time_min')
     .eq('category', category)
@@ -31,7 +29,6 @@ async function fetchBestMatch(category, targetCalories) {
 
   if (!data || data.length === 0) return null;
 
-  // Pick the closest match
   return data.reduce((best, r) =>
     Math.abs(r.calories - targetCalories) < Math.abs(best.calories - targetCalories) ? r : best
   );
@@ -57,12 +54,7 @@ async function genericPlan(req, res, next) {
     }
 
     res.json({
-      data: {
-        target_calories,
-        days,
-        calorie_split: split,
-        plan,
-      },
+      data: { target_calories, days, calorie_split: split, plan },
       note: 'Meal plan generik berdasarkan target kalori. Login untuk plan personal yang disesuaikan dengan profil Anda.',
     });
   } catch (err) {
@@ -72,8 +64,7 @@ async function genericPlan(req, res, next) {
 
 async function personalizedPlan(req, res, next) {
   try {
-    // Fetch user's remaining calories from their profile
-    const { data: profile, error } = await supabase
+    const { data: profile, error } = await getSupabase()
       .from('user_profiles')
       .select('target_calories, calories_consumed_today')
       .eq('user_id', req.user.id)

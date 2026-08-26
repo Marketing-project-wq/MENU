@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { supabase } = require('../lib/supabase');
+const { getSupabase } = require('../lib/supabase');
 
 const favoriteSchema = Joi.object({
   recipe_id: Joi.string().uuid().required(),
@@ -18,8 +18,8 @@ async function toggleFavorite(req, res, next) {
 
     const { recipe_id } = value;
     const user_id = req.user.id;
+    const supabase = getSupabase();
 
-    // Check if recipe exists
     const { data: recipe } = await supabase
       .from('recipes')
       .select('id')
@@ -29,7 +29,6 @@ async function toggleFavorite(req, res, next) {
 
     if (!recipe) return res.status(404).json({ error: 'Resep tidak ditemukan.' });
 
-    // Toggle: delete if exists, insert if not
     const { data: existing } = await supabase
       .from('favorites')
       .select('id')
@@ -56,8 +55,8 @@ async function logMeal(req, res, next) {
 
     const { recipe_id, servings, eaten_at } = value;
     const user_id = req.user.id;
+    const supabase = getSupabase();
 
-    // Fetch recipe for calorie calculation
     const { data: recipe, error: recipeErr } = await supabase
       .from('recipes')
       .select('id, name, calories, protein_g, carbs_g, fat_g')
@@ -94,7 +93,7 @@ async function getHistory(req, res, next) {
     const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
     const offset = (pageNum - 1) * limitNum;
 
-    let query = supabase
+    let query = getSupabase()
       .from('meal_logs')
       .select(`
         id, servings, eaten_at,
