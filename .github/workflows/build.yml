@@ -1,0 +1,23 @@
+name: Build check
+
+# Verifikasi build (typecheck + vite build) — TIDAK deploy. Deploy diatur di Railway.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build (tsc --noEmit + vite build)
+        run: npm run build
+        env:
+          # Anon key tidak dibutuhkan saat build (hanya runtime); nilai dummy agar tak warn.
+          VITE_SUPABASE_ANON_KEY: build-time-placeholder

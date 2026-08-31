@@ -1,72 +1,50 @@
-# Menu 20FIT API
+# menu.20fit.id
 
-Backend REST API untuk [menu.20fit.id](https://menu.20fit.id) — katalog menu makanan sehat dengan kalori & makro.
+Frontend katalog & kontribusi resep sehat 20FIT — mirip Cookpad, tersambung ke ekosistem **my.20fit.id**.
 
-## Fitur
+- **Browse publik** (tanpa login): resep resmi 20FIT + kontribusi member yang sudah **di-approve admin**.
+- **Submit resep** (butuh akun 20FIT): masuk antrian review — **TIDAK langsung tayang**.
+- **Moderasi** dilakukan admin di **my.20fit.id** (bukan di sini). Hanya resep `approved+published` yang tampil publik.
 
-| Fitur | Guest | Member |
-|---|:---:|:---:|
-| Lihat katalog resep/menu | ✓ | ✓ |
-| Lihat detail resep (kalori & makro) | ✓ | ✓ |
-| Generator meal plan generik | ✓ | ✓ |
-| Meal plan personal (sisa kalori akun) | — | ✓ |
-| Simpan / favoritkan resep | — | ✓ |
-| Tracking menu yang dimakan | — | ✓ |
-| Riwayat meal plan | — | ✓ |
+## Arsitektur (sama pola calories.20fit.id)
 
-## Stack
+- **Frontend** React + Vite + Tailwind (repo ini), deploy di **Railway** (`serve dist -s`).
+- **Data & auth**: Supabase project bersama `20FIT ALL DATA` (`cpvzwqptzcxnwzfzgrmt`). Frontend **hanya pakai anon key**.
+- **Operasi sensitif** (submit, katalog, moderasi) lewat **API my.20fit.id** yang cek auth/role di server.
+- **SSO**: login diarahkan ke `my.20fit.id/login?next=menu`; kembali via **URL fragment** (`#access_token=…&refresh_token=…`) yang **langsung di-strip** dari URL (tidak pernah masuk log server).
 
-- **Runtime**: Node.js 18+ / Express 4
-- **Database & Auth**: Supabase (PostgreSQL + RLS)
-- **Auth pattern**: SSO token dari `my.20fit.id` via URL fragment
+### Sumber data (satu sumber)
 
-## Setup
+| Data | Sumber | Endpoint |
+|---|---|---|
+| Resep resmi 20FIT (~120) | `js/recipes.js` di my.20fit.id | `GET /api/menu/catalog` |
+| Kontribusi member approved | tabel `my20fit_menu_contribution` | `GET /api/menu/published` |
+| Submit / revisi / status | server my.20fit.id | `POST /api/menu/submit`, `GET /api/menu/mine`, `POST /api/menu/:id/revise` |
+
+Angka gizi = **perkiraan** (resmi & member sama-sama ditandai; sumber dibedakan di UI).
+
+## Menjalankan
 
 ```bash
-# 1. Install dependencies
 npm install
-
-# 2. Salin env dan isi nilai Supabase
-cp .env.example .env
-
-# 3. Jalankan schema & seed di Supabase SQL Editor
-#    supabase/schema.sql  → buat tabel & RLS
-#    supabase/seed.sql    → 20 resep awal
-
-# 4. Jalankan server
-npm run dev
+cp .env.example .env   # isi VITE_SUPABASE_ANON_KEY; VITE_API_URL default my.20fit.id
+npm run dev            # dev server
+npm run build          # typecheck + build produksi -> dist/
+npm start              # serve dist (Railway)
 ```
 
-## Endpoints
+## Env
 
-### Guest (tanpa login)
+| Variable | Keterangan |
+|---|---|
+| `VITE_SUPABASE_ANON_KEY` | Anon key Supabase (project `cpvzwqptzcxnwzfzgrmt`). **Bukan** service key. |
+| `VITE_API_URL` | Base API. Default `https://my.20fit.id`. |
 
-```
-GET  /api/menu/recipes                  Daftar resep, filter: ?category=lunch&search=ayam&page=1&limit=20
-GET  /api/menu/recipes/:id              Detail resep + status favorit (jika ada token)
-POST /api/menu/generic-plan             Meal plan generik berdasarkan target kalori
-  body: { "target_calories": 1800, "days": 3 }
-```
+## Deploy (Railway) + domain
 
-### Member (butuh Bearer token)
+1. Buat service Railway dari repo ini (build `npm run build`, start `npm run start`).
+2. Set env `VITE_SUPABASE_ANON_KEY` (+ `VITE_API_URL` bila staging).
+3. Railway → **Custom Domain** `menu.20fit.id` → dapat target CNAME.
+4. **Cloudflare DNS (20fit.id)**: tambah **CNAME `menu` → target Railway**.
 
-```
-GET  /api/menu/personalized-plan        Meal plan personal berdasarkan sisa kalori akun
-POST /api/menu/favorite                 Toggle favorit resep
-  body: { "recipe_id": "<uuid>" }
-POST /api/menu/log                      Log makanan yang dimakan
-  body: { "recipe_id": "<uuid>", "servings": 1, "eaten_at": "2024-01-15T12:00:00Z" }
-GET  /api/menu/history                  Riwayat meal log, filter: ?date=2024-01-15&page=1
-```
-
-### Auth header
-
-```
-Authorization: Bearer <supabase_access_token>
-```
-
-Token dikirim dari `my.20fit.id` via URL fragment saat SSO login.
-
-## Kategori Resep
-
-`breakfast` · `lunch` · `dinner` · `snack` · `drink`
+> Bagian moderasi + endpoint publik ada di repo **PROFILE20FIT** (my.20fit.id).
