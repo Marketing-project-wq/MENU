@@ -29,7 +29,7 @@ body {
   margin: 0;
   background: rgb(var(--bg));
   color: rgb(var(--fg));
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Barlow Condensed", system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
