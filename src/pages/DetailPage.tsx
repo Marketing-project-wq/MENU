@@ -4,6 +4,7 @@ import { useRecipes, useLang } from "../lib/store";
 import { buildVMs } from "../lib/normalize";
 import { SourceBadge } from "../components/SourceBadge";
 import { Spinner } from "../components/Spinner";
+import { FoodImage } from "../components/FoodImage";
 import { api } from "../lib/api";
 import { catLabel, dietLabel } from "../lib/i18n";
 import type { RecipeVM } from "../lib/types";
@@ -59,18 +60,17 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
       </Link>
 
       <div className="mt-3 overflow-hidden app-card">
-        <div
-          className="flex h-52 items-center justify-center"
-          style={{ backgroundColor: recipe.photoUrl ? undefined : tint(recipe.tint) }}
-        >
-          {recipe.photoUrl ? (
-            <img src={recipe.photoUrl} alt={recipe.name} className="h-full w-full object-cover" />
-          ) : (
-            <span className="text-7xl" aria-hidden>
-              {recipe.emoji}
-            </span>
-          )}
-        </div>
+        <FoodImage
+          id={recipe.id}
+          photoQ={recipe.photoQ}
+          photoName={recipe.photoName}
+          photoUrl={recipe.photoUrl}
+          emoji={recipe.emoji}
+          tint={recipe.tint}
+          alt={recipe.name}
+          className="h-52 w-full"
+          emojiClass="text-7xl"
+        />
 
         <div className="p-5">
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -145,11 +145,4 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       {children}
     </section>
   );
-}
-
-function tint(hex: string): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex || "");
-  if (!m) return "#f0ede5";
-  const n = parseInt(m[1], 16);
-  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, 0.12)`;
 }

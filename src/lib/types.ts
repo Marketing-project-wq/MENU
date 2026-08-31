@@ -72,6 +72,8 @@ export interface RecipeVM {
   ingredients: string; // teks, dipisah newline
   steps: string; // teks, dipisah newline
   photoUrl: string | null;
+  photoQ: string | null; // kata kunci pendek utk resolve foto (TheMealDB)
+  photoName: string | null; // nama deskriptif utk resolve foto (Pexels)
   emoji: string;
   tint: string;
   reviewedAt: string | null;
