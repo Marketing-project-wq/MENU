@@ -1,4 +1,5 @@
 import { useLang } from "../lib/store";
+import { catLabel, dietLabel } from "../lib/i18n";
 import { DIET_TYPES } from "../lib/constants";
 
 export interface FilterState {
@@ -16,7 +17,7 @@ export function Filters({
   onChange: (v: FilterState) => void;
   categories: string[];
 }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
       <input
@@ -35,7 +36,7 @@ export function Filters({
         <option value="">{t("allCategories")}</option>
         {categories.map((c) => (
           <option key={c} value={c}>
-            {c}
+            {catLabel(c, lang)}
           </option>
         ))}
       </select>
@@ -47,8 +48,8 @@ export function Filters({
       >
         <option value="">{t("allDiets")}</option>
         {DIET_TYPES.map((d) => (
-          <option key={d} value={d} className="capitalize">
-            {d}
+          <option key={d} value={d}>
+            {dietLabel(d, lang)}
           </option>
         ))}
       </select>

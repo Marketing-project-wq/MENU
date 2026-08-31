@@ -4,6 +4,7 @@ import { useLang } from "../lib/store";
 import { api } from "../lib/api";
 import { Spinner } from "../components/Spinner";
 import { RecipeForm, type RecipeFormValues } from "../components/RecipeForm";
+import { dietLabel, statusLabel } from "../lib/i18n";
 import type { MineResponse, MySubmission } from "../lib/types";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -91,9 +92,11 @@ export function MinePage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="font-semibold text-brand-dark">{s.name}</div>
-                  <div className="mt-0.5 text-xs capitalize text-black/45">{s.diet_type}</div>
+                  <div className="mt-0.5 text-xs text-black/45">{dietLabel(s.diet_type, lang)}</div>
                 </div>
-                <span className={"chip " + (STATUS_STYLE[s.status] || "bg-black/5")}>{s.status}</span>
+                <span className={"chip " + (STATUS_STYLE[s.status] || "bg-black/5")}>
+                  {statusLabel(s.status, lang)}
+                </span>
               </div>
               {s.status === "rejected" && s.reject_reason && (
                 <div className="mt-2 rounded-lg bg-red-50 p-2 text-xs text-red-700">

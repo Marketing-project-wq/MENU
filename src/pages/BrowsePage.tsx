@@ -49,7 +49,9 @@ export function BrowsePage() {
         <div className="app-card p-6 text-center text-sm text-black/60">{t("noResults")}</div>
       ) : (
         <>
-          <p className="mb-3 text-xs text-black/40">{filtered.length} resep</p>
+          <p className="mb-3 text-xs text-black/40">
+            {filtered.length} {t("recipesWord")}
+          </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {filtered.map((r) => (
               <RecipeCard key={r.key} r={r} />

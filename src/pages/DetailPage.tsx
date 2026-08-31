@@ -5,6 +5,7 @@ import { buildVMs } from "../lib/normalize";
 import { SourceBadge } from "../components/SourceBadge";
 import { Spinner } from "../components/Spinner";
 import { api } from "../lib/api";
+import { catLabel, dietLabel } from "../lib/i18n";
 import type { RecipeVM } from "../lib/types";
 
 function lines(text: string): string[] {
@@ -41,7 +42,7 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
   if (!recipe) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 text-center">
-        <p className="text-sm text-black/60">404 — resep tidak ditemukan.</p>
+        <p className="text-sm text-black/60">404 — {t("notFound")}</p>
         <Link to="/" className="mt-3 inline-block text-sm font-semibold text-brand-red">
           {t("backToBrowse")}
         </Link>
@@ -75,11 +76,11 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <SourceBadge source={recipe.source} />
             {recipe.category && (
-              <span className="chip bg-black/5 text-black/60">{recipe.category}</span>
+              <span className="chip bg-black/5 text-black/60">{catLabel(recipe.category, lang)}</span>
             )}
             {recipe.dietTypes.map((d) => (
-              <span key={d} className="chip bg-black/5 capitalize text-black/60">
-                {d}
+              <span key={d} className="chip bg-black/5 text-black/60">
+                {dietLabel(d, lang)}
               </span>
             ))}
           </div>

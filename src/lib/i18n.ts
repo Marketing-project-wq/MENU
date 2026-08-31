@@ -61,8 +61,55 @@ const STR: Dict = {
     id: "Resep yang kamu kirim TIDAK langsung tayang — direview admin dulu.",
     en: "Your submitted recipe is NOT published immediately — an admin reviews it first.",
   },
+  recipesWord: { id: "resep", en: "recipes" },
+  notFound: { id: "Resep tidak ditemukan.", en: "Recipe not found." },
+  category: { id: "Kategori", en: "Category" },
+  dietType: { id: "Tipe diet", en: "Diet type" },
 };
 
 export function makeT(lang: Lang) {
   return (key: keyof typeof STR): string => STR[key]?.[lang] ?? String(key);
+}
+
+// Label tipe diet (set tetap; nilai mentah dipakai untuk filter, label ini untuk tampilan).
+const DIET_LABELS: Record<string, { id: string; en: string }> = {
+  normal: { id: "Normal", en: "Normal" },
+  vegetarian: { id: "Vegetarian", en: "Vegetarian" },
+  vegan: { id: "Vegan", en: "Vegan" },
+  pescatarian: { id: "Pescatarian", en: "Pescatarian" },
+  keto: { id: "Keto", en: "Keto" },
+  halal: { id: "Halal", en: "Halal" },
+  "high-protein": { id: "Tinggi Protein", en: "High-protein" },
+  "low-carb": { id: "Rendah Karbo", en: "Low-carb" },
+};
+
+export function dietLabel(diet: string, lang: Lang): string {
+  return DIET_LABELS[diet]?.[lang] ?? diet;
+}
+
+// Label kategori makanan (nilai mentah dari katalog dipakai untuk filter).
+const CAT_LABELS: Record<string, { id: string; en: string }> = {
+  Rice: { id: "Nasi", en: "Rice" },
+  Chicken: { id: "Ayam", en: "Chicken" },
+  Beef: { id: "Sapi", en: "Beef" },
+  Seafood: { id: "Seafood", en: "Seafood" },
+  Vegetarian: { id: "Vegetarian", en: "Vegetarian" },
+  Vegan: { id: "Vegan", en: "Vegan" },
+  Pasta: { id: "Pasta", en: "Pasta" },
+  Noodle: { id: "Mie", en: "Noodle" },
+};
+
+export function catLabel(cat: string, lang: Lang): string {
+  return CAT_LABELS[cat]?.[lang] ?? cat;
+}
+
+// Label status submission.
+const STATUS_LABELS: Record<string, { id: string; en: string }> = {
+  pending: { id: "Menunggu review", en: "Pending review" },
+  approved: { id: "Disetujui", en: "Approved" },
+  rejected: { id: "Ditolak", en: "Rejected" },
+};
+
+export function statusLabel(status: string, lang: Lang): string {
+  return STATUS_LABELS[status]?.[lang] ?? status;
 }
