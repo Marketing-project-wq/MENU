@@ -6,11 +6,15 @@ import { RecipeCard } from "../components/RecipeCard";
 import { Filters, type FilterState } from "../components/Filters";
 import { Spinner } from "../components/Spinner";
 
+// Jumlah resep yang ditampilkan per "halaman" — sisanya baru dimuat pas klik "Muat lebih banyak".
+const PAGE_SIZE = 15;
+
 export function BrowsePage() {
   const { official, members, loading, error } = useRecipes();
   const { lang, t } = useLang();
   const { ensure } = useSocial();
   const [f, setF] = useState<FilterState>({ q: "", category: "", diet: "" });
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const vms = useMemo(() => buildVMs(official, members, lang), [official, members, lang]);
 
@@ -30,10 +34,18 @@ export function BrowsePage() {
     });
   }, [vms, f]);
 
-  // Muat jumlah heart (+ state user) utk resep terlihat — di-batch & dedupe di store.
+  // Filter/pencarian berubah -> mulai lagi dari halaman pertama.
   useEffect(() => {
-    if (filtered.length) ensure(filtered.map((r) => ({ source: r.source, id: r.id })));
-  }, [filtered, ensure]);
+    setVisibleCount(PAGE_SIZE);
+  }, [f]);
+
+  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
+  const hasMore = visibleCount < filtered.length;
+
+  // Muat jumlah heart (+ state user) hanya utk resep yang benar-benar terlihat — di-batch & dedupe di store.
+  useEffect(() => {
+    if (visible.length) ensure(visible.map((r) => ({ source: r.source, id: r.id })));
+  }, [visible, ensure]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -57,13 +69,24 @@ export function BrowsePage() {
       ) : (
         <>
           <p className="mb-3 text-xs text-fg/40">
-            {filtered.length} {t("recipesWord")}
+            {visible.length} / {filtered.length} {t("recipesWord")}
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {filtered.map((r) => (
+            {visible.map((r) => (
               <RecipeCard key={r.key} r={r} />
             ))}
           </div>
+          {hasMore && (
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+              >
+                {t("loadMore")}
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
