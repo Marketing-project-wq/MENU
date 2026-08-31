@@ -13,13 +13,12 @@
     "preview": "vite preview",
     "start": "serve dist -s -l $PORT"
   },
+  "//": "Build tools sengaja di 'dependencies' (bukan devDependencies) supaya Railway/host yang set NODE_ENV=production tetap menginstalnya saat build.",
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "serve": "14.2.1"
-  },
-  "devDependencies": {
+    "serve": "14.2.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.0.0",
