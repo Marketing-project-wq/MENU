@@ -62,6 +62,7 @@ const STR: Dict = {
     en: "Your submitted recipe is NOT published immediately — an admin reviews it first.",
   },
   recipesWord: { id: "resep", en: "recipes" },
+  loadMore: { id: "Muat lebih banyak", en: "Load more" },
   notFound: { id: "Resep tidak ditemukan.", en: "Recipe not found." },
   category: { id: "Kategori", en: "Category" },
   dietType: { id: "Tipe diet", en: "Diet type" },
