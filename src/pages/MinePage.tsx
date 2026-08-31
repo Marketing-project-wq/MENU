@@ -4,6 +4,7 @@ import { useLang } from "../lib/store";
 import { api } from "../lib/api";
 import { Spinner } from "../components/Spinner";
 import { RecipeForm, type RecipeFormValues } from "../components/RecipeForm";
+import { parseStepsText } from "../lib/normalize";
 import { dietLabel, statusLabel } from "../lib/i18n";
 import type { MineResponse, MySubmission } from "../lib/types";
 
@@ -133,12 +134,18 @@ export function MinePage() {
 }
 
 function toFormValues(s: MySubmission): RecipeFormValues {
+  const steps =
+    Array.isArray(s.steps_json) && s.steps_json.length
+      ? s.steps_json.map((x) => ({ t: String(x?.t ?? ""), photo: x?.photo ?? null }))
+      : parseStepsText(s.steps ?? "");
   return {
     name: s.name,
     diet_type: s.diet_type,
     ingredients: s.ingredients ?? "",
-    steps: s.steps ?? "",
+    steps: steps.length ? steps : [{ t: "", photo: null }],
     est_kcal: s.est_kcal != null ? String(s.est_kcal) : "",
+    servings: s.servings != null ? String(s.servings) : "",
+    cook_minutes: s.cook_minutes != null ? String(s.cook_minutes) : "",
     photo_url: s.photo_url ?? null,
   };
 }

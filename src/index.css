@@ -54,3 +54,30 @@ body {
     @apply block text-xs font-semibold uppercase tracking-wide text-fg/50 mb-1;
   }
 }
+
+/* ---- Cetak resep: sembunyikan chrome UI, tampil bahan + langkah rapi di kertas. ---- */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  header,
+  footer {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .app-card {
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .print-area {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  img {
+    max-height: 240px;
+  }
+}

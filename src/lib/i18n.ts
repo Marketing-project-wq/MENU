@@ -65,6 +65,50 @@ const STR: Dict = {
   notFound: { id: "Resep tidak ditemukan.", en: "Recipe not found." },
   category: { id: "Kategori", en: "Category" },
   dietType: { id: "Tipe diet", en: "Diet type" },
+  // Aksi & sosial
+  save: { id: "Simpan", en: "Save" },
+  saved: { id: "Tersimpan", en: "Saved" },
+  share: { id: "Bagikan", en: "Share" },
+  print: { id: "Cetak", en: "Print" },
+  like: { id: "Suka", en: "Like" },
+  linkCopied: { id: "Link disalin!", en: "Link copied!" },
+  loginToInteract: {
+    id: "Masuk dulu untuk menyimpan & menyukai resep.",
+    en: "Log in first to save & like recipes.",
+  },
+  savedRecipes: { id: "Resep Tersimpan", en: "Saved Recipes" },
+  emptySaved: { id: "Belum ada resep tersimpan.", en: "No saved recipes yet." },
+  loginToSeeSaved: {
+    id: "Masuk untuk melihat koleksi resep tersimpanmu.",
+    en: "Log in to see your saved collection.",
+  },
+  savedNotLive: {
+    id: "Resep ini sedang tidak tersedia (mungkin dihapus atau belum tayang).",
+    en: "This recipe is currently unavailable (removed or not published).",
+  },
+  // Info porsi/waktu
+  servings: { id: "Porsi", en: "Servings" },
+  cookTime: { id: "Waktu masak", en: "Cook time" },
+  minutesShort: { id: "mnt", en: "min" },
+  // Langkah berfoto (form submit)
+  step: { id: "Langkah", en: "Step" },
+  addStep: { id: "+ Tambah langkah", en: "+ Add step" },
+  removeStep: { id: "Hapus", en: "Remove" },
+  moveUp: { id: "Naik", en: "Up" },
+  moveDown: { id: "Turun", en: "Down" },
+  stepTextPlaceholder: {
+    id: "Tulis langkah ini…",
+    en: "Describe this step…",
+  },
+  stepPhoto: { id: "Foto langkah", en: "Step photo" },
+  addStepPhoto: { id: "+ Foto proses", en: "+ Process photo" },
+  mainPhoto: { id: "Foto utama (opsional)", en: "Main photo (optional)" },
+  uploading: { id: "Mengunggah…", en: "Uploading…" },
+  removePhoto: { id: "hapus foto", en: "remove photo" },
+  stepsHint: {
+    id: "Tambahkan langkah satu per satu. Tiap langkah boleh diberi foto proses.",
+    en: "Add steps one by one. Each step can have a process photo.",
+  },
 };
 
 export function makeT(lang: Lang) {

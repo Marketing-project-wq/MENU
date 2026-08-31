@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRecipes, useLang } from "../lib/store";
+import { useSocial } from "../lib/social";
 import { buildVMs } from "../lib/normalize";
 import { RecipeCard } from "../components/RecipeCard";
 import { Filters, type FilterState } from "../components/Filters";
@@ -8,6 +9,7 @@ import { Spinner } from "../components/Spinner";
 export function BrowsePage() {
   const { official, members, loading, error } = useRecipes();
   const { lang, t } = useLang();
+  const { ensure } = useSocial();
   const [f, setF] = useState<FilterState>({ q: "", category: "", diet: "" });
 
   const vms = useMemo(() => buildVMs(official, members, lang), [official, members, lang]);
@@ -27,6 +29,11 @@ export function BrowsePage() {
       return true;
     });
   }, [vms, f]);
+
+  // Muat jumlah heart (+ state user) utk resep terlihat — di-batch & dedupe di store.
+  useEffect(() => {
+    if (filtered.length) ensure(filtered.map((r) => ({ source: r.source, id: r.id })));
+  }, [filtered, ensure]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
