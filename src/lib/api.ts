@@ -1,6 +1,12 @@
 import { API, API_BASE } from "./constants";
 import { getAccessToken } from "./supabase";
-import type { OfficialRecipe, PublishedContribution, MineResponse } from "./types";
+import type {
+  MineResponse,
+  OfficialRecipe,
+  PublishedContribution,
+  RecipeStep,
+  Source,
+} from "./types";
 
 async function authHeaders(): Promise<Record<string, string>> {
   const tok = await getAccessToken();
@@ -20,6 +26,26 @@ export interface SubmitBody {
   diet_type: string;
   photo_url?: string | null;
   est_kcal?: number | null;
+  steps_json?: RecipeStep[] | null;
+  servings?: number | null;
+  cook_minutes?: number | null;
+}
+
+/** Kunci sosial gabungan "source:menu_id". */
+export type SocialKey = string;
+export interface SocialResponse {
+  counts: Record<SocialKey, number>;
+  reacted: SocialKey[];
+  saved: SocialKey[];
+}
+export interface SavedRow {
+  source: Source;
+  menu_id: string;
+  created_at: string;
+}
+export interface SavedResponse {
+  saved: SavedRow[];
+  members: Record<string, PublishedContribution>;
 }
 
 export const api = {
@@ -94,6 +120,65 @@ export const api = {
       });
     } catch {
       /* analitik best-effort — abaikan error */
+    }
+  },
+
+  /** Unggah satu foto resep (data URL base64) -> Storage my.20fit.id, balik URL publik. Butuh login. */
+  async uploadPhoto(dataUrl: string): Promise<string> {
+    const r = await fetch(`${API_BASE}${API.UPLOAD}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+      body: JSON.stringify({ data_url: dataUrl }),
+    });
+    const j = await jsonOrThrow(r);
+    if (!j.url) throw new Error("Upload gagal.");
+    return j.url as string;
+  },
+
+  /** Toggle heart pada resep. Butuh login. */
+  async react(source: Source, id: string): Promise<{ reacted: boolean; count: number }> {
+    const r = await fetch(`${API_BASE}${API.REACT(id)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+      body: JSON.stringify({ source }),
+    });
+    return jsonOrThrow(r);
+  },
+
+  /** Toggle simpan resep ke koleksi. Butuh login. */
+  async save(source: Source, id: string): Promise<{ saved: boolean }> {
+    const r = await fetch(`${API_BASE}${API.SAVE(id)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+      body: JSON.stringify({ source }),
+    });
+    return jsonOrThrow(r);
+  },
+
+  /** Koleksi resep tersimpan milik user (butuh login). */
+  async getSaved(): Promise<SavedResponse> {
+    const r = await fetch(`${API_BASE}${API.SAVED}`, { headers: { ...(await authHeaders()) } });
+    const j = await jsonOrThrow(r);
+    return { saved: j.saved ?? [], members: j.members ?? {} };
+  },
+
+  /**
+   * Jumlah heart (+ state user bila login) utk banyak resep sekaligus. Tahan-banting:
+   * kembalikan kosong kalau endpoint belum ada / gagal, supaya browse tetap jalan.
+   */
+  async social(keys: SocialKey[]): Promise<SocialResponse> {
+    const empty: SocialResponse = { counts: {}, reacted: [], saved: [] };
+    if (!keys.length) return empty;
+    try {
+      const ids = encodeURIComponent(keys.join(","));
+      const r = await fetch(`${API_BASE}${API.SOCIAL}?ids=${ids}`, {
+        headers: { ...(await authHeaders()) },
+      });
+      if (!r.ok) return empty;
+      const j = await r.json().catch(() => ({}));
+      return { counts: j.counts ?? {}, reacted: j.reacted ?? [], saved: j.saved ?? [] };
+    } catch {
+      return empty;
     }
   },
 };

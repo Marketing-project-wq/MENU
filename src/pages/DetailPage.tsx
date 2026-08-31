@@ -1,20 +1,16 @@
-import { useEffect, useMemo, type ReactNode } from "react";
+import { useEffect, useMemo } from "react";
 import { Link } from "../router";
 import { useRecipes, useLang } from "../lib/store";
 import { buildVMs } from "../lib/normalize";
 import { SourceBadge } from "../components/SourceBadge";
 import { Spinner } from "../components/Spinner";
 import { FoodImage } from "../components/FoodImage";
+import { ActionBar } from "../components/ActionBar";
+import { IngredientGroups } from "../components/IngredientGroups";
+import { StepList } from "../components/StepList";
 import { api } from "../lib/api";
 import { catLabel, dietLabel } from "../lib/i18n";
 import type { RecipeVM } from "../lib/types";
-
-function lines(text: string): string[] {
-  return text
-    .split(/\r?\n/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
 
 export function DetailPage({ routeKey }: { routeKey: string }) {
   const { official, members, loading } = useRecipes();
@@ -54,8 +50,8 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
   const isOfficial = recipe.source === "official";
 
   return (
-    <article className="mx-auto max-w-3xl px-4 py-6">
-      <Link to="/" className="text-sm font-semibold text-fg/50 hover:text-brand-red">
+    <article className="mx-auto max-w-5xl px-4 py-6 print-area">
+      <Link to="/" className="no-print text-sm font-semibold text-fg/50 hover:text-brand-red">
         {t("backToBrowse")}
       </Link>
 
@@ -68,11 +64,11 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
           emoji={recipe.emoji}
           tint={recipe.tint}
           alt={recipe.name}
-          className="h-52 w-full"
+          className="h-56 w-full sm:h-64"
           emojiClass="text-7xl"
         />
 
-        <div className="p-5">
+        <div className="p-5 sm:p-6">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <SourceBadge source={recipe.source} />
             {recipe.category && (
@@ -85,16 +81,34 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
             ))}
           </div>
 
-          <h1 className="text-xl font-extrabold tracking-tight text-fg">{recipe.name}</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-fg">{recipe.name}</h1>
+
+          {(recipe.servings != null || recipe.cookMinutes != null) && (
+            <div className="mt-2 flex flex-wrap gap-4 text-sm text-fg/60">
+              {recipe.servings != null && (
+                <span>
+                  🍽️ {recipe.servings} {t("servings")}
+                </span>
+              )}
+              {recipe.cookMinutes != null && (
+                <span>
+                  ⏱️ {recipe.cookMinutes} {t("minutesShort")}
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className="mt-4">
+            <ActionBar source={recipe.source} id={recipe.id} name={recipe.name} />
+          </div>
 
           {/* Perkiraan gizi — SELALU ditandai perkiraan; sumber dibedakan. */}
-          <div className="mt-4 rounded-xl border border-fg/10 bg-fg/[0.02] p-4">
+          <div className="mt-5 rounded-xl border border-fg/10 bg-fg/[0.02] p-4">
             <div className="mb-2 flex items-baseline justify-between">
               <span className="label mb-0">{t("nutrition")}</span>
               {recipe.kcal != null && (
                 <span className="text-lg font-bold text-fg">
-                  {recipe.kcal}{" "}
-                  <span className="text-xs font-medium text-fg/50">{t("calories")}</span>
+                  {recipe.kcal} <span className="text-xs font-medium text-fg/50">{t("calories")}</span>
                 </span>
               )}
             </div>
@@ -110,19 +124,22 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
             </p>
           </div>
 
-          <Section title={t("ingredients")}>
-            <ul className="list-disc space-y-1 pl-5 text-sm text-fg/75">
-              {lines(recipe.ingredients).map((l, i) => (
-                <li key={i}>{l}</li>
-              ))}
-            </ul>
-          </Section>
+          {/* Dua kolom: Bahan | Cara membuat. Di HP jadi satu kolom mengalir. */}
+          <div className="mt-6 grid gap-8 md:grid-cols-[1fr_1.35fr]">
+            <section>
+              <h2 className="mb-3 border-b border-fg/10 pb-2 text-sm font-bold uppercase tracking-wide text-fg/70">
+                {t("ingredients")}
+              </h2>
+              <IngredientGroups groups={recipe.ingredientGroups} />
+            </section>
 
-          <Section title={t("steps")}>
-            <div className="space-y-1.5 whitespace-pre-line text-sm leading-relaxed text-fg/75">
-              {recipe.steps}
-            </div>
-          </Section>
+            <section>
+              <h2 className="mb-3 border-b border-fg/10 pb-2 text-sm font-bold uppercase tracking-wide text-fg/70">
+                {t("steps")}
+              </h2>
+              <StepList steps={recipe.stepList} />
+            </section>
+          </div>
         </div>
       </div>
     </article>
@@ -135,14 +152,5 @@ function Macro({ label, value }: { label: string; value: string }) {
       <div className="text-[11px] uppercase tracking-wide text-fg/40">{label}</div>
       <div className="font-semibold text-fg">{value}</div>
     </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="mt-5">
-      <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-fg/70">{title}</h2>
-      {children}
-    </section>
   );
 }

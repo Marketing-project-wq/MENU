@@ -28,7 +28,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-20 border-b border-fg/5 bg-bg/85 backdrop-blur">
+    <header className="no-print sticky top-0 z-20 border-b border-fg/5 bg-bg/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
           <img src={LOGO_LIGHT} alt="20FIT" className="h-10 w-auto dark:hidden" />
@@ -39,6 +39,7 @@ export function Header() {
         <nav className="ml-2 hidden items-center gap-1 sm:flex">
           {navItem("/", t("browse"))}
           {navItem("/submit", t("submit"))}
+          {isAuthenticated && navItem("/tersimpan", t("saved"))}
           {isAuthenticated && navItem("/submission-saya", t("mySubmissions"))}
         </nav>
 
@@ -99,9 +100,10 @@ export function Header() {
       </div>
 
       {/* Nav mobile */}
-      <nav className="flex items-center gap-1 border-t border-fg/5 px-4 py-2 sm:hidden">
+      <nav className="flex flex-wrap items-center gap-1 border-t border-fg/5 px-4 py-2 sm:hidden">
         {navItem("/", t("browse"))}
         {navItem("/submit", t("submit"))}
+        {isAuthenticated && navItem("/tersimpan", t("saved"))}
         {isAuthenticated && navItem("/submission-saya", t("mySubmissions"))}
       </nav>
     </header>

@@ -3,6 +3,18 @@
 export type Lang = "id" | "en";
 export type Source = "official" | "member";
 
+/** Satu langkah cara membuat — teks + foto proses opsional (step berfoto). */
+export interface RecipeStep {
+  t: string; // teks langkah
+  photo: string | null; // URL foto proses (bucket menu-photos) atau null
+}
+
+/** Kelompok bahan (mis. "Bumbu Halus") + item-nya. title null = tanpa kelompok. */
+export interface IngredientGroup {
+  title: string | null;
+  items: string[];
+}
+
 /** Resep resmi 20FIT — bentuk item di js/recipes.js (via GET /api/menu/catalog). */
 export interface OfficialRecipe {
   id: string;
@@ -27,8 +39,11 @@ export interface PublishedContribution {
   diet_type: string;
   ingredients: string;
   steps: string;
+  steps_json?: RecipeStep[] | null;
   photo_url: string | null;
   est_kcal: number | null;
+  servings?: number | null;
+  cook_minutes?: number | null;
   reviewed_at: string | null;
 }
 
@@ -46,6 +61,9 @@ export interface MySubmission {
   // Opsional — dikembalikan agar form revisi bisa prefill (server select diperluas).
   ingredients?: string;
   steps?: string;
+  steps_json?: RecipeStep[] | null;
+  servings?: number | null;
+  cook_minutes?: number | null;
   photo_url?: string | null;
 }
 
@@ -69,8 +87,12 @@ export interface RecipeVM {
   macros: { p: number; c: number; f: number } | null; // hanya official
   dietTypes: string[];
   category: string | null;
-  ingredients: string; // teks, dipisah newline
-  steps: string; // teks, dipisah newline
+  ingredients: string; // teks, dipisah newline (disimpan utk print & fallback)
+  steps: string; // teks, dipisah newline (disimpan utk print & fallback)
+  stepList: RecipeStep[]; // langkah terstruktur (foto opsional) hasil parse steps_json/teks
+  ingredientGroups: IngredientGroup[]; // bahan dikelompokkan (mis. "Bumbu Halus")
+  servings: number | null;
+  cookMinutes: number | null;
   photoUrl: string | null;
   photoQ: string | null; // kata kunci pendek utk resolve foto (TheMealDB)
   photoName: string | null; // nama deskriptif utk resolve foto (Pexels)

@@ -57,7 +57,7 @@ export function Link({
 }
 
 export interface Route {
-  name: "browse" | "detail" | "submit" | "mine" | "notfound";
+  name: "browse" | "detail" | "submit" | "mine" | "saved" | "notfound";
   params: Record<string, string>;
 }
 
@@ -69,6 +69,7 @@ export function parseRoute(path: string): Route {
   }
   if (parts[0] === "submit") return { name: "submit", params: {} };
   if (parts[0] === "submission-saya") return { name: "mine", params: {} };
+  if (parts[0] === "tersimpan") return { name: "saved", params: {} };
   return { name: "notfound", params: {} };
 }
 
