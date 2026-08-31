@@ -141,7 +141,7 @@ export function RecipeForm({
           value={v.est_kcal}
           onChange={(e) => set({ est_kcal: e.target.value })}
         />
-        <p className="mt-1 text-xs text-black/45">
+        <p className="mt-1 text-xs text-fg/45">
           {L(
             "Angka gizi kamu diperlakukan sebagai PERKIRAAN member, bukan fakta terverifikasi.",
             "Your nutrition figure is treated as a member ESTIMATE, not a verified fact."
@@ -161,12 +161,12 @@ export function RecipeForm({
         {v.photo_url && (
           <div className="mt-2 flex items-center gap-3">
             <img src={v.photo_url} alt="preview" className="h-16 w-16 rounded-lg object-cover" />
-            <button type="button" className="text-xs text-black/50 underline" onClick={() => set({ photo_url: null })}>
+            <button type="button" className="text-xs text-fg/50 underline" onClick={() => set({ photo_url: null })}>
               {L("hapus foto", "remove photo")}
             </button>
           </div>
         )}
-        <p className="mt-1 text-xs text-black/45">
+        <p className="mt-1 text-xs text-fg/45">
           {L(
             "Gunakan foto milikmu sendiri. Jangan pakai foto berhak cipta.",
             "Use your own photo. Do not use copyrighted images."
@@ -175,7 +175,7 @@ export function RecipeForm({
       </div>
 
       {healthWarn && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800">
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
           {L(
             "Sepertinya ada klaim kesehatan/medis (mis. “menyembuhkan”). Resep dengan klaim medis bisa ditolak atau diedit admin. Fokuskan ke bahan & cara masak.",
             "This looks like a health/medical claim (e.g. “cures”). Recipes with medical claims may be rejected or edited by an admin. Keep it to ingredients & method."

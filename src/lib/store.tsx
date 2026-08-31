@@ -79,3 +79,49 @@ export function RecipesProvider({ children }: { children: ReactNode }) {
   return <RecipesContext.Provider value={value}>{children}</RecipesContext.Provider>;
 }
 export const useRecipes = () => useContext(RecipesContext);
+
+/* --------------------------------- Theme -------------------------------- */
+
+type Theme = "light" | "dark";
+const THEME_KEY = "menu20fit_theme";
+
+function readTheme(): Theme {
+  try {
+    return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+  } catch {
+    return "light";
+  }
+}
+
+interface ThemeCtx {
+  theme: Theme;
+  setTheme: (t: Theme) => void;
+  toggle: () => void;
+}
+const ThemeContext = createContext<ThemeCtx>({ theme: "light", setTheme: () => {}, toggle: () => {} });
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>(() => readTheme());
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") root.classList.add("dark");
+    else root.classList.remove("dark");
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch {
+      /* ignore */
+    }
+  }, [theme]);
+
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme: (t: Theme) => setThemeState(t),
+      toggle: () => setThemeState((p) => (p === "dark" ? "light" : "dark")),
+    }),
+    [theme]
+  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}
+export const useTheme = () => useContext(ThemeContext);

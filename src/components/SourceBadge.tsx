@@ -11,7 +11,7 @@ export function SourceBadge({ source }: { source: Source }) {
     );
   }
   return (
-    <span className="chip bg-emerald-600/10 text-emerald-700" title="Kontribusi member (sudah direview admin)">
+    <span className="chip bg-emerald-600/10 text-emerald-700 dark:text-emerald-400" title="Kontribusi member (sudah direview admin)">
       ● {t("member")}
     </span>
   );

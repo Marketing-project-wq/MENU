@@ -8,9 +8,9 @@ import { dietLabel, statusLabel } from "../lib/i18n";
 import type { MineResponse, MySubmission } from "../lib/types";
 
 const STATUS_STYLE: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-800",
-  approved: "bg-emerald-100 text-emerald-800",
-  rejected: "bg-red-100 text-red-700",
+  pending: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
+  approved: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300",
+  rejected: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300",
 };
 
 export function MinePage() {
@@ -45,7 +45,7 @@ export function MinePage() {
   if (!isAuthenticated) {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
-        <p className="text-sm text-black/60">{t("loginToSubmit")}</p>
+        <p className="text-sm text-fg/60">{t("loginToSubmit")}</p>
         <button className="btn-primary mt-4" onClick={() => login("in")}>
           {t("login")}
         </button>
@@ -61,19 +61,19 @@ export function MinePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
-      <h1 className="text-xl font-extrabold tracking-tight text-brand-dark">{t("mySubmissions")}</h1>
+      <h1 className="text-xl font-extrabold tracking-tight text-fg">{t("mySubmissions")}</h1>
 
       {/* Progres reward */}
       <div className="mt-3 app-card p-4">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-black/60">
-            {L("Disetujui", "Approved")}: <b className="text-brand-dark">{data.approved}</b>
+          <span className="text-fg/60">
+            {L("Disetujui", "Approved")}: <b className="text-fg">{data.approved}</b>
           </span>
-          <span className="text-black/60">
-            {L("Kredit diperoleh", "Credits earned")}: <b className="text-brand-dark">{data.credits_earned}</b>
+          <span className="text-fg/60">
+            {L("Kredit diperoleh", "Credits earned")}: <b className="text-fg">{data.credits_earned}</b>
           </span>
         </div>
-        <p className="mt-2 text-xs text-black/45">
+        <p className="mt-2 text-xs text-fg/45">
           {L(
             `${toNext} resep disetujui lagi untuk ${data.reward_scan} kredit scan berikutnya.`,
             `${toNext} more approved recipes for the next ${data.reward_scan} scan credits.`
@@ -82,7 +82,7 @@ export function MinePage() {
       </div>
 
       {data.submissions.length === 0 ? (
-        <div className="mt-4 app-card p-6 text-center text-sm text-black/55">
+        <div className="mt-4 app-card p-6 text-center text-sm text-fg/55">
           {L("Belum ada submission.", "No submissions yet.")}
         </div>
       ) : (
@@ -91,15 +91,15 @@ export function MinePage() {
             <li key={s.id} className="app-card p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="font-semibold text-brand-dark">{s.name}</div>
-                  <div className="mt-0.5 text-xs text-black/45">{dietLabel(s.diet_type, lang)}</div>
+                  <div className="font-semibold text-fg">{s.name}</div>
+                  <div className="mt-0.5 text-xs text-fg/45">{dietLabel(s.diet_type, lang)}</div>
                 </div>
-                <span className={"chip " + (STATUS_STYLE[s.status] || "bg-black/5")}>
+                <span className={"chip " + (STATUS_STYLE[s.status] || "bg-fg/5")}>
                   {statusLabel(s.status, lang)}
                 </span>
               </div>
               {s.status === "rejected" && s.reject_reason && (
-                <div className="mt-2 rounded-lg bg-red-50 p-2 text-xs text-red-700">
+                <div className="mt-2 rounded-lg bg-red-50 p-2 text-xs text-red-700 dark:bg-red-500/10 dark:text-red-300">
                   <b>{L("Alasan", "Reason")}:</b> {s.reject_reason}
                 </div>
               )}
@@ -112,7 +112,7 @@ export function MinePage() {
                 </button>
               )}
               {reviseId === s.id && (
-                <div className="mt-3 border-t border-black/5 pt-3">
+                <div className="mt-3 border-t border-fg/5 pt-3">
                   <RecipeForm
                     initial={toFormValues(s)}
                     submitLabel={L("Kirim revisi", "Submit revision")}

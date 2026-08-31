@@ -32,17 +32,17 @@ export function RecipeCard({ r }: { r: RecipeVM }) {
         </div>
       </div>
       <div className="p-3">
-        <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-tight text-brand-dark">
+        <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-tight text-fg">
           {r.name}
         </h3>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {r.kcal != null && (
-            <span className="chip bg-black/5 text-black/70">
+            <span className="chip bg-fg/5 text-fg/70">
               {r.kcal} {t("calories")}
             </span>
           )}
           {r.dietTypes.slice(0, 2).map((d) => (
-            <span key={d} className="chip bg-black/5 text-black/60">
+            <span key={d} className="chip bg-fg/5 text-fg/60">
               {dietLabel(d, lang)}
             </span>
           ))}

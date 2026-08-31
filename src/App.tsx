@@ -1,5 +1,5 @@
 import { AuthProvider } from "./lib/auth";
-import { LangProvider, RecipesProvider } from "./lib/store";
+import { LangProvider, RecipesProvider, ThemeProvider } from "./lib/store";
 import { RouterProvider, useRouter, parseRoute } from "./router";
 import { Header } from "./components/Header";
 import { BrowsePage } from "./pages/BrowsePage";
@@ -27,8 +27,9 @@ function Routes() {
 
 export default function App() {
   return (
-    <LangProvider>
-      <AuthProvider>
+    <ThemeProvider>
+      <LangProvider>
+        <AuthProvider>
         <RecipesProvider>
           <RouterProvider>
             <div className="min-h-full">
@@ -36,13 +37,14 @@ export default function App() {
               <main>
                 <Routes />
               </main>
-              <footer className="mx-auto max-w-6xl px-4 py-10 text-center text-xs text-black/35">
+              <footer className="mx-auto max-w-6xl px-4 py-10 text-center text-xs text-fg/35">
                 Menu 20FIT · 20FIT Sport Clinic Indonesia
               </footer>
             </div>
           </RouterProvider>
         </RecipesProvider>
       </AuthProvider>
-    </LangProvider>
+      </LangProvider>
+    </ThemeProvider>
   );
 }
