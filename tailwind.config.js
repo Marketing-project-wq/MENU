@@ -17,7 +17,7 @@ export default {
         fg: "rgb(var(--fg) / <alpha-value>)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+        sans: ["Barlow Condensed", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
       },
     },
   },

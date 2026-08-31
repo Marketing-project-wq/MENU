@@ -31,8 +31,8 @@ export function Header() {
     <header className="sticky top-0 z-20 border-b border-fg/5 bg-bg/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
-          <img src={LOGO_LIGHT} alt="20FIT" className="h-7 w-auto dark:hidden" />
-          <img src={LOGO_DARK} alt="20FIT" className="hidden h-7 w-auto dark:block" />
+          <img src={LOGO_LIGHT} alt="20FIT" className="h-10 w-auto dark:hidden" />
+          <img src={LOGO_DARK} alt="20FIT" className="hidden h-10 w-auto dark:block" />
           <span className="text-sm font-bold tracking-tight text-fg/70">Menu</span>
         </Link>
 
