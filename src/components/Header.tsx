@@ -39,7 +39,7 @@ export function Header() {
         <nav className="ml-2 hidden items-center gap-1 sm:flex">
           {navItem("/", t("browse"))}
           {navItem("/submit", t("submit"))}
-          {isAuthenticated && navItem("/tersimpan", t("saved"))}
+          {navItem("/tersimpan", t("saved"))}
           {isAuthenticated && navItem("/submission-saya", t("mySubmissions"))}
         </nav>
 
@@ -103,7 +103,7 @@ export function Header() {
       <nav className="flex flex-wrap items-center gap-1 border-t border-fg/5 px-4 py-2 sm:hidden">
         {navItem("/", t("browse"))}
         {navItem("/submit", t("submit"))}
-        {isAuthenticated && navItem("/tersimpan", t("saved"))}
+        {navItem("/tersimpan", t("saved"))}
         {isAuthenticated && navItem("/submission-saya", t("mySubmissions"))}
       </nav>
     </header>
