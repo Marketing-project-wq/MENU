@@ -109,6 +109,23 @@ const STR: Dict = {
     id: "Tambahkan langkah satu per satu. Tiap langkah boleh diberi foto proses.",
     en: "Add steps one by one. Each step can have a process photo.",
   },
+  // Bagikan resep
+  shareTitle: { id: "Bagikan resep", en: "Share recipe" },
+  copyLink: { id: "Salin", en: "Copy" },
+  shareVia: { id: "Bagikan lewat", en: "Share via" },
+  moreApps: { id: "Aplikasi lainnya…", en: "More apps…" },
+  close: { id: "Tutup", en: "Close" },
+  // Footer
+  footerAbout: {
+    id: "20FIT adalah ekosistem kesehatan & kebugaran terpadu — dari resep sehat, klinik olahraga, gym, sampai arena olahraga.",
+    en: "20FIT is an integrated health & fitness ecosystem — from healthy recipes, a sports clinic, gym, to a sports arena.",
+  },
+  footerLinksTitle: { id: "Produk 20FIT lainnya", en: "More 20FIT products" },
+  footerMy: { id: "Akun 20FIT", en: "20FIT Account" },
+  footerClinic: { id: "20FIT Sport Clinic", en: "20FIT Sport Clinic" },
+  footerGym: { id: "20FIT Gym", en: "20FIT Gym" },
+  footerArena: { id: "20FIT Arena", en: "20FIT Arena" },
+  footerRights: { id: "Semua hak dilindungi.", en: "All rights reserved." },
 };
 
 export function makeT(lang: Lang) {

@@ -8,18 +8,19 @@ import { FoodImage } from "../components/FoodImage";
 import { ActionBar } from "../components/ActionBar";
 import { IngredientGroups } from "../components/IngredientGroups";
 import { StepList } from "../components/StepList";
+import { RecipeNotFound } from "../components/RecipeNotFound";
 import { api } from "../lib/api";
 import { catLabel, dietLabel } from "../lib/i18n";
 import type { RecipeVM } from "../lib/types";
 
-export function DetailPage({ routeKey }: { routeKey: string }) {
+export function DetailPage({ slug }: { slug: string }) {
   const { official, members, loading } = useRecipes();
   const { lang, t } = useLang();
 
   const recipe: RecipeVM | undefined = useMemo(() => {
     const vms = buildVMs(official, members, lang);
-    return vms.find((r) => r.key === routeKey);
-  }, [official, members, lang, routeKey]);
+    return vms.find((r) => r.slug === slug);
+  }, [official, members, lang, slug]);
 
   // Best-effort: catat buka detail (sinyal minat) — hanya sekali per resep.
   useEffect(() => {
@@ -36,16 +37,7 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
 
   if (loading) return <Spinner label={t("loading")} />;
 
-  if (!recipe) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-10 text-center">
-        <p className="text-sm text-fg/60">404 — {t("notFound")}</p>
-        <Link to="/" className="mt-3 inline-block text-sm font-semibold text-brand-red">
-          {t("backToBrowse")}
-        </Link>
-      </div>
-    );
-  }
+  if (!recipe) return <RecipeNotFound />;
 
   const isOfficial = recipe.source === "official";
 

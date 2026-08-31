@@ -82,6 +82,7 @@ export interface RecipeVM {
   key: string; // unik: "official:<id>" | "member:<uuid>"
   id: string;
   source: Source;
+  slug: string; // slug URL berbasis nama resep, unik dlm daftar hasil buildVMs() (lihat normalize.ts)
   name: string;
   kcal: number | null;
   macros: { p: number; c: number; f: number } | null; // hanya official

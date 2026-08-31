@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 interface RouterCtx {
   path: string;
-  navigate: (to: string) => void;
+  navigate: (to: string, opts?: { replace?: boolean }) => void;
 }
 
 const Ctx = createContext<RouterCtx>({ path: "/", navigate: () => {} });
@@ -16,11 +16,12 @@ export function RouterProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  const navigate = (to: string) => {
+  const navigate = (to: string, opts?: { replace?: boolean }) => {
     if (to === window.location.pathname + window.location.search) return;
-    window.history.pushState(null, "", to);
+    if (opts?.replace) window.history.replaceState(null, "", to);
+    else window.history.pushState(null, "", to);
     setPath(to.split("?")[0]);
-    window.scrollTo(0, 0);
+    if (!opts?.replace) window.scrollTo(0, 0);
   };
 
   return <Ctx.Provider value={{ path, navigate }}>{children}</Ctx.Provider>;
@@ -57,15 +58,21 @@ export function Link({
 }
 
 export interface Route {
-  name: "browse" | "detail" | "submit" | "mine" | "saved" | "notfound";
+  name: "browse" | "detail" | "legacy-detail" | "submit" | "mine" | "saved" | "notfound";
   params: Record<string, string>;
 }
 
+// URL resep: /resep/{slug} (baru, berbasis nama resep, satu segmen).
+// URL lama /resep/{source}/{id} (mis. link yang sudah tersebar) tetap dikenali
+// sebagai "legacy-detail" supaya bisa di-redirect ke slug baru, bukan 404.
 export function parseRoute(path: string): Route {
   if (!path || path === "/") return { name: "browse", params: {} };
   const parts = path.split("/").filter(Boolean);
+  if (parts[0] === "resep" && parts.length === 2) {
+    return { name: "detail", params: { slug: decodeURIComponent(parts[1]) } };
+  }
   if (parts[0] === "resep" && parts.length >= 3) {
-    return { name: "detail", params: { source: parts[1], id: decodeURIComponent(parts.slice(2).join("/")) } };
+    return { name: "legacy-detail", params: { source: parts[1], id: decodeURIComponent(parts.slice(2).join("/")) } };
   }
   if (parts[0] === "submit") return { name: "submit", params: {} };
   if (parts[0] === "submission-saya") return { name: "mine", params: {} };
@@ -73,6 +80,6 @@ export function parseRoute(path: string): Route {
   return { name: "notfound", params: {} };
 }
 
-export function recipeHref(source: string, id: string): string {
-  return `/resep/${source}/${encodeURIComponent(id)}`;
+export function recipeHref(slug: string): string {
+  return `/resep/${encodeURIComponent(slug)}`;
 }

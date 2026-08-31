@@ -12,7 +12,7 @@ export function RecipeCard({ r }: { r: RecipeVM }) {
   const hearts = count(r.source, r.id);
   return (
     <Link
-      to={recipeHref(r.source, r.id)}
+      to={recipeHref(r.slug)}
       className="app-card group block overflow-hidden transition-transform hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="relative h-36">

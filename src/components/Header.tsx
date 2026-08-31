@@ -1,10 +1,7 @@
 import { Link, useRouter } from "../router";
 import { useAuth } from "../lib/auth";
 import { useLang, useTheme } from "../lib/store";
-
-// Logo 20FIT — versi terang & gelap (putih) di-swap otomatis oleh kelas .dark.
-const LOGO_LIGHT = "https://media.20fit.id/wp-content/uploads/2026/05/Logo-20fit.png";
-const LOGO_DARK = "https://media.20fit.id/wp-content/uploads/2026/07/Copy-of-new-logo-20fit-putih-3.png";
+import { LOGO_LIGHT, LOGO_DARK } from "../lib/constants";
 
 export function Header() {
   const { t, lang, setLang } = useLang();
