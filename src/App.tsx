@@ -37,7 +37,7 @@ export default function App() {
                 <Routes />
               </main>
               <footer className="mx-auto max-w-6xl px-4 py-10 text-center text-xs text-black/35">
-                menu.20fit.id · 20FIT Sport Clinic Indonesia
+                Menu 20FIT · 20FIT Sport Clinic Indonesia
               </footer>
             </div>
           </RouterProvider>

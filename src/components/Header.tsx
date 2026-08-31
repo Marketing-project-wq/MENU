@@ -41,13 +41,32 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <button
-            className="rounded-full border border-black/10 px-2 py-1 text-xs font-semibold text-black/60 hover:bg-black/5"
-            onClick={() => setLang(lang === "id" ? "en" : "id")}
-            title="Bahasa / Language"
+          <div
+            className="flex items-center rounded-full border border-black/10 p-0.5 text-xs font-bold"
+            role="group"
+            aria-label="Bahasa / Language"
           >
-            {lang === "id" ? "ID" : "EN"}
-          </button>
+            <button
+              className={
+                "rounded-full px-2.5 py-1 transition-colors " +
+                (lang === "id" ? "bg-brand-red text-white" : "text-black/55 hover:text-brand-dark")
+              }
+              onClick={() => setLang("id")}
+              aria-pressed={lang === "id"}
+            >
+              ID
+            </button>
+            <button
+              className={
+                "rounded-full px-2.5 py-1 transition-colors " +
+                (lang === "en" ? "bg-brand-red text-white" : "text-black/55 hover:text-brand-dark")
+              }
+              onClick={() => setLang("en")}
+              aria-pressed={lang === "en"}
+            >
+              EN
+            </button>
+          </div>
           {isAuthenticated ? (
             <div className="flex items-center gap-2">
               <span className="hidden max-w-[140px] truncate text-xs text-black/50 md:inline">

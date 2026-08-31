@@ -1,10 +1,11 @@
 import { Link, recipeHref } from "../router";
 import { SourceBadge } from "./SourceBadge";
 import { useLang } from "../lib/store";
+import { dietLabel } from "../lib/i18n";
 import type { RecipeVM } from "../lib/types";
 
 export function RecipeCard({ r }: { r: RecipeVM }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   return (
     <Link
       to={recipeHref(r.source, r.id)}
@@ -41,8 +42,8 @@ export function RecipeCard({ r }: { r: RecipeVM }) {
             </span>
           )}
           {r.dietTypes.slice(0, 2).map((d) => (
-            <span key={d} className="chip bg-black/5 capitalize text-black/60">
-              {d}
+            <span key={d} className="chip bg-black/5 text-black/60">
+              {dietLabel(d, lang)}
             </span>
           ))}
         </div>

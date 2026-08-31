@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { DIET_TYPES, RULES } from "../lib/constants";
 import type { SubmitBody } from "../lib/api";
 import { useLang } from "../lib/store";
+import { dietLabel } from "../lib/i18n";
 
 // Kata-kata yang menandakan KLAIM KESEHATAN berisiko. Ini hanya peringatan lembut
 // di sisi client — gerbang sebenarnya tetap moderasi admin + flag server-side.
@@ -100,10 +101,10 @@ export function RecipeForm({
 
       <div>
         <label className="label">{L("Tipe diet", "Diet type")}</label>
-        <select className="field capitalize" value={v.diet_type} onChange={(e) => set({ diet_type: e.target.value })}>
+        <select className="field" value={v.diet_type} onChange={(e) => set({ diet_type: e.target.value })}>
           {DIET_TYPES.map((d) => (
             <option key={d} value={d}>
-              {d}
+              {dietLabel(d, lang)}
             </option>
           ))}
         </select>
