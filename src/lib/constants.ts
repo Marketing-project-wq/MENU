@@ -9,8 +9,19 @@ export const SUPABASE = {
   STORAGE_KEY: "sb-cpvzwqptzcxnwzfzgrmt-auth-token",
 };
 
+// Logo 20FIT — versi terang & gelap (putih), di-swap otomatis oleh kelas .dark.
+export const LOGO_LIGHT = "https://media.20fit.id/wp-content/uploads/2026/05/Logo-20fit.png";
+export const LOGO_DARK = "https://media.20fit.id/wp-content/uploads/2026/07/Copy-of-new-logo-20fit-putih-3.png";
+
 // Pusat akun + API = my.20fit.id
 export const MY20FIT = "https://my.20fit.id";
+
+// Produk/layanan 20FIT lain yang ditautkan di footer (dikonfirmasi pemilik produk).
+export const OTHER_20FIT_PRODUCTS = {
+  CLINIC: "https://clinic.20fit.id",
+  GYM: "https://gym.20fit.id",
+  ARENA: "https://arena.20fit.id",
+};
 
 // Boleh di-override lewat env (mis. staging), default ke my.20fit.id.
 export const API_BASE = (import.meta.env.VITE_API_URL as string) || MY20FIT;

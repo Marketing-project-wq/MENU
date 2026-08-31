@@ -33,6 +33,42 @@ function parseIngredientGroups(text: string): IngredientGroup[] {
   return groups.filter((g) => g.items.length > 0);
 }
 
+/** Ubah nama resep jadi slug URL (huruf kecil, dash, tanpa diakritik/simbol). */
+function slugify(name: string): string {
+  const s = name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // buang diakritik (e\u0301 -> e, dst.)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80)
+    .replace(/-+$/g, "");
+  return s || "resep";
+}
+
+/** Akhiran pendek & stabil dari id, dipakai hanya saat slug nama bentrok dgn resep lain. */
+function idSuffix(id: string): string {
+  const s = id.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return s.slice(-6) || "x";
+}
+
+/** Pastikan tiap RecipeVM di `list` punya slug unik. Slug dasar = nama;
+ *  kalau bentrok dgn resep lain, tambahkan akhiran id (stabil, deterministik). */
+function assignSlugs(list: RecipeVM[]): void {
+  const used = new Set<string>();
+  for (const r of list) {
+    const base = slugify(r.name);
+    let slug = base;
+    if (used.has(slug)) {
+      slug = `${base}-${idSuffix(r.id)}`;
+      let n = 2;
+      while (used.has(slug)) slug = `${base}-${idSuffix(r.id)}-${n++}`;
+    }
+    used.add(slug);
+    r.slug = slug;
+  }
+}
+
 /** Pecah teks langkah jadi RecipeStep[] (tanpa foto). Nomor "1." / "1)" & bullet di depan dibuang. */
 export function parseStepsText(text: string): RecipeStep[] {
   return text
@@ -62,6 +98,7 @@ export function normalizeOfficial(r: OfficialRecipe, lang: Lang): RecipeVM {
     key: `official:${r.id}`,
     id: r.id,
     source: "official",
+    slug: slugify(r.nm?.[lang] || r.nm?.en || r.id), // default; disempurnakan (unik) oleh buildVMs()
     name: r.nm?.[lang] || r.nm?.en || r.id,
     kcal: typeof r.kcal === "number" ? r.kcal : null,
     macros: { p: r.p ?? 0, c: r.c ?? 0, f: r.f ?? 0 },
@@ -92,6 +129,7 @@ export function normalizeMember(m: PublishedContribution): RecipeVM {
     key: `member:${m.id}`,
     id: m.id,
     source: "member",
+    slug: slugify(m.name), // default; disempurnakan (unik) oleh buildVMs()
     name: m.name,
     kcal: typeof m.est_kcal === "number" ? m.est_kcal : null,
     macros: null, // member hanya kasih perkiraan kalori, bukan makro lengkap
@@ -120,5 +158,20 @@ export function buildVMs(
   const off = official.map((r) => normalizeOfficial(r, lang));
   const mem = members.map(normalizeMember);
   // Member terbaru dulu, lalu resep resmi.
-  return [...mem, ...off];
+  const all = [...mem, ...off];
+  // Slug final: unik dlm daftar ini (dipakai sbg satu-satunya sumber kebenaran
+  // slug -> resep oleh DetailPage & redirect URL lama, lihat router.tsx).
+  assignSlugs(all);
+  return all;
+}
+
+/** Peta "source:id" -> slug kanonik, dihitung dari katalog publik penuh (official + members).
+ *  Dipakai halaman yang membangun RecipeVM dari subset data lain (mis. SavedPage) supaya
+ *  link yang dibuat tetap konsisten dgn slug yang dipakai DetailPage. */
+export function buildSlugMap(
+  official: OfficialRecipe[],
+  members: PublishedContribution[],
+  lang: Lang
+): Map<string, string> {
+  return new Map(buildVMs(official, members, lang).map((r) => [r.key, r.slug]));
 }

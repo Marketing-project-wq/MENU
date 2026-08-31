@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../lib/auth";
 import { useLang, useRecipes } from "../lib/store";
 import { useSocial } from "../lib/social";
 import { api, type SavedRow } from "../lib/api";
-import { normalizeMember, normalizeOfficial } from "../lib/normalize";
+import { buildSlugMap, normalizeMember, normalizeOfficial } from "../lib/normalize";
 import { RecipeCard } from "../components/RecipeCard";
 import { Spinner } from "../components/Spinner";
 import type { PublishedContribution, RecipeVM } from "../lib/types";
@@ -11,8 +11,16 @@ import type { PublishedContribution, RecipeVM } from "../lib/types";
 export function SavedPage() {
   const { t, lang } = useLang();
   const { isAuthenticated, isLoading: authLoading, login } = useAuth();
-  const { official } = useRecipes();
+  const { official, members: globalMembers } = useRecipes();
   const { ensure } = useSocial();
+
+  // Peta slug kanonik (sama persis dgn yg dipakai Browse/Detail) supaya link kartu
+  // tersimpan konsisten dgn slug yang dicari DetailPage — bukan dihitung ulang dari
+  // subset data getSaved() yang bisa berbeda urutan/isinya.
+  const slugMap = useMemo(
+    () => buildSlugMap(official, globalMembers, lang),
+    [official, globalMembers, lang]
+  );
   const [rows, setRows] = useState<SavedRow[] | null>(null);
   const [members, setMembers] = useState<Record<string, PublishedContribution>>({});
   const [loading, setLoading] = useState(false);
@@ -67,10 +75,18 @@ export function SavedPage() {
   for (const row of rows) {
     if (row.source === "official") {
       const o = officialById.get(row.menu_id);
-      if (o) vms.push(normalizeOfficial(o, lang));
+      if (o) {
+        const vm = normalizeOfficial(o, lang);
+        vm.slug = slugMap.get(vm.key) ?? vm.slug;
+        vms.push(vm);
+      }
     } else {
       const m = members[row.menu_id];
-      if (m) vms.push(normalizeMember(m));
+      if (m) {
+        const vm = normalizeMember(m);
+        vm.slug = slugMap.get(vm.key) ?? vm.slug;
+        vms.push(vm);
+      }
     }
   }
 

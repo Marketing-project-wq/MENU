@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../lib/auth";
 import { useSocial } from "../lib/social";
 import { useLang } from "../lib/store";
+import { ShareMenu } from "./ShareMenu";
 import type { Source } from "../lib/types";
 
 /**
@@ -12,8 +13,8 @@ export function ActionBar({ source, id, name }: { source: Source; id: string; na
   const { t } = useLang();
   const { isAuthenticated, login } = useAuth();
   const { count, reacted, saved, ensure, toggleReact, toggleSave } = useSocial();
-  const [copied, setCopied] = useState(false);
   const [needLogin, setNeedLogin] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     ensure([{ source, id }]);
@@ -30,26 +31,6 @@ export function ActionBar({ source, id, name }: { source: Source; id: string; na
     }
     fn();
   };
-
-  async function doShare() {
-    const url = window.location.href;
-    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
-    if (nav.share) {
-      try {
-        await nav.share({ title: name, url });
-        return;
-      } catch {
-        /* dibatalkan user — lanjut ke fallback salin */
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      /* ignore */
-    }
-  }
 
   return (
     <div className="no-print">
@@ -86,11 +67,11 @@ export function ActionBar({ source, id, name }: { source: Source; id: string; na
 
         <button
           type="button"
-          onClick={doShare}
+          onClick={() => setShareOpen(true)}
           className="inline-flex items-center gap-1.5 rounded-full border border-fg/15 px-3 py-1.5 text-sm font-semibold text-fg/70 transition hover:border-fg/30"
         >
           <ShareIcon />
-          <span>{copied ? t("linkCopied") : t("share")}</span>
+          <span>{t("share")}</span>
         </button>
 
         <button
@@ -110,6 +91,10 @@ export function ActionBar({ source, id, name }: { source: Source; id: string; na
             {t("login")}
           </button>
         </div>
+      )}
+
+      {shareOpen && (
+        <ShareMenu url={window.location.href} title={name} onClose={() => setShareOpen(false)} />
       )}
     </div>
   );

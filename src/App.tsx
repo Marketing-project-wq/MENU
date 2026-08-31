@@ -3,8 +3,10 @@ import { LangProvider, RecipesProvider, ThemeProvider } from "./lib/store";
 import { SocialProvider } from "./lib/social";
 import { RouterProvider, useRouter, parseRoute } from "./router";
 import { Header } from "./components/Header";
+import { Footer } from "./components/Footer";
 import { BrowsePage } from "./pages/BrowsePage";
 import { DetailPage } from "./pages/DetailPage";
+import { LegacyDetailRedirect } from "./pages/LegacyDetailRedirect";
 import { SubmitPage } from "./pages/SubmitPage";
 import { MinePage } from "./pages/MinePage";
 import { SavedPage } from "./pages/SavedPage";
@@ -15,7 +17,9 @@ function Routes() {
 
   switch (route.name) {
     case "detail":
-      return <DetailPage routeKey={`${route.params.source}:${route.params.id}`} />;
+      return <DetailPage slug={route.params.slug} />;
+    case "legacy-detail":
+      return <LegacyDetailRedirect source={route.params.source} id={route.params.id} />;
     case "submit":
       return <SubmitPage />;
     case "mine":
@@ -42,9 +46,7 @@ export default function App() {
                 <main>
                   <Routes />
                 </main>
-                <footer className="mx-auto max-w-6xl px-4 py-10 text-center text-xs text-fg/35">
-                  Menu 20FIT · 20FIT Sport Clinic Indonesia
-                </footer>
+                <Footer />
               </div>
             </RouterProvider>
           </SocialProvider>
