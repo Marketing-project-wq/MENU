@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Katalog resep sehat 20FIT — jelajahi resep resmi & kontribusi member. Submit resepmu, direview admin sebelum tayang." />
+    <!-- Terapkan tema sebelum paint (hindari kedip) -->
+    <script>
+      try {
+        if (localStorage.getItem("menu20fit_theme") === "dark")
+          document.documentElement.classList.add("dark");
+      } catch (e) {}
+    </script>
     <title>Menu 20FIT — Resep Sehat</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

@@ -42,7 +42,7 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
   if (!recipe) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 text-center">
-        <p className="text-sm text-black/60">404 — {t("notFound")}</p>
+        <p className="text-sm text-fg/60">404 — {t("notFound")}</p>
         <Link to="/" className="mt-3 inline-block text-sm font-semibold text-brand-red">
           {t("backToBrowse")}
         </Link>
@@ -54,7 +54,7 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-6">
-      <Link to="/" className="text-sm font-semibold text-black/50 hover:text-brand-red">
+      <Link to="/" className="text-sm font-semibold text-fg/50 hover:text-brand-red">
         {t("backToBrowse")}
       </Link>
 
@@ -76,25 +76,25 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <SourceBadge source={recipe.source} />
             {recipe.category && (
-              <span className="chip bg-black/5 text-black/60">{catLabel(recipe.category, lang)}</span>
+              <span className="chip bg-fg/5 text-fg/60">{catLabel(recipe.category, lang)}</span>
             )}
             {recipe.dietTypes.map((d) => (
-              <span key={d} className="chip bg-black/5 text-black/60">
+              <span key={d} className="chip bg-fg/5 text-fg/60">
                 {dietLabel(d, lang)}
               </span>
             ))}
           </div>
 
-          <h1 className="text-xl font-extrabold tracking-tight text-brand-dark">{recipe.name}</h1>
+          <h1 className="text-xl font-extrabold tracking-tight text-fg">{recipe.name}</h1>
 
           {/* Perkiraan gizi — SELALU ditandai perkiraan; sumber dibedakan. */}
-          <div className="mt-4 rounded-xl border border-black/10 bg-black/[0.02] p-4">
+          <div className="mt-4 rounded-xl border border-fg/10 bg-fg/[0.02] p-4">
             <div className="mb-2 flex items-baseline justify-between">
               <span className="label mb-0">{t("nutrition")}</span>
               {recipe.kcal != null && (
-                <span className="text-lg font-bold text-brand-dark">
+                <span className="text-lg font-bold text-fg">
                   {recipe.kcal}{" "}
-                  <span className="text-xs font-medium text-black/50">{t("calories")}</span>
+                  <span className="text-xs font-medium text-fg/50">{t("calories")}</span>
                 </span>
               )}
             </div>
@@ -105,13 +105,13 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
                 <Macro label={t("fat")} value={`${recipe.macros.f} g`} />
               </div>
             )}
-            <p className="mt-3 text-xs italic text-black/45">
+            <p className="mt-3 text-xs italic text-fg/45">
               {isOfficial ? t("estOfficial") : t("estUser")}
             </p>
           </div>
 
           <Section title={t("ingredients")}>
-            <ul className="list-disc space-y-1 pl-5 text-sm text-black/75">
+            <ul className="list-disc space-y-1 pl-5 text-sm text-fg/75">
               {lines(recipe.ingredients).map((l, i) => (
                 <li key={i}>{l}</li>
               ))}
@@ -119,7 +119,7 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
           </Section>
 
           <Section title={t("steps")}>
-            <div className="space-y-1.5 whitespace-pre-line text-sm leading-relaxed text-black/75">
+            <div className="space-y-1.5 whitespace-pre-line text-sm leading-relaxed text-fg/75">
               {recipe.steps}
             </div>
           </Section>
@@ -131,9 +131,9 @@ export function DetailPage({ routeKey }: { routeKey: string }) {
 
 function Macro({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-white py-2">
-      <div className="text-[11px] uppercase tracking-wide text-black/40">{label}</div>
-      <div className="font-semibold text-brand-dark">{value}</div>
+    <div className="rounded-lg bg-card py-2">
+      <div className="text-[11px] uppercase tracking-wide text-fg/40">{label}</div>
+      <div className="font-semibold text-fg">{value}</div>
     </div>
   );
 }
@@ -141,7 +141,7 @@ function Macro({ label, value }: { label: string; value: string }) {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-5">
-      <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-black/70">{title}</h2>
+      <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-fg/70">{title}</h2>
       {children}
     </section>
   );

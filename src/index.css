@@ -2,8 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Palet tema — channel RGB (dipakai token Tailwind bg/card/fg dgn <alpha-value>). */
 :root {
   color-scheme: light;
+  --bg: 247 245 240; /* warm off-white */
+  --card: 255 255 255;
+  --card2: 240 237 229;
+  --fg: 22 23 15; /* near-black */
+}
+
+.dark {
+  color-scheme: dark;
+  --bg: 14 15 11; /* warm near-black */
+  --card: 24 25 17;
+  --card2: 32 33 24;
+  --fg: 240 237 230;
 }
 
 html,
@@ -14,29 +27,30 @@ body,
 
 body {
   margin: 0;
-  background: #f7f5f0;
-  color: #16170f;
+  background: rgb(var(--bg));
+  color: rgb(var(--fg));
   font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 @layer components {
   .app-card {
-    @apply rounded-2xl bg-white border border-black/5 shadow-sm;
+    @apply rounded-2xl bg-card border border-fg/10 shadow-sm;
   }
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors bg-brand-red text-white hover:bg-[#a30d01] disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors bg-black/5 text-brand-dark hover:bg-black/10 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors bg-fg/5 text-fg hover:bg-fg/10 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .chip {
     @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
   }
   .field {
-    @apply w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-brand-red/60 focus:ring-2 focus:ring-brand-red/10;
+    @apply w-full rounded-xl border border-fg/10 bg-card px-3 py-2 text-sm outline-none focus:border-brand-red/60 focus:ring-2 focus:ring-brand-red/10;
   }
   .label {
-    @apply block text-xs font-semibold uppercase tracking-wide text-black/50 mb-1;
+    @apply block text-xs font-semibold uppercase tracking-wide text-fg/50 mb-1;
   }
 }
