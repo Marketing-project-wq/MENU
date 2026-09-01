@@ -57,6 +57,7 @@ export function DetailPage({ slug }: { slug: string }) {
           tint={recipe.tint}
           alt={recipe.name}
           className="aspect-[4/3] w-full"
+          aspectRatio="4/3"
           emojiClass="text-7xl"
           priority
           widths={[480, 768, 992]}

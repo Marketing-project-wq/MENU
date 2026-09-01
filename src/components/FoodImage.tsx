@@ -28,6 +28,7 @@ export function FoodImage({
   priority = false,
   widths = CARD_WIDTHS,
   sizes = CARD_SIZES,
+  aspectRatio,
 }: {
   id: string;
   photoQ?: string | null;
@@ -41,6 +42,9 @@ export function FoodImage({
   priority?: boolean;
   widths?: number[];
   sizes?: string;
+  /** Dipakai kalau parent TIDAK punya tinggi tetap (mis. hero detail, bukan kartu daftar) --
+   *  kunci rasio lewat inline style ini, bukan cuma class Tailwind aspect-[..]. */
+  aspectRatio?: string;
 }) {
   const [url, setUrl] = useState<string | null>(photoUrl || null);
   const [failed, setFailed] = useState(false);
@@ -103,7 +107,15 @@ export function FoodImage({
     <div
       ref={ref}
       className={"flex items-center justify-center overflow-hidden " + className}
-      style={{ backgroundColor: show ? undefined : hexToTint(tint) }}
+      // width/height (atau aspectRatio)/overflow inline JUGA (bukan cuma lewat class Tailwind) --
+      // kalau file CSS pernah gagal termuat (mis. cache CDN nunjuk ke nama file lama yang sudah
+      // tak ada di server), foto tetap kepotong pas ke framenya, bukan tampil segede aslinya.
+      // aspectRatio dipakai kalau parent tak punya tinggi tetap (height:100% akan runtuh ke 0).
+      style={
+        aspectRatio
+          ? { backgroundColor: show ? undefined : hexToTint(tint), width: "100%", aspectRatio, overflow: "hidden" }
+          : { backgroundColor: show ? undefined : hexToTint(tint), width: "100%", height: "100%", overflow: "hidden" }
+      }
     >
       {show ? (
         <img
@@ -114,6 +126,7 @@ export function FoodImage({
           {...imgProps}
           decoding="async"
           className="h-full w-full object-cover object-center"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
           onError={() => setFailed(true)}
         />
       ) : (
