@@ -58,6 +58,9 @@ export function DetailPage({ slug }: { slug: string }) {
           alt={recipe.name}
           className="aspect-[4/3] w-full"
           emojiClass="text-7xl"
+          priority
+          widths={[480, 768, 992]}
+          sizes="(min-width: 1024px) 992px, 100vw"
         />
 
         <div className="p-5 sm:p-6">

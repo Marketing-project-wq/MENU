@@ -131,8 +131,8 @@ export function BrowsePage() {
             {visible.length} / {filtered.length} {t("recipesWord")}
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {visible.map((r) => (
-              <RecipeCard key={r.key} r={r} />
+            {visible.map((r, i) => (
+              <RecipeCard key={r.key} r={r} priority={i < 3} />
             ))}
           </div>
           {hasMore && (
