@@ -15,11 +15,11 @@ export function RecipeCard({ r, priority = false }: { r: RecipeVM; priority?: bo
       to={recipeHref(r.slug)}
       className="app-card group block overflow-hidden transition-transform hover:-translate-y-0.5 hover:shadow-md"
     >
-      {/* aspect-square (bukan tinggi tetap h-36) -- foto AI resmi rasionya persis 1:1 (1024x1024),
-          kalau frame-nya jauh lebih lebar dari tinggi (mis. 271x144 di grid 4 kolom = ~1.9:1),
-          object-cover motong hampir separuh tinggi foto -> kelihatan "zoom" ke tengah, bukan
-          seluruh piring. aspect-square bikin frame ikut lebar kartu, cocok sama rasio sumbernya. */}
-      <div className="relative aspect-square" style={{ aspectRatio: "1 / 1" }}>
+      {/* aspect-square (1:1) -- cocok persis rasio foto AI resmi (1024x1024), jadi object-cover
+          nyaris tak motong apa-apa (lihat commit sebelumnya). Padding (p-2.5) di sini bikin
+          fotonya sendiri kelihatan lebih kecil/tak penuh sampai tepi kartu -- bukan crop lagi,
+          cuma dikasih jarak (foto persegi utuh, cuma areanya lebih kecil dari framenya). */}
+      <div className="relative aspect-square p-2.5" style={{ aspectRatio: "1 / 1", padding: "0.625rem" }}>
         <FoodImage
           id={r.id}
           photoQ={r.photoQ}
@@ -28,9 +28,9 @@ export function RecipeCard({ r, priority = false }: { r: RecipeVM; priority?: bo
           emoji={r.emoji}
           tint={r.tint}
           alt={r.name}
-          className="h-full w-full"
+          className="h-full w-full rounded-xl"
           aspectRatio="1 / 1"
-          emojiClass="text-5xl"
+          emojiClass="text-4xl"
           priority={priority}
         />
         <div className="absolute left-2 top-2">
