@@ -56,7 +56,7 @@ export function DetailPage({ slug }: { slug: string }) {
           emoji={recipe.emoji}
           tint={recipe.tint}
           alt={recipe.name}
-          className="h-56 w-full sm:h-64"
+          className="aspect-[4/3] w-full"
           emojiClass="text-7xl"
         />
 
