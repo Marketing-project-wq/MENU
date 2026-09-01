@@ -15,7 +15,9 @@ export function RecipeCard({ r, priority = false }: { r: RecipeVM; priority?: bo
       to={recipeHref(r.slug)}
       className="app-card group block overflow-hidden transition-transform hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="relative h-36">
+      {/* height inline JUGA (bukan cuma class h-36) -- FoodImage di dalamnya andalkan tinggi
+          tetap dari sini utk mengunci ukuran fotonya lewat inline style, bukan cuma CSS eksternal. */}
+      <div className="relative h-36" style={{ height: "9rem" }}>
         <FoodImage
           id={r.id}
           photoQ={r.photoQ}
