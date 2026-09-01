@@ -50,6 +50,7 @@ export const API = {
   SAVE: (id: string) => `/api/menu/${id}/save`, // auth: toggle simpan ke koleksi
   SAVED: "/api/menu/saved", // auth: koleksi resep tersimpan
   SOCIAL: "/api/menu/social", // publik: jumlah heart (+ state user bila login) batch
+  REWARD_CONFIG: "/api/menu/reward-config", // publik: ambang & besaran reward sumbang-resep
 };
 
 // Batas & aturan (samakan dengan server my.20fit.id).

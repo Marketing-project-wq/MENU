@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { supabase } from "./supabase";
 import { URLS } from "./constants";
 import { api } from "./api";
+import { takePendingSave } from "./pendingSave";
 
 interface AuthCtx {
   user: any | null;
@@ -56,6 +57,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         api.claimAnonLikes().catch(() => {
           /* best-effort — kegagalan di sini tak boleh mengganggu login */
         });
+        // Resep yang diklik "Simpan" sebelum login -> simpan sekarang juga, otomatis.
+        const pending = takePendingSave();
+        if (pending) {
+          api.save(pending.source, pending.id).catch(() => {
+            /* best-effort — kalau gagal, user masih bisa simpan manual lagi */
+          });
+        }
       }
     });
     return () => sub.subscription.unsubscribe();

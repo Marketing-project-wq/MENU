@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../lib/auth";
 import { useSocial } from "../lib/social";
 import { useLang } from "../lib/store";
+import { setPendingSave } from "../lib/pendingSave";
 import { ShareMenu } from "./ShareMenu";
 import type { Source } from "../lib/types";
 
@@ -25,12 +26,15 @@ export function ActionBar({ source, id, name }: { source: Source; id: string; na
   const isSaved = saved(source, id);
   const n = count(source, id);
 
-  const guard = (fn: () => void) => {
+  const handleSaveClick = () => {
     if (!isAuthenticated) {
+      // Ingat resep ini -- begitu dia balik login/daftar, langsung tersimpan otomatis
+      // (lihat lib/auth.tsx), tak perlu mencari ulang.
+      setPendingSave({ source, id });
       setNeedLogin(true);
       return;
     }
-    fn();
+    void toggleSave(source, id).catch(() => {});
   };
 
   return (
@@ -53,7 +57,7 @@ export function ActionBar({ source, id, name }: { source: Source; id: string; na
 
         <button
           type="button"
-          onClick={() => guard(() => void toggleSave(source, id).catch(() => {}))}
+          onClick={handleSaveClick}
           aria-pressed={isSaved}
           className={
             "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold transition " +
@@ -90,6 +94,10 @@ export function ActionBar({ source, id, name }: { source: Source; id: string; na
           <span>{t("loginToInteract")}</span>
           <button type="button" onClick={() => login("in")} className="font-bold underline">
             {t("login")}
+          </button>
+          <span aria-hidden>·</span>
+          <button type="button" onClick={() => login("up")} className="font-bold underline">
+            {t("signUp")}
           </button>
         </div>
       )}

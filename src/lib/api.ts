@@ -5,6 +5,7 @@ import type {
   OfficialRecipe,
   PublishedContribution,
   RecipeStep,
+  RewardConfig,
   Source,
 } from "./types";
 
@@ -85,6 +86,12 @@ export const api = {
   /** Submission-ku + progres reward. */
   async mine(): Promise<MineResponse> {
     const r = await fetch(`${API_BASE}${API.MINE}`, { headers: { ...(await authHeaders()) } });
+    return jsonOrThrow(r);
+  },
+
+  /** Ambang & besaran reward sumbang-resep (publik, tanpa login) -- JANGAN hardcode di UI. */
+  async rewardConfig(): Promise<RewardConfig> {
+    const r = await fetch(`${API_BASE}${API.REWARD_CONFIG}`);
     return jsonOrThrow(r);
   },
 
