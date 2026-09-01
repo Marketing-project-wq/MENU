@@ -30,6 +30,8 @@ export interface OfficialRecipe {
   nm: { en: string; id: string };
   ing: { en: string; id: string };
   steps: { en: string; id: string };
+  servings?: number; // porsi -- opsional, belum diisi utk semua resep (progresif per Tahap 2)
+  cookMinutes?: number; // menit masak -- opsional, sama alasannya
 }
 
 /** Kontribusi user approved+published (via GET /api/menu/published) — tanpa PII. */

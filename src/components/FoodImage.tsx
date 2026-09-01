@@ -82,7 +82,7 @@ export function FoodImage({
           src={url as string}
           alt={alt}
           loading="lazy"
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover object-center"
           onError={() => setFailed(true)}
         />
       ) : (

@@ -18,17 +18,18 @@ export function Filters({
   categories: string[];
 }) {
   const { t, lang } = useLang();
+  const activeCls = "border-brand-red/60 ring-2 ring-brand-red/10 text-brand-red";
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
       <input
-        className="field sm:max-w-xs"
+        className={"field sm:max-w-xs" + (value.q ? " " + activeCls : "")}
         placeholder={t("search")}
         value={value.q}
         onChange={(e) => onChange({ ...value, q: e.target.value })}
         aria-label={t("search")}
       />
       <select
-        className="field sm:max-w-[200px]"
+        className={"field sm:max-w-[200px]" + (value.category ? " " + activeCls : "")}
         value={value.category}
         onChange={(e) => onChange({ ...value, category: e.target.value })}
         aria-label={t("allCategories")}
@@ -41,7 +42,7 @@ export function Filters({
         ))}
       </select>
       <select
-        className="field sm:max-w-[200px]"
+        className={"field sm:max-w-[200px]" + (value.diet ? " " + activeCls : "")}
         value={value.diet}
         onChange={(e) => onChange({ ...value, diet: e.target.value })}
         aria-label={t("allDiets")}

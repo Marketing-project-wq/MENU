@@ -4,17 +4,50 @@ import { useSocial } from "../lib/social";
 import { buildVMs } from "../lib/normalize";
 import { RecipeCard } from "../components/RecipeCard";
 import { Filters, type FilterState } from "../components/Filters";
+import { FilterChips } from "../components/FilterChips";
 import { Spinner } from "../components/Spinner";
+import { useRouter } from "../router";
+import { catLabel, dietLabel } from "../lib/i18n";
 
 // Jumlah resep yang ditampilkan per "halaman" — sisanya baru dimuat pas klik "Muat lebih banyak".
 const PAGE_SIZE = 15;
+
+/** Baca filter awal dari URL (?q=&category=&diet=) supaya link bisa dibagikan & bertahan saat refresh. */
+function readFiltersFromURL(): FilterState {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      q: params.get("q") || "",
+      category: params.get("category") || "",
+      diet: params.get("diet") || "",
+    };
+  } catch {
+    return { q: "", category: "", diet: "" };
+  }
+}
+
+function filtersToQuery(f: FilterState): string {
+  const params = new URLSearchParams();
+  if (f.q.trim()) params.set("q", f.q.trim());
+  if (f.category) params.set("category", f.category);
+  if (f.diet) params.set("diet", f.diet);
+  const s = params.toString();
+  return s ? `?${s}` : "";
+}
 
 export function BrowsePage() {
   const { official, members, loading, error } = useRecipes();
   const { lang, t } = useLang();
   const { ensure } = useSocial();
-  const [f, setF] = useState<FilterState>({ q: "", category: "", diet: "" });
+  const { navigate } = useRouter();
+  const [f, setF] = useState<FilterState>(() => readFiltersFromURL());
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Filter aktif -> URL query param (shareable, bertahan saat refresh).
+  useEffect(() => {
+    navigate("/" + filtersToQuery(f), { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [f.q, f.category, f.diet]);
 
   const vms = useMemo(() => buildVMs(official, members, lang), [official, members, lang]);
 
@@ -47,6 +80,19 @@ export function BrowsePage() {
     if (visible.length) ensure(visible.map((r) => ({ source: r.source, id: r.id })));
   }, [visible, ensure]);
 
+  const activeFilterLabels: string[] = [];
+  if (f.q.trim()) activeFilterLabels.push(`"${f.q.trim()}"`);
+  if (f.category) activeFilterLabels.push(catLabel(f.category, lang));
+  if (f.diet) activeFilterLabels.push(dietLabel(f.diet, lang));
+  const hasActiveFilters = activeFilterLabels.length > 0;
+
+  function removeFilter(key: keyof FilterState) {
+    setF((prev) => ({ ...prev, [key]: "" }));
+  }
+  function clearAllFilters() {
+    setF({ q: "", category: "", diet: "" });
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <section className="mb-5">
@@ -56,16 +102,29 @@ export function BrowsePage() {
         <p className="mt-1 text-sm text-fg/55">{t("reviewNote")}</p>
       </section>
 
-      <div className="mb-4">
+      <div className="mb-2">
         <Filters value={f} onChange={setF} categories={categories} />
       </div>
+
+      <FilterChips value={f} onRemove={removeFilter} onClearAll={clearAllFilters} />
 
       {loading ? (
         <Spinner label={t("loading")} />
       ) : error && vms.length === 0 ? (
         <div className="app-card p-6 text-center text-sm text-fg/60">{error}</div>
       ) : filtered.length === 0 ? (
-        <div className="app-card p-6 text-center text-sm text-fg/60">{t("noResults")}</div>
+        <div className="app-card p-6 text-center text-sm text-fg/60">
+          <p>
+            {hasActiveFilters
+              ? `${t("noResultsFiltered")} (${activeFilterLabels.join(" + ")})`
+              : t("noResults")}
+          </p>
+          {hasActiveFilters && (
+            <button type="button" onClick={clearAllFilters} className="btn-ghost mt-3">
+              {t("clearAllFilters")}
+            </button>
+          )}
+        </div>
       ) : (
         <>
           <p className="mb-3 text-xs text-fg/40">

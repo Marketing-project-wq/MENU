@@ -66,6 +66,14 @@ const STR: Dict = {
   notFound: { id: "Resep tidak ditemukan.", en: "Recipe not found." },
   category: { id: "Kategori", en: "Category" },
   dietType: { id: "Tipe diet", en: "Diet type" },
+  // Filter aktif (chip)
+  searchPrefix: { id: "Cari", en: "Search" },
+  clearAllFilters: { id: "Hapus semua", en: "Clear all" },
+  removeFilterAria: { id: "Hapus filter", en: "Remove filter" },
+  noResultsFiltered: {
+    id: "Tidak ada resep yang cocok dengan filter ini.",
+    en: "No recipes match these filters.",
+  },
   // Aksi & sosial
   save: { id: "Simpan", en: "Save" },
   saved: { id: "Tersimpan", en: "Saved" },
