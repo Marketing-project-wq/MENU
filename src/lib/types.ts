@@ -73,10 +73,16 @@ export interface MineResponse {
   ok: boolean;
   submissions: MySubmission[];
   approved: number;
+  approved_published: number;
   per_cycle: number;
   reward_scan: number;
   toward_next: number;
   credits_earned: number;
+}
+
+export interface RewardConfig {
+  per_cycle: number;
+  reward_scan: number;
 }
 
 /** View-model terpadu untuk kartu & detail. */

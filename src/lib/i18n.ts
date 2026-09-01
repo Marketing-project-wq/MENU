@@ -34,6 +34,7 @@ const STR: Dict = {
   official: { id: "Resmi 20FIT", en: "Official 20FIT" },
   member: { id: "Dari member", en: "From member" },
   login: { id: "Masuk", en: "Log in" },
+  signUp: { id: "Daftar", en: "Sign up" },
   logout: { id: "Keluar", en: "Log out" },
   ingredients: { id: "Bahan", en: "Ingredients" },
   steps: { id: "Cara Buat", en: "Steps" },
@@ -82,8 +83,8 @@ const STR: Dict = {
   like: { id: "Suka", en: "Like" },
   linkCopied: { id: "Link disalin!", en: "Link copied!" },
   loginToInteract: {
-    id: "Masuk dulu untuk menyimpan & menyukai resep.",
-    en: "Log in first to save & like recipes.",
+    id: "Masuk atau daftar dulu, biar resep ini tersimpan permanen dan bisa kamu buka lagi kapan saja di my.20fit.id.",
+    en: "Log in or sign up first, so this recipe is saved permanently and you can open it again anytime on my.20fit.id.",
   },
   savedRecipes: { id: "Resep Tersimpan", en: "Saved Recipes" },
   emptySaved: { id: "Belum ada resep tersimpan.", en: "No saved recipes yet." },

@@ -6,7 +6,7 @@ import { useSocial } from "../lib/social";
 import { dietLabel } from "../lib/i18n";
 import type { RecipeVM } from "../lib/types";
 
-export function RecipeCard({ r }: { r: RecipeVM }) {
+export function RecipeCard({ r, priority = false }: { r: RecipeVM; priority?: boolean }) {
   const { t, lang } = useLang();
   const { count } = useSocial();
   const hearts = count(r.source, r.id);
@@ -26,6 +26,7 @@ export function RecipeCard({ r }: { r: RecipeVM }) {
           alt={r.name}
           className="h-full w-full"
           emojiClass="text-5xl"
+          priority={priority}
         />
         <div className="absolute left-2 top-2">
           <SourceBadge source={r.source} />

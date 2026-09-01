@@ -5,6 +5,7 @@ import type {
   OfficialRecipe,
   PublishedContribution,
   RecipeStep,
+  RewardConfig,
   Source,
 } from "./types";
 
@@ -88,6 +89,12 @@ export const api = {
     return jsonOrThrow(r);
   },
 
+  /** Ambang & besaran reward sumbang-resep (publik, tanpa login) -- JANGAN hardcode di UI. */
+  async rewardConfig(): Promise<RewardConfig> {
+    const r = await fetch(`${API_BASE}${API.REWARD_CONFIG}`);
+    return jsonOrThrow(r);
+  },
+
   /** Revisi menu yang ditolak -> pending lagi. */
   async revise(id: string, body: SubmitBody): Promise<{ ok: boolean }> {
     const r = await fetch(`${API_BASE}${API.REVISE(id)}`, {
@@ -135,14 +142,33 @@ export const api = {
     return j.url as string;
   },
 
-  /** Toggle heart pada resep. Butuh login. */
+  /**
+   * Toggle heart pada resep. TIDAK butuh login -- guest diidentifikasi lewat cookie httpOnly
+   * (eco_anon) di server, makanya wajib `credentials: "include"` biar cookie lintas-origin
+   * (menu.20fit.id -> my.20fit.id) ikut terkirim/tersimpan.
+   */
   async react(source: Source, id: string): Promise<{ reacted: boolean; count: number }> {
     const r = await fetch(`${API_BASE}${API.REACT(id)}`, {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
       body: JSON.stringify({ source }),
     });
     return jsonOrThrow(r);
+  },
+
+  /** Pindahkan like sesi anonim (cookie eco_anon) ke akun yang baru login/daftar. Butuh login;
+   *  aman dipanggil berkali-kali (no-op kalau tak ada sesi anonim tersisa). */
+  async claimAnonLikes(): Promise<{ migrated: number }> {
+    const tok = await getAccessToken();
+    if (!tok) return { migrated: 0 };
+    const r = await fetch(`${API_BASE}${API.CLAIM_ANON_LIKES}`, {
+      method: "POST",
+      credentials: "include",
+      headers: { Authorization: `Bearer ${tok}` },
+    });
+    const j = await jsonOrThrow(r);
+    return { migrated: j.migrated || 0 };
   },
 
   /** Toggle simpan resep ke koleksi. Butuh login. */
@@ -172,6 +198,7 @@ export const api = {
     try {
       const ids = encodeURIComponent(keys.join(","));
       const r = await fetch(`${API_BASE}${API.SOCIAL}?ids=${ids}`, {
+        credentials: "include", // biar cookie eco_anon (like guest) ikut terbaca server
         headers: { ...(await authHeaders()) },
       });
       if (!r.ok) return empty;
