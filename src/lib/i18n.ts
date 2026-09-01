@@ -82,8 +82,8 @@ const STR: Dict = {
   like: { id: "Suka", en: "Like" },
   linkCopied: { id: "Link disalin!", en: "Link copied!" },
   loginToInteract: {
-    id: "Masuk dulu untuk menyimpan & menyukai resep.",
-    en: "Log in first to save & like recipes.",
+    id: "Masuk dulu untuk menyimpan resep.",
+    en: "Log in first to save recipes.",
   },
   savedRecipes: { id: "Resep Tersimpan", en: "Saved Recipes" },
   emptySaved: { id: "Belum ada resep tersimpan.", en: "No saved recipes yet." },

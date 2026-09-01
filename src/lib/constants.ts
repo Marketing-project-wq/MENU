@@ -45,7 +45,8 @@ export const API = {
   REVISE: (id: string) => `/api/menu/${id}/revise`, // auth: revisi menu ditolak
   OPEN: "/api/menu/open", // opsional: catat buka detail (sinyal minat)
   UPLOAD: "/api/menu/upload", // auth: unggah foto resep (utama/per-langkah) -> Storage
-  REACT: (id: string) => `/api/menu/${id}/react`, // auth: toggle heart
+  REACT: (id: string) => `/api/menu/${id}/react`, // publik (login opsional): toggle heart
+  CLAIM_ANON_LIKES: "/api/menu/claim-anon-likes", // auth: pindahkan like sesi anonim ke akun
   SAVE: (id: string) => `/api/menu/${id}/save`, // auth: toggle simpan ke koleksi
   SAVED: "/api/menu/saved", // auth: koleksi resep tersimpan
   SOCIAL: "/api/menu/social", // publik: jumlah heart (+ state user bila login) batch

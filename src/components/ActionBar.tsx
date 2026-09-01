@@ -7,7 +7,8 @@ import type { Source } from "../lib/types";
 
 /**
  * Bar aksi resep: Suka (heart), Simpan, Bagikan, Cetak.
- * Suka & Simpan butuh login (guest -> diarahkan ke my.20fit.id). Jumlah heart dari server.
+ * Suka BEBAS tanpa login (sesi anonim di server). Simpan butuh login (guest -> ajakan masuk/daftar).
+ * Jumlah heart dari server, tak bisa dicurangi client.
  */
 export function ActionBar({ source, id, name }: { source: Source; id: string; name: string }) {
   const { t } = useLang();
@@ -37,7 +38,7 @@ export function ActionBar({ source, id, name }: { source: Source; id: string; na
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
-          onClick={() => guard(() => void toggleReact(source, id).catch(() => {}))}
+          onClick={() => void toggleReact(source, id).catch(() => {})}
           aria-pressed={liked}
           className={
             "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold transition " +

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "./supabase";
 import { URLS } from "./constants";
+import { api } from "./api";
 
 interface AuthCtx {
   user: any | null;
@@ -46,8 +47,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     })();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((e, s) => {
       setUser(s?.user ?? null);
+      // Baru saja login/daftar -> pindahkan like yang dibuat sebagai guest (sesi anonim
+      // eco_anon) ke akun ini. Aman dipanggil berkali-kali (server no-op kalau tak ada
+      // sesi anonim tersisa), jadi tak perlu dedup di sisi sini.
+      if (e === "SIGNED_IN") {
+        api.claimAnonLikes().catch(() => {
+          /* best-effort — kegagalan di sini tak boleh mengganggu login */
+        });
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, []);
