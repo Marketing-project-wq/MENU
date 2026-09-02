@@ -1,7 +1,7 @@
 {
   "app": "20fit-menu (recepie.20fit.id)",
-  "base_commit": "4f3933f",
-  "features": "Tahap 2,4,5,6 — Eat Now, Home, in-house Articles",
-  "deploy_trigger": "manual re-deploy",
-  "stamped_at": "2026-09-02T09:23:56Z"
+  "base_commit": "9011e08",
+  "features": "Tahap 2,4,5,6 + 50 artikel + graceful photo fallback",
+  "deploy_trigger": "articles seed + CoverImage fallback",
+  "stamped_at": "2026-09-02T10:02:40Z"
 }
