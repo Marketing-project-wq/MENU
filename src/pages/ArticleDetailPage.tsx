@@ -38,7 +38,7 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
         if (o) out.push(normalizeOfficial(o, lang));
       } else {
         const m = memById.get(ref.menu_id);
-        if (m) out.push(normalizeMember(m));
+        if (m) out.push(normalizeMember(m, lang));
       }
     }
     return out;
