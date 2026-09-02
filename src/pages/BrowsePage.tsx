@@ -102,7 +102,8 @@ export function BrowsePage() {
         <p className="mt-1 text-sm text-fg/55">{t("reviewNote")}</p>
       </section>
 
-      <div className="mb-2">
+      {/* Bilah filter -- "kaca ringan" (satu bar kecil, aman diburamkan). */}
+      <div className="glass-light mb-2 rounded-2xl p-3">
         <Filters value={f} onChange={setF} categories={categories} />
       </div>
 
@@ -130,10 +131,14 @@ export function BrowsePage() {
           <p className="mb-3 text-xs text-fg/40">
             {visible.length} / {filtered.length} {t("recipesWord")}
           </p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {visible.map((r, i) => (
-              <RecipeCard key={r.key} r={r} priority={i < 3} />
-            ))}
+          {/* SATU wadah kaca besar ("kaca padat") membungkus grid -- bukan per-kartu (mahal
+              di scroll HP kelas menengah). Kartu di dalamnya tetap padat/opak (app-card). */}
+          <div className="glass-solid rounded-2xl p-3 sm:p-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {visible.map((r, i) => (
+                <RecipeCard key={r.key} r={r} priority={i < 3} />
+              ))}
+            </div>
           </div>
           {hasMore && (
             <div className="mt-6 flex justify-center">

@@ -120,16 +120,16 @@ export function DetailPage({ slug }: { slug: string }) {
             </p>
           </div>
 
-          {/* Dua kolom: Bahan | Cara membuat. Di HP jadi satu kolom mengalir. */}
-          <div className="mt-6 grid gap-8 md:grid-cols-[1fr_1.35fr]">
-            <section>
+          {/* Dua kolom: Bahan | Cara membuat -- panel "kaca padat". Di HP jadi satu kolom mengalir. */}
+          <div className="mt-6 grid gap-4 md:grid-cols-[1fr_1.35fr] md:gap-6">
+            <section className="glass-solid rounded-2xl p-4">
               <h2 className="mb-3 border-b border-fg/10 pb-2 text-sm font-bold uppercase tracking-wide text-fg/70">
                 {t("ingredients")}
               </h2>
               <IngredientGroups groups={recipe.ingredientGroups} />
             </section>
 
-            <section>
+            <section className="glass-solid rounded-2xl p-4">
               <h2 className="mb-3 border-b border-fg/10 pb-2 text-sm font-bold uppercase tracking-wide text-fg/70">
                 {t("steps")}
               </h2>

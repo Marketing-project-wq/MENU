@@ -6,9 +6,8 @@ export default {
     extend: {
       colors: {
         brand: {
-          red: "#C41101",
-          dark: "#16170F",
-          pink: "#FCEBED",
+          red: "#D62828",
+          dark: "#141414",
         },
         // Token tema (light/dark) — nilai channel RGB dari CSS vars di index.css.
         bg: "rgb(var(--bg) / <alpha-value>)",
