@@ -1,6 +1,7 @@
 import { useLang } from "../lib/store";
-import { LOGO_LIGHT, LOGO_DARK, MY20FIT, OTHER_20FIT_PRODUCTS } from "../lib/constants";
+import { LOGO_DARK, MY20FIT, OTHER_20FIT_PRODUCTS } from "../lib/constants";
 
+/** Footer PADAT (bukan kaca) -- hitam brand #141414, kontras penuh, terlepas dari tema situs. */
 export function Footer() {
   const { t } = useLang();
   const year = new Date().getFullYear();
@@ -13,17 +14,18 @@ export function Footer() {
   ];
 
   return (
-    <footer className="no-print mt-10 border-t border-fg/10 bg-fg/[0.02]">
+    <footer className="no-print mt-10 bg-brand-dark">
       <div className="mx-auto max-w-6xl px-4 py-10">
         <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
           <div className="max-w-sm">
-            <img src={LOGO_LIGHT} alt="20FIT" className="mx-auto h-8 w-auto dark:hidden sm:mx-0" />
-            <img src={LOGO_DARK} alt="20FIT" className="mx-auto hidden h-8 w-auto dark:block sm:mx-0" />
-            <p className="mt-3 text-xs leading-relaxed text-fg/50">{t("footerAbout")}</p>
+            <img src={LOGO_DARK} alt="20FIT" className="mx-auto h-8 w-auto sm:mx-0" />
+            <p className="mt-3 text-xs leading-relaxed text-white/60">{t("footerAbout")}</p>
           </div>
 
           <nav aria-label={t("footerLinksTitle")} className="flex flex-col items-center gap-2 sm:items-end">
-            <span className="label mb-0">{t("footerLinksTitle")}</span>
+            <span className="mb-0 block text-xs font-semibold uppercase tracking-wide text-white/50">
+              {t("footerLinksTitle")}
+            </span>
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 sm:justify-end">
               {links.map((l) => (
                 <a
@@ -31,7 +33,7 @@ export function Footer() {
                   href={l.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs font-semibold text-fg/60 transition-colors hover:text-brand-red"
+                  className="text-xs font-semibold text-white/75 transition-colors hover:text-brand-red"
                 >
                   {l.label}
                 </a>
@@ -40,7 +42,7 @@ export function Footer() {
           </nav>
         </div>
 
-        <p className="mt-8 text-center text-[11px] text-fg/35">
+        <p className="mt-8 text-center text-[11px] text-white/40">
           © {year} 20FIT · {t("footerRights")}
         </p>
       </div>

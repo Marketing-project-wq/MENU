@@ -8,7 +8,20 @@
   --bg: 247 245 240; /* warm off-white */
   --card: 255 255 255;
   --card2: 240 237 229;
-  --fg: 22 23 15; /* near-black */
+  --fg: 20 20 20; /* #141414 */
+
+  /* ---- Tingkatan kaca (glass) — lihat dokumentasi di bawah @layer components. ---- */
+  --glass-solid-bg: 255 255 255; /* "kaca padat": kartu menu, panel bahan/langkah */
+  --glass-solid-alpha: 0.72;
+  --glass-solid-border: 20 20 20;
+  --glass-solid-border-alpha: 0.08;
+  --glass-solid-blur: 16px;
+
+  --glass-light-bg: 255 255 255; /* "kaca ringan": header, bilah filter, tombol mengambang */
+  --glass-light-alpha: 0.55;
+  --glass-light-border: 255 255 255;
+  --glass-light-border-alpha: 0.35;
+  --glass-light-blur: 10px;
 }
 
 .dark {
@@ -17,6 +30,16 @@
   --card: 24 25 17;
   --card2: 32 33 24;
   --fg: 240 237 230;
+
+  --glass-solid-bg: 20 20 20;
+  --glass-solid-alpha: 0.6;
+  --glass-solid-border: 255 255 255;
+  --glass-solid-border-alpha: 0.08;
+
+  --glass-light-bg: 20 20 20;
+  --glass-light-alpha: 0.45;
+  --glass-light-border: 255 255 255;
+  --glass-light-border-alpha: 0.12;
 }
 
 html,
@@ -34,9 +57,75 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* ---- Lapisan latar untuk kaca (glass butuh sesuatu di belakangnya, bukan putih polos) ----
+   Dua bidang merah brand sangat samar (opacity rendah), besar, DI LUAR bingkai layar --
+   biar kaca yang ada di atasnya (header/kartu/panel) punya sesuatu utk dibaurkan, bukan
+   cuma jadi kotak abu-abu. Fixed (bukan scroll dgn body) supaya konsisten di semua halaman. */
+.bg-app-gradient {
+  background-color: rgb(var(--bg));
+  background-image:
+    radial-gradient(60vw 60vw at -10% -15%, rgb(214 40 40 / 0.10), transparent 60%),
+    radial-gradient(55vw 55vw at 110% 105%, rgb(214 40 40 / 0.08), transparent 60%);
+  background-attachment: fixed, fixed;
+  background-repeat: no-repeat, no-repeat;
+}
+.dark .bg-app-gradient {
+  background-image:
+    radial-gradient(60vw 60vw at -10% -15%, rgb(214 40 40 / 0.14), transparent 60%),
+    radial-gradient(55vw 55vw at 110% 105%, rgb(214 40 40 / 0.10), transparent 60%);
+}
+
 @layer components {
   .app-card {
     @apply rounded-2xl bg-card border border-fg/10 shadow-sm;
+  }
+
+  /* ---- Kaca padat: kartu menu (wadah grid), panel bahan & langkah. Tembus SEDIKIT, buram
+     ringan, tepi tipis. TIDAK dipakai per-kartu (mahal di scroll) -- satu wadah besar saja. */
+  .glass-solid {
+    background-color: rgb(var(--glass-solid-bg) / var(--glass-solid-alpha));
+    border: 1px solid rgb(var(--glass-solid-border) / var(--glass-solid-border-alpha));
+    -webkit-backdrop-filter: blur(var(--glass-solid-blur)) saturate(1.15);
+    backdrop-filter: blur(var(--glass-solid-blur)) saturate(1.15);
+  }
+  /* ---- Kaca ringan: header, bilah filter, tombol mengambang. Lebih tembus, buram sedang. */
+  .glass-light {
+    background-color: rgb(var(--glass-light-bg) / var(--glass-light-alpha));
+    border: 1px solid rgb(var(--glass-light-border) / var(--glass-light-border-alpha));
+    -webkit-backdrop-filter: blur(var(--glass-light-blur)) saturate(1.1);
+    backdrop-filter: blur(var(--glass-light-blur)) saturate(1.1);
+  }
+  /* Browser tanpa dukungan backdrop-filter -> cadangan semi-padat (bukan tembus penuh). */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-solid { background-color: rgb(var(--glass-solid-bg) / 0.94); }
+    .glass-light { background-color: rgb(var(--glass-light-bg) / 0.9); }
+    .glass-header { background-color: rgb(20 20 20 / 0.92) !important; }
+  }
+
+  /* ---- Header: titik paling gampang gagal -- foto makanan TERANG lewat di belakangnya
+     saat digulir (header sticky, konten lewat di baliknya). Latar SELALU gelap (bukan ikut
+     tema terang/gelap situs) + teks putih, supaya kontras terjamin apa pun yang lewat di
+     belakang -- bukan cuma "kaca terang + teks gelap" yang gampang hilang di atas foto
+     terang. `--scrolled` menambah padat (hardening) begitu halaman digulir. */
+  .glass-header {
+    /* alpha 0.65 (bukan 0.55) -- diuji nyata (Playwright, hitung kontras WCAG): 0.55 cuma
+       dapat 4.07:1 kalau foto TERANG PENUH (putih) lewat di belakangnya, di bawah target
+       4.5:1. 0.65 -> 5.72:1, ada margin aman. */
+    background-color: rgb(20 20 20 / 0.65);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    backdrop-filter: blur(14px) saturate(1.2);
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    transition: background-color 0.25s ease, backdrop-filter 0.25s ease;
+  }
+  .glass-header.is-scrolled {
+    background-color: rgb(20 20 20 / 0.88);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .glass-header {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      background-color: rgb(20 20 20 / 0.94);
+    }
   }
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors bg-brand-red text-white hover:bg-[#a30d01] disabled:opacity-50 disabled:cursor-not-allowed;
@@ -79,5 +168,24 @@ body {
   }
   img {
     max-height: 240px;
+  }
+}
+
+/* ---- Hormati preferensi sistem: kurangi transparansi & gerak. ---- */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-solid,
+  .glass-light {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: rgb(var(--glass-solid-bg) / 0.96);
+  }
+  .bg-app-gradient {
+    background-image: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
   }
 }

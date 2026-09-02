@@ -41,7 +41,7 @@ export default function App() {
         <RecipesProvider>
           <SocialProvider>
             <RouterProvider>
-              <div className="min-h-full">
+              <div className="min-h-full bg-app-gradient">
                 <Header />
                 <main>
                   <Routes />
