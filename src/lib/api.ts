@@ -54,6 +54,23 @@ export interface SavedResponse {
   members: Record<string, PublishedContribution>;
 }
 
+export interface BrowseParams {
+  q?: string;
+  category?: string;
+  diet?: string;
+  lang?: string;
+  offset?: number;
+  limit?: number;
+}
+export interface BrowseResponse {
+  ok: boolean;
+  official: OfficialRecipe[];
+  members: PublishedContribution[];
+  total: number;
+  has_more: boolean;
+  next_offset: number;
+}
+
 export const api = {
   /** Resep resmi 20FIT (satu sumber = js/recipes.js di my.20fit.id). */
   async getCatalog(): Promise<OfficialRecipe[]> {
@@ -76,6 +93,23 @@ export const api = {
     } catch {
       return [];
     }
+  },
+
+  /**
+   * Halaman Jelajah -- satu "halaman" (default 16) resep official+member, ter-filter &
+   * ter-urut di SERVER (bukan client fetch-semua-lalu-slice). Dipanggil ulang tiap
+   * ganti filter (offset 0) atau klik "Muat lebih banyak" (offset berikutnya).
+   */
+  async browse(params: BrowseParams): Promise<BrowseResponse> {
+    const qs = new URLSearchParams();
+    if (params.q) qs.set("q", params.q);
+    if (params.category) qs.set("category", params.category);
+    if (params.diet) qs.set("diet", params.diet);
+    if (params.lang) qs.set("lang", params.lang);
+    qs.set("offset", String(params.offset ?? 0));
+    qs.set("limit", String(params.limit ?? 16));
+    const r = await fetch(`${API_BASE}${API.BROWSE}?${qs.toString()}`);
+    return jsonOrThrow(r);
   },
 
   /** Submit resep baru (butuh login). */

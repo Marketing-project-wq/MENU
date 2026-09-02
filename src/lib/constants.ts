@@ -53,7 +53,11 @@ export const API = {
   REWARD_CONFIG: "/api/menu/reward-config", // publik: ambang & besaran reward sumbang-resep
   CATERERS: (id: string) => `/api/menu/${id}/caterers`, // publik: katering penjual resep ini
   CATERER_CLICK: "/api/menu/caterer-click", // publik (login opsional): catat klik ke katering
+  BROWSE: "/api/menu/browse", // publik: halaman Jelajah -- pagination server-side sungguhan
 };
+
+// Jumlah resep per "halaman" -- dipakai BrowsePage utk "Load more" server-side.
+export const BROWSE_PAGE_SIZE = 16;
 
 // Batas & aturan (samakan dengan server my.20fit.id).
 export const RULES = {
