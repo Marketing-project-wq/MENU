@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRecipes, useLang } from "../lib/store";
 import { useSocial } from "../lib/social";
 import { buildVMs } from "../lib/normalize";
+import { api } from "../lib/api";
 import { RecipeCard } from "../components/RecipeCard";
 import { Filters, type FilterState } from "../components/Filters";
 import { FilterChips } from "../components/FilterChips";
 import { Spinner } from "../components/Spinner";
 import { useRouter } from "../router";
 import { catLabel, dietLabel } from "../lib/i18n";
-
-// Jumlah resep yang ditampilkan per "halaman" — sisanya baru dimuat pas klik "Muat lebih banyak".
-const PAGE_SIZE = 15;
+import { BROWSE_PAGE_SIZE } from "../lib/constants";
+import type { RecipeVM } from "../lib/types";
 
 /** Baca filter awal dari URL (?q=&category=&diet=) supaya link bisa dibagikan & bertahan saat refresh. */
 function readFiltersFromURL(): FilterState {
@@ -41,7 +41,6 @@ export function BrowsePage() {
   const { ensure } = useSocial();
   const { navigate } = useRouter();
   const [f, setF] = useState<FilterState>(() => readFiltersFromURL());
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // Filter aktif -> URL query param (shareable, bertahan saat refresh).
   useEffect(() => {
@@ -49,36 +48,96 @@ export function BrowsePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [f.q, f.category, f.diet]);
 
-  const vms = useMemo(() => buildVMs(official, members, lang), [official, members, lang]);
-
+  // Kategori dropdown dari katalog resmi (sudah termuat penuh di context utk keperluan
+  // lain -- detail/tersimpan -- jadi aman dipakai di sini tanpa request tambahan).
   const categories = useMemo(() => {
     const set = new Set<string>();
-    vms.forEach((r) => r.category && set.add(r.category));
+    official.forEach((r) => r.cat && set.add(r.cat));
     return Array.from(set).sort();
-  }, [vms]);
+  }, [official]);
 
-  const filtered = useMemo(() => {
-    const q = f.q.trim().toLowerCase();
-    return vms.filter((r) => {
-      if (q && !r.name.toLowerCase().includes(q)) return false;
-      if (f.category && r.category !== f.category) return false;
-      if (f.diet && !r.dietTypes.includes(f.diet)) return false;
-      return true;
+  // Peta kanonik key -> RecipeVM (slug SUDAH didisambiguasi terhadap katalog PENUH, sama
+  // seperti yg dipakai DetailPage/SavedPage) -- halaman ini hanya memutuskan ITEM MANA &
+  // URUTAN APA yang ditampilkan (lewat /api/menu/browse), bukan menghitung slug sendiri.
+  const canonical = useMemo(() => {
+    const map = new Map<string, RecipeVM>();
+    buildVMs(official, members, lang).forEach((r) => map.set(r.key, r));
+    return map;
+  }, [official, members, lang]);
+
+  // ---- Pagination server-side sungguhan ("Load more") ----
+  const [items, setItems] = useState<RecipeVM[]>([]);
+  const [total, setTotal] = useState(0);
+  const [nextOffset, setNextOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true); // memuat halaman pertama utk filter saat ini
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const reqId = useRef(0); // cegah race: respons lambat dari filter LAMA tak boleh timpa filter BARU
+
+  function toVMs(res: { official: typeof official; members: typeof members }): RecipeVM[] {
+    const out: RecipeVM[] = [];
+    res.members.forEach((m) => {
+      const vm = canonical.get(`member:${m.id}`);
+      if (vm) out.push(vm);
     });
-  }, [vms, f]);
+    res.official.forEach((o) => {
+      const vm = canonical.get(`official:${o.id}`);
+      if (vm) out.push(vm);
+    });
+    return out;
+  }
 
-  // Filter/pencarian berubah -> mulai lagi dari halaman pertama.
+  async function loadPage(offset: number, replace: boolean) {
+    const myReq = ++reqId.current;
+    if (replace) {
+      setPageLoading(true);
+      setPageError(null);
+    } else {
+      setLoadingMore(true);
+    }
+    try {
+      const res = await api.browse({
+        q: f.q.trim() || undefined,
+        category: f.category || undefined,
+        diet: f.diet || undefined,
+        lang,
+        offset,
+        limit: BROWSE_PAGE_SIZE,
+      });
+      if (myReq !== reqId.current) return; // respons basi (filter sudah ganti lagi)
+      const vms = toVMs(res);
+      setItems((prev) => (replace ? vms : [...prev, ...vms]));
+      setTotal(res.total);
+      setHasMore(res.has_more);
+      setNextOffset(res.next_offset);
+      setPageError(null);
+    } catch (e: any) {
+      if (myReq !== reqId.current) return;
+      setPageError(e?.message || t("loadMoreFailed"));
+      if (replace) setItems([]);
+    } finally {
+      if (myReq !== reqId.current) return;
+      setPageLoading(false);
+      setLoadingMore(false);
+    }
+  }
+
+  // Filter/pencarian berubah -> reset ke halaman pertama (bukan nambah di bawah filter lama).
+  // Pencarian teks di-debounce dikit supaya tak nembak request tiap ketikan.
   useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [f]);
-
-  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
-  const hasMore = visibleCount < filtered.length;
+    if (canonical.size === 0 && loading) return; // tunggu katalog penuh termuat dulu (utk resolusi slug)
+    const t2 = setTimeout(() => {
+      loadPage(0, true);
+    }, f.q ? 300 : 0);
+    return () => clearTimeout(t2);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [f.q, f.category, f.diet, canonical, loading]);
 
   // Muat jumlah heart (+ state user) hanya utk resep yang benar-benar terlihat — di-batch & dedupe di store.
   useEffect(() => {
-    if (visible.length) ensure(visible.map((r) => ({ source: r.source, id: r.id })));
-  }, [visible, ensure]);
+    if (items.length) ensure(items.map((r) => ({ source: r.source, id: r.id })));
+  }, [items, ensure]);
 
   const activeFilterLabels: string[] = [];
   if (f.q.trim()) activeFilterLabels.push(`"${f.q.trim()}"`);
@@ -109,11 +168,18 @@ export function BrowsePage() {
 
       <FilterChips value={f} onRemove={removeFilter} onClearAll={clearAllFilters} />
 
-      {loading ? (
+      {loading || pageLoading ? (
         <Spinner label={t("loading")} />
-      ) : error && vms.length === 0 ? (
+      ) : error && items.length === 0 && !pageError ? (
         <div className="app-card p-6 text-center text-sm text-fg/60">{error}</div>
-      ) : filtered.length === 0 ? (
+      ) : items.length === 0 && pageError ? (
+        <div className="app-card p-6 text-center text-sm text-fg/60">
+          <p className="text-brand-red">{pageError}</p>
+          <button type="button" onClick={() => loadPage(0, true)} className="btn-ghost mt-3">
+            {t("retry")}
+          </button>
+        </div>
+      ) : items.length === 0 ? (
         <div className="app-card p-6 text-center text-sm text-fg/60">
           <p>
             {hasActiveFilters
@@ -129,28 +195,32 @@ export function BrowsePage() {
       ) : (
         <>
           <p className="mb-3 text-xs text-fg/40">
-            {visible.length} / {filtered.length} {t("recipesWord")}
+            {items.length} / {total} {t("recipesWord")}
           </p>
           {/* SATU wadah kaca besar ("kaca padat") membungkus grid -- bukan per-kartu (mahal
               di scroll HP kelas menengah). Kartu di dalamnya tetap padat/opak (app-card). */}
           <div className="glass-solid rounded-2xl p-3 sm:p-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {visible.map((r, i) => (
+              {items.map((r, i) => (
                 <RecipeCard key={r.key} r={r} priority={i < 3} />
               ))}
             </div>
           </div>
-          {hasMore && (
-            <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex flex-col items-center gap-2">
+            {pageError && <p className="text-sm text-brand-red">{pageError}</p>}
+            {hasMore ? (
               <button
                 type="button"
-                className="btn-ghost"
-                onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+                className="btn-ghost disabled:opacity-50"
+                disabled={loadingMore}
+                onClick={() => loadPage(nextOffset, false)}
               >
-                {t("loadMore")}
+                {loadingMore ? t("loading") : pageError ? t("retry") : t("loadMore")}
               </button>
-            </div>
-          )}
+            ) : (
+              <p className="text-xs text-fg/40">{t("allShown")}</p>
+            )}
+          </div>
         </>
       )}
     </div>
