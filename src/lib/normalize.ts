@@ -145,10 +145,10 @@ export function normalizeMember(m: PublishedContribution): RecipeVM {
     ingredientGroups: parseIngredientGroups(ingredients),
     servings: typeof m.servings === "number" ? m.servings : null,
     cookMinutes: typeof m.cook_minutes === "number" ? m.cook_minutes : null,
-    prepMinutes: null, // belum ada struktur ini di form submit member (Tahap 3 khusus katalog resmi)
-    equipment: null,
-    prepNote: null,
-    commonMistake: null,
+    prepMinutes: typeof m.prep_minutes === "number" ? m.prep_minutes : null,
+    equipment: m.equipment || null,
+    prepNote: m.prep_note || null,
+    commonMistake: null, // belum ada struktur ini di form submit member
     photoUrl: m.photo_url || null,
     photoQ: null,
     photoName: null,

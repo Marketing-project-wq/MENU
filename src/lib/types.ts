@@ -52,6 +52,9 @@ export interface PublishedContribution {
   est_kcal: number | null;
   servings?: number | null;
   cook_minutes?: number | null;
+  prep_minutes?: number | null;
+  equipment?: string | null;
+  prep_note?: string | null;
   reviewed_at: string | null;
 }
 
@@ -72,6 +75,9 @@ export interface MySubmission {
   steps_json?: RecipeStep[] | null;
   servings?: number | null;
   cook_minutes?: number | null;
+  prep_minutes?: number | null;
+  equipment?: string | null;
+  prep_note?: string | null;
   photo_url?: string | null;
 }
 
