@@ -118,6 +118,30 @@ const STR: Dict = {
   eatNowSearchPh: { id: "Cari makanan…", en: "Search food…" },
   eatNowAllCat: { id: "Semua kategori", en: "All categories" },
   eatNowOther: { id: "Lainnya", en: "Other" },
+  // Artikel (Tahap 6)
+  articlesNav: { id: "Artikel", en: "Articles" },
+  articlesTitle: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
+  articlesSub: {
+    id: "Ulasan & rekomendasi tempat makan pilihan 20FIT.",
+    en: "20FIT's picks & reviews of places to eat.",
+  },
+  articlesEmpty: { id: "Belum ada artikel.", en: "No articles yet." },
+  articleBy: { id: "oleh", en: "by" },
+  articleRelatedRecipes: { id: "Mau coba masak sendiri?", en: "Want to cook it yourself?" },
+  recipeRelatedArticles: { id: "Mau makan di luar?", en: "Prefer to eat out?" },
+  backToArticles: { id: "← Semua artikel", en: "← All articles" },
+  seeAll: { id: "Lihat semua", en: "See all" },
+  // Home (Tahap 5)
+  homeNav: { id: "Beranda", en: "Home" },
+  homeHeroTitle: { id: "Makan sehat, gampang.", en: "Healthy eating, made easy." },
+  homeHeroSub: {
+    id: "Resep, rekomendasi tempat makan, dan pesan langsung — dari 20FIT.",
+    en: "Recipes, place recommendations, and instant ordering — from 20FIT.",
+  },
+  homeArticlesHeading: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
+  homeRecipesHeading: { id: "Resep Pilihan", en: "Featured Recipes" },
+  homeEatNowHeading: { id: "Bisa Langsung Dipesan", en: "Order Right Now" },
+  browseAllRecipes: { id: "Jelajah semua resep", en: "Browse all recipes" },
   // Atribusi pembuat resep -- "20FIT Kitchen" = tim resmi; komunitas pakai nama tampilan
   // yang diisi kontributor sendiri (BUKAN email/nama akun), fallback kalau kosong.
   officialKitchenName: { id: "20FIT Kitchen", en: "20FIT Kitchen" },

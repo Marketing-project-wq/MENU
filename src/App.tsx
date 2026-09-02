@@ -11,12 +11,21 @@ import { SubmitPage } from "./pages/SubmitPage";
 import { MinePage } from "./pages/MinePage";
 import { SavedPage } from "./pages/SavedPage";
 import { EatNowPage } from "./pages/EatNowPage";
+import { HomePage } from "./pages/HomePage";
+import { ArticlesPage } from "./pages/ArticlesPage";
+import { ArticleDetailPage } from "./pages/ArticleDetailPage";
 
 function Routes() {
   const { path } = useRouter();
   const route = parseRoute(path);
 
   switch (route.name) {
+    case "home":
+      return <HomePage />;
+    case "articles":
+      return <ArticlesPage />;
+    case "article":
+      return <ArticleDetailPage slug={route.params.slug} />;
     case "detail":
       return <DetailPage slug={route.params.slug} />;
     case "legacy-detail":
@@ -32,7 +41,7 @@ function Routes() {
     case "browse":
       return <BrowsePage />;
     default:
-      return <BrowsePage />;
+      return <HomePage />;
   }
 }
 

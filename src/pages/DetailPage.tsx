@@ -10,6 +10,7 @@ import { IngredientGroups } from "../components/IngredientGroups";
 import { StepList } from "../components/StepList";
 import { CatererList } from "../components/CatererList";
 import { EatNowLinks } from "../components/EatNowLinks";
+import { RelatedArticles } from "../components/RelatedArticles";
 import { RecipeNotFound } from "../components/RecipeNotFound";
 import { api } from "../lib/api";
 import { catLabel, dietLabel } from "../lib/i18n";
@@ -45,7 +46,7 @@ export function DetailPage({ slug }: { slug: string }) {
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-6 print-area">
-      <Link to="/" className="no-print text-sm font-semibold text-fg/50 hover:text-brand-red">
+      <Link to="/resep" className="no-print text-sm font-semibold text-fg/50 hover:text-brand-red">
         {t("backToBrowse")}
       </Link>
 
@@ -170,6 +171,7 @@ export function DetailPage({ slug }: { slug: string }) {
           {/* Katering mitra 20FIT lebih dulu, baru layanan pesan-antar (Eat Now). */}
           <CatererList source={recipe.source} id={recipe.id} />
           <EatNowLinks source={recipe.source} id={recipe.id} />
+          <RelatedArticles source={recipe.source} id={recipe.id} />
         </div>
       </div>
     </article>

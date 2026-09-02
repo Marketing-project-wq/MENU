@@ -1,6 +1,9 @@
 import { API, API_BASE } from "./constants";
 import { getAccessToken } from "./supabase";
 import type {
+  ArticleFull,
+  ArticleRecipeRef,
+  ArticleSummary,
   Caterer,
   DeliveryLink,
   MineResponse,
@@ -136,6 +139,44 @@ export const api = {
       if (!r.ok) return [];
       const j = await r.json().catch(() => ({}));
       return j.items ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  /** Daftar artikel terbit (opsional filter kategori). Gagal -> []. */
+  async articles(category?: string): Promise<ArticleSummary[]> {
+    try {
+      const url = `${API_BASE}${API.ARTICLES}` + (category ? `?category=${encodeURIComponent(category)}` : "");
+      const r = await fetch(url);
+      if (!r.ok) return [];
+      const j = await r.json().catch(() => ({}));
+      return j.articles ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  /** Satu artikel terbit (full body) + resep terkait. Gagal/404 -> null. */
+  async article(slug: string): Promise<{ article: ArticleFull; recipes: ArticleRecipeRef[] } | null> {
+    try {
+      const r = await fetch(`${API_BASE}${API.ARTICLE(slug)}`);
+      if (!r.ok) return null;
+      const j = await r.json().catch(() => ({}));
+      if (!j.ok || !j.article) return null;
+      return { article: j.article, recipes: j.recipes ?? [] };
+    } catch {
+      return null;
+    }
+  },
+
+  /** Artikel terkait sebuah resep (utk "mau makan di luar?"). Gagal -> []. */
+  async recipeArticles(source: Source, id: string): Promise<ArticleSummary[]> {
+    try {
+      const r = await fetch(`${API_BASE}${API.RECIPE_ARTICLES(id)}?source=${encodeURIComponent(source)}`);
+      if (!r.ok) return [];
+      const j = await r.json().catch(() => ({}));
+      return j.articles ?? [];
     } catch {
       return [];
     }

@@ -131,6 +131,26 @@ export interface DeliveryLink {
   sort_order?: number;
 }
 
+/** Artikel in-house (rekomendasi tempat makan) — di-host di sini, bukan WordPress. */
+export interface ArticleSummary {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  cover_url: string | null;
+  category: string | null;
+  author_name?: string | null;
+  published_at: string | null;
+}
+export interface ArticleFull extends ArticleSummary {
+  body_md: string | null;
+}
+/** Kunci resep yang ditautkan ke artikel (utk "mau coba masak sendiri?"). */
+export interface ArticleRecipeRef {
+  source: Source;
+  menu_id: string;
+}
+
 /** View-model terpadu untuk kartu & detail. */
 export interface RecipeVM {
   key: string; // unik: "official:<id>" | "member:<uuid>"
