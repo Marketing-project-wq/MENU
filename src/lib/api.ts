@@ -1,6 +1,7 @@
 import { API, API_BASE } from "./constants";
 import { getAccessToken } from "./supabase";
 import type {
+  Caterer,
   MineResponse,
   OfficialRecipe,
   PublishedContribution,
@@ -25,11 +26,15 @@ export interface SubmitBody {
   ingredients: string;
   steps: string;
   diet_type: string;
+  display_name?: string | null; // nama tampilan publik -- bukan email/nama akun
   photo_url?: string | null;
   est_kcal?: number | null;
   steps_json?: RecipeStep[] | null;
   servings?: number | null;
+  prep_minutes?: number | null;
   cook_minutes?: number | null;
+  equipment?: string | null;
+  prep_note?: string | null;
 }
 
 /** Kunci sosial gabungan "source:menu_id". */
@@ -93,6 +98,34 @@ export const api = {
   async rewardConfig(): Promise<RewardConfig> {
     const r = await fetch(`${API_BASE}${API.REWARD_CONFIG}`);
     return jsonOrThrow(r);
+  },
+
+  /** Katering yang menjual resep ini (direktori, tanpa transaksi). Gagal -> [] (jangan blokir
+   *  render halaman resep gara-gara ini). */
+  async caterers(source: Source, id: string): Promise<Caterer[]> {
+    try {
+      const r = await fetch(`${API_BASE}${API.CATERERS(id)}?source=${encodeURIComponent(source)}`);
+      if (!r.ok) return [];
+      const j = await r.json().catch(() => ({}));
+      return j.caterers ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  /** Catat klik ke katering (analitik saja, dipakai nanti utk urutan "terpopuler" begitu
+   *  datanya cukup -- BELUM sekarang). Best-effort, tak pernah melempar. */
+  async trackCatererClick(catererId: string, source: Source, id: string): Promise<void> {
+    try {
+      await fetch(`${API_BASE}${API.CATERER_CLICK}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({ caterer_id: catererId, source, menu_id: id }),
+      });
+    } catch {
+      /* best-effort */
+    }
   },
 
   /** Revisi menu yang ditolak -> pending lagi. */

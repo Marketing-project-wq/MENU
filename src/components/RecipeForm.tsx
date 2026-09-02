@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { DIET_TYPES, RULES } from "../lib/constants";
 import { api, type SubmitBody } from "../lib/api";
 import { useLang } from "../lib/store";
@@ -12,26 +12,49 @@ const HEALTH_CLAIM_RE =
 
 export interface RecipeFormValues {
   name: string;
+  display_name: string; // nama tampilan publik kontributor -- bukan nama akun/email
   diet_type: string;
   ingredients: string;
   steps: RecipeStep[];
   est_kcal: string; // input teks -> dikonversi saat submit
   servings: string;
+  prep_minutes: string;
   cook_minutes: string;
+  equipment: string;
+  prep_note: string;
   photo_url: string | null; // foto utama (URL Storage)
 }
 
 export function emptyValues(): RecipeFormValues {
   return {
     name: "",
+    display_name: "",
     diet_type: "normal",
     ingredients: "",
     steps: [{ t: "", photo: null }],
     est_kcal: "",
     servings: "",
+    prep_minutes: "",
     cook_minutes: "",
+    equipment: "",
+    prep_note: "",
     photo_url: null,
   };
+}
+
+function isEmptyValues(v: RecipeFormValues): boolean {
+  return (
+    !v.name.trim() &&
+    !v.ingredients.trim() &&
+    !v.est_kcal.trim() &&
+    !v.servings.trim() &&
+    !v.prep_minutes.trim() &&
+    !v.cook_minutes.trim() &&
+    !v.equipment.trim() &&
+    !v.prep_note.trim() &&
+    !v.photo_url &&
+    v.steps.every((s) => !s.t.trim() && !s.photo)
+  );
 }
 
 function readFileAsDataUrl(file: File): Promise<string> {
@@ -47,13 +70,35 @@ export function RecipeForm({
   initial,
   submitLabel,
   onSubmit,
+  draftKey,
 }: {
   initial: RecipeFormValues;
   submitLabel: string;
   onSubmit: (body: SubmitBody) => Promise<void>;
+  // Kunci autosave draf (localStorage) -- hanya diisi form "kirim baru" (bukan revisi,
+  // yg sudah punya `initial` dari server). Mencegah data hilang kalau tab tertutup/reload
+  // tak sengaja di tengah pengisian form yang panjang.
+  draftKey?: string;
 }) {
   const { lang, t } = useLang();
-  const [v, setV] = useState<RecipeFormValues>(initial);
+  const [v, setV] = useState<RecipeFormValues>(() => {
+    if (!draftKey) return initial;
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (raw) return { ...initial, ...JSON.parse(raw) };
+    } catch {
+      /* draf korup -- abaikan, mulai dari initial */
+    }
+    return initial;
+  });
+  const [draftRestored] = useState(() => {
+    if (!draftKey) return false;
+    try {
+      return !!localStorage.getItem(draftKey);
+    } catch {
+      return false;
+    }
+  });
   const [photoErr, setPhotoErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -61,6 +106,36 @@ export function RecipeForm({
 
   const L = (id: string, en: string) => (lang === "id" ? id : en);
   const set = (patch: Partial<RecipeFormValues>) => setV((s) => ({ ...s, ...patch }));
+
+  // Autosave draf (debounced) -- hanya utk form yg punya draftKey (kirim baru).
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!draftKey) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      try {
+        if (isEmptyValues(v)) localStorage.removeItem(draftKey);
+        else localStorage.setItem(draftKey, JSON.stringify(v));
+      } catch {
+        /* localStorage penuh/diblokir -- draf best-effort, jangan ganggu pengisian form */
+      }
+    }, 600);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [v, draftKey]);
+
+  function discardDraft() {
+    if (draftKey) {
+      try {
+        localStorage.removeItem(draftKey);
+      } catch {
+        /* ignore */
+      }
+    }
+    setV(emptyValues());
+  }
 
   const anyUploading = Object.values(uploading).some(Boolean);
   const healthWarn = HEALTH_CLAIM_RE.test(`${v.name} ${v.ingredients} ${v.steps.map((s) => s.t).join(" ")}`);
@@ -137,15 +212,26 @@ export function RecipeForm({
       const stepsText = cleanSteps.map((s, i) => `${i + 1}. ${s.t}`).join("\n");
       await onSubmit({
         name: v.name.trim(),
+        display_name: v.display_name.trim() || null,
         diet_type: v.diet_type,
         ingredients: v.ingredients.trim(),
         steps: stepsText,
         steps_json: cleanSteps,
         est_kcal: num(v.est_kcal, 0),
         servings: num(v.servings, 1),
+        prep_minutes: num(v.prep_minutes, 0),
         cook_minutes: num(v.cook_minutes, 0),
+        equipment: v.equipment.trim() || null,
+        prep_note: v.prep_note.trim() || null,
         photo_url: v.photo_url,
       });
+      if (draftKey) {
+        try {
+          localStorage.removeItem(draftKey);
+        } catch {
+          /* ignore */
+        }
+      }
     } catch (e: any) {
       setErr(e?.message || "Gagal mengirim.");
     } finally {
@@ -155,12 +241,33 @@ export function RecipeForm({
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      {draftRestored && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-red/20 bg-brand-red/5 p-3 text-xs text-fg/70">
+          <span>{L("Draf sebelumnya dipulihkan.", "Your earlier draft was restored.")}</span>
+          <button type="button" className="font-semibold text-brand-red underline" onClick={discardDraft}>
+            {L("Mulai dari awal", "Start fresh")}
+          </button>
+        </div>
+      )}
+
       <div>
         <label className="label">{L("Nama resep", "Recipe name")}</label>
         <input className="field" value={v.name} onChange={(e) => set({ name: e.target.value })} maxLength={120} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div>
+        <label className="label">{t("displayNameLabel")}</label>
+        <input
+          className="field"
+          value={v.display_name}
+          onChange={(e) => set({ display_name: e.target.value })}
+          maxLength={60}
+          placeholder={t("displayNamePlaceholder")}
+        />
+        <p className="mt-1 text-xs text-fg/45">{t("displayNameHint")}</p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="label">{L("Tipe diet", "Diet type")}</label>
           <select className="field" value={v.diet_type} onChange={(e) => set({ diet_type: e.target.value })}>
@@ -183,6 +290,24 @@ export function RecipeForm({
         </div>
         <div>
           <label className="label">
+            {t("prepTime")} ({t("minutesShort")})
+          </label>
+          <input
+            className="field"
+            type="number"
+            min={0}
+            value={v.prep_minutes}
+            onChange={(e) => set({ prep_minutes: e.target.value })}
+          />
+          <p className="mt-1 text-xs text-fg/45">
+            {L(
+              "Menit potong/ulek/siapkan bahan -- SEBELUM mulai masak di atas api.",
+              "Minutes cutting/prepping ingredients -- BEFORE cooking starts on heat."
+            )}
+          </p>
+        </div>
+        <div>
+          <label className="label">
             {t("cookTime")} ({t("minutesShort")})
           </label>
           <input
@@ -192,7 +317,38 @@ export function RecipeForm({
             value={v.cook_minutes}
             onChange={(e) => set({ cook_minutes: e.target.value })}
           />
+          <p className="mt-1 text-xs text-fg/45">
+            {L(
+              "Menit AKTIF di atas api/kompor -- bukan waktu tunggu pasif (rendam, dinginkan).",
+              "Minutes ACTIVELY on heat -- not passive wait time (marinating, chilling)."
+            )}
+          </p>
         </div>
+      </div>
+
+      <div>
+        <label className="label">{t("equipmentLabel")} (opsional)</label>
+        <input
+          className="field"
+          value={v.equipment}
+          onChange={(e) => set({ equipment: e.target.value })}
+          maxLength={300}
+          placeholder={L("Wajan, ulekan, panci kukus", "Pan, mortar & pestle, steamer")}
+        />
+      </div>
+
+      <div>
+        <label className="label">{t("prepNoteLabel")} (opsional)</label>
+        <textarea
+          className="field min-h-[60px]"
+          value={v.prep_note}
+          onChange={(e) => set({ prep_note: e.target.value })}
+          maxLength={500}
+          placeholder={L(
+            "Mis. rendam kacang semalaman, potong dadu 1cm, marinasi 15 menit",
+            "E.g. soak beans overnight, dice 1cm, marinate 15 minutes"
+          )}
+        />
       </div>
 
       <div>

@@ -8,6 +8,7 @@ import { FoodImage } from "../components/FoodImage";
 import { ActionBar } from "../components/ActionBar";
 import { IngredientGroups } from "../components/IngredientGroups";
 import { StepList } from "../components/StepList";
+import { CatererList } from "../components/CatererList";
 import { RecipeNotFound } from "../components/RecipeNotFound";
 import { api } from "../lib/api";
 import { catLabel, dietLabel } from "../lib/i18n";
@@ -78,18 +79,41 @@ export function DetailPage({ slug }: { slug: string }) {
           </div>
 
           <h1 className="text-2xl font-extrabold tracking-tight text-fg">{recipe.name}</h1>
+          <p className="mt-1 text-sm text-fg/55">
+            {t("byPrefix")} <span className="font-semibold text-fg/75">{recipe.creatorName}</span>
+          </p>
 
-          {(recipe.servings != null || recipe.cookMinutes != null) && (
+          {(recipe.servings != null || recipe.cookMinutes != null || recipe.prepMinutes != null) && (
             <div className="mt-2 flex flex-wrap gap-4 text-sm text-fg/60">
               {recipe.servings != null && (
                 <span>
                   🍽️ {recipe.servings} {t("servings")}
                 </span>
               )}
+              {recipe.prepMinutes != null && (
+                <span>
+                  🔪 {t("prepTime")} {recipe.prepMinutes} {t("minutesShort")}
+                </span>
+              )}
               {recipe.cookMinutes != null && (
                 <span>
-                  ⏱️ {recipe.cookMinutes} {t("minutesShort")}
+                  ⏱️ {t("cookTime")} {recipe.cookMinutes} {t("minutesShort")}
                 </span>
+              )}
+            </div>
+          )}
+
+          {(recipe.equipment || recipe.prepNote) && (
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs dark:border-amber-500/25 dark:bg-amber-500/10">
+              {recipe.equipment && (
+                <p className="text-amber-800 dark:text-amber-200">
+                  <span className="font-bold">{t("equipmentLabel")}:</span> {recipe.equipment}
+                </p>
+              )}
+              {recipe.prepNote && (
+                <p className={"text-amber-800 dark:text-amber-200" + (recipe.equipment ? " mt-1.5" : "")}>
+                  <span className="font-bold">{t("prepNoteLabel")}:</span> {recipe.prepNote}
+                </p>
               )}
             </div>
           )}
@@ -134,8 +158,15 @@ export function DetailPage({ slug }: { slug: string }) {
                 {t("steps")}
               </h2>
               <StepList steps={recipe.stepList} />
+              {recipe.commonMistake && (
+                <p className="mt-3 rounded-lg bg-brand-red/5 p-2.5 text-xs text-fg/70">
+                  <span className="font-bold text-brand-red">{t("commonMistakeLabel")}:</span> {recipe.commonMistake}
+                </p>
+              )}
             </section>
           </div>
+
+          <CatererList source={recipe.source} id={recipe.id} />
         </div>
       </div>
     </article>

@@ -140,12 +140,16 @@ function toFormValues(s: MySubmission): RecipeFormValues {
       : parseStepsText(s.steps ?? "");
   return {
     name: s.name,
+    display_name: s.display_name ?? "",
     diet_type: s.diet_type,
     ingredients: s.ingredients ?? "",
     steps: steps.length ? steps : [{ t: "", photo: null }],
     est_kcal: s.est_kcal != null ? String(s.est_kcal) : "",
     servings: s.servings != null ? String(s.servings) : "",
+    prep_minutes: s.prep_minutes != null ? String(s.prep_minutes) : "",
     cook_minutes: s.cook_minutes != null ? String(s.cook_minutes) : "",
+    equipment: s.equipment ?? "",
+    prep_note: s.prep_note ?? "",
     photo_url: s.photo_url ?? null,
   };
 }
