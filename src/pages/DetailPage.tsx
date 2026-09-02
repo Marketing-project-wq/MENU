@@ -9,6 +9,7 @@ import { ActionBar } from "../components/ActionBar";
 import { IngredientGroups } from "../components/IngredientGroups";
 import { StepList } from "../components/StepList";
 import { CatererList } from "../components/CatererList";
+import { EatNowSection } from "../components/EatNowSection";
 import { RecipeNotFound } from "../components/RecipeNotFound";
 import { api } from "../lib/api";
 import { catLabel, dietLabel } from "../lib/i18n";
@@ -166,7 +167,10 @@ export function DetailPage({ slug }: { slug: string }) {
             </section>
           </div>
 
+          {/* Katering mitra 20FIT DULU (komisi milik kita), baru Eat Now (GrabFood/GoFood --
+              murni kirim trafik keluar, tanpa apa-apa buat kita). Urutan ini disengaja. */}
           <CatererList source={recipe.source} id={recipe.id} />
+          <EatNowSection source={recipe.source} id={recipe.id} />
         </div>
       </div>
     </article>

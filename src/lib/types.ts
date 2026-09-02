@@ -122,6 +122,16 @@ export interface Caterer {
   portion_note: string | null;
 }
 
+/** Link "Eat Now" (via GET /api/menu/:id/delivery-links) -- tautan biasa ke halaman kategori
+ *  publik GrabFood/GoFood, dipetakan eksplisit per resep lewat CMS. TANPA API/scraping --
+ *  bukan daftar restoran real-time (itu baru dimuat di sisi GrabFood setelah user isi alamat). */
+export interface DeliveryLink {
+  id: string;
+  provider: "grabfood" | "gofood";
+  label: string;
+  url: string;
+}
+
 /** View-model terpadu untuk kartu & detail. */
 export interface RecipeVM {
   key: string; // unik: "official:<id>" | "member:<uuid>"

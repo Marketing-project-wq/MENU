@@ -53,6 +53,8 @@ export const API = {
   REWARD_CONFIG: "/api/menu/reward-config", // publik: ambang & besaran reward sumbang-resep
   CATERERS: (id: string) => `/api/menu/${id}/caterers`, // publik: katering penjual resep ini
   CATERER_CLICK: "/api/menu/caterer-click", // publik (login opsional): catat klik ke katering
+  DELIVERY_LINKS: (id: string) => `/api/menu/${id}/delivery-links`, // publik: link "Eat Now" (GrabFood/GoFood)
+  DELIVERY_CLICK: "/api/menu/delivery-click", // publik (login opsional): catat klik "Eat Now"
 };
 
 // Batas & aturan (samakan dengan server my.20fit.id).
