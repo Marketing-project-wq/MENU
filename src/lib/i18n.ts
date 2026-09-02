@@ -109,7 +109,6 @@ const STR: Dict = {
   save: { id: "Simpan", en: "Save" },
   saved: { id: "Tersimpan", en: "Saved" },
   share: { id: "Bagikan", en: "Share" },
-  print: { id: "Cetak", en: "Print" },
   like: { id: "Suka", en: "Like" },
   linkCopied: { id: "Link disalin!", en: "Link copied!" },
   loginToInteract: {
