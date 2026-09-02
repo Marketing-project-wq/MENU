@@ -75,6 +75,25 @@ const STR: Dict = {
     id: "Tidak ada resep yang cocok dengan filter ini.",
     en: "No recipes match these filters.",
   },
+  // Katering (Tahap 2) -- direktori pihak ketiga, murni informasi, tanpa transaksi lewat 20FIT.
+  caterersTitle: { id: "Mau beli, bukan masak sendiri?", en: "Prefer to buy instead of cook?" },
+  caterersDisclaimer: {
+    id: "Katering di bawah adalah mitra pihak ketiga -- transaksi langsung dengan mereka, bukan lewat 20FIT.",
+    en: "The caterers below are third-party partners -- transactions happen directly with them, not through 20FIT.",
+  },
+  caterersVerifiedBadge: { id: "Terverifikasi", en: "Verified" },
+  caterersSortNearest: { id: "Terdekat", en: "Nearest" },
+  caterersSortDefault: { id: "Rekomendasi", en: "Recommended" },
+  caterersLocationDenied: {
+    id: "Akses lokasi ditolak/tak tersedia -- urutan kembali ke rekomendasi. Pilih area manual di bawah kalau mau.",
+    en: "Location access denied/unavailable -- back to recommended order. Pick an area manually below if you'd like.",
+  },
+  caterersAreaAll: { id: "Semua area", en: "All areas" },
+  caterersMinOrder: { id: "Min. pesan", en: "Min. order" },
+  caterersOrderBtn: { id: "Pesan", en: "Order" },
+  caterersWhatsappBtn: { id: "WhatsApp", en: "WhatsApp" },
+  caterersDistanceKm: { id: "km", en: "km" },
+
   // Aksi & sosial
   save: { id: "Simpan", en: "Save" },
   saved: { id: "Tersimpan", en: "Saved" },
