@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "../router";
 import { useLang, useRecipes } from "../lib/store";
 import { api } from "../lib/api";
 import { renderMarkdown } from "../lib/markdown";
 import { normalizeMember, normalizeOfficial } from "../lib/normalize";
+import { CoverImage } from "../components/CoverImage";
 import { RecipeCard } from "../components/RecipeCard";
 import { Spinner } from "../components/Spinner";
 import type { ArticleFull, ArticleRecipeRef, RecipeVM } from "../lib/types";
@@ -14,6 +15,7 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
   const { t, lang } = useLang();
   const { official, members } = useRecipes();
   const [state, setState] = useState<State>("loading");
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let alive = true;
@@ -44,6 +46,22 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
     return out;
   }, [state, official, members, lang]);
 
+  // Jaring pengaman foto DALAM body: kalau gambar stok gagal muat, sembunyikan (bukan ikon rusak).
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    const imgs = Array.from(el.querySelectorAll("img"));
+    const onErr = (e: Event) => {
+      const img = e.currentTarget as HTMLImageElement;
+      img.style.display = "none";
+    };
+    imgs.forEach((img) => {
+      if (img.complete && img.naturalWidth === 0) img.style.display = "none";
+      else img.addEventListener("error", onErr, { once: true });
+    });
+    return () => imgs.forEach((img) => img.removeEventListener("error", onErr));
+  }, [state]);
+
   if (state === "loading") return <Spinner label={t("loading")} />;
   if (state === "notfound") {
     return (
@@ -65,7 +83,7 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
         {t("backToArticles")}
       </Link>
       <div className="mt-3 overflow-hidden app-card">
-        {a.cover_url && <img src={a.cover_url} alt={a.title} className="h-56 w-full object-cover sm:h-72" />}
+        <CoverImage src={a.cover_url} alt={a.title} className="h-56 w-full sm:h-72" priority />
         <div className="p-5 sm:p-6">
           {a.category && <span className="chip bg-fg/5 text-fg/60">{a.category}</span>}
           <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-fg">{a.title}</h1>
@@ -75,7 +93,7 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
             </p>
           )}
           {/* body_md dirender lewat renderMarkdown yang meng-escape HTML dulu (aman). */}
-          <div className="mt-4 text-sm" dangerouslySetInnerHTML={{ __html: html }} />
+          <div ref={bodyRef} className="mt-4 text-sm" dangerouslySetInnerHTML={{ __html: html }} />
 
           {relatedVMs.length > 0 && (
             <section className="mt-8 border-t border-fg/10 pt-5">

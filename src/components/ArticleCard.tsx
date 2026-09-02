@@ -1,5 +1,6 @@
 import { Link } from "../router";
 import { useLang } from "../lib/store";
+import { CoverImage } from "./CoverImage";
 import type { ArticleSummary } from "../lib/types";
 
 export function ArticleCard({ a }: { a: ArticleSummary }) {
@@ -10,13 +11,7 @@ export function ArticleCard({ a }: { a: ArticleSummary }) {
       className="app-card group block overflow-hidden transition-transform hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="relative h-36 bg-fg/5">
-        {a.cover_url ? (
-          <img src={a.cover_url} alt={a.title} loading="lazy" className="h-full w-full object-cover" />
-        ) : (
-          <div className="grid h-full w-full place-items-center text-4xl" aria-hidden>
-            📝
-          </div>
-        )}
+        <CoverImage src={a.cover_url} alt={a.title} className="h-full w-full" emoji="📝" />
         {a.category && (
           <span className="chip absolute left-2 top-2 bg-black/45 text-white backdrop-blur">{a.category}</span>
         )}
