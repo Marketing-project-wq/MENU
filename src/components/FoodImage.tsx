@@ -125,8 +125,12 @@ export function FoodImage({
           alt={alt}
           {...imgProps}
           decoding="async"
-          className="h-full w-full object-cover object-center"
-          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+          // object-position 50% 42% (bukan tengah-tengah matematis) -- kalau frame TIDAK cocok
+          // persis rasio sumbernya (mis. fallback TheMealDB yang landscape, bukan hasil AI 1:1),
+          // titik yang dipertahankan sedikit di ATAS tengah, karena bagian menarik dari foto
+          // makanan (piring/isi utama) biasanya ada di situ, bukan di baris paling bawah gambar.
+          className="h-full w-full object-cover"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 42%" }}
           onError={() => setFailed(true)}
         />
       ) : (
