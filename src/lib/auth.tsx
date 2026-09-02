@@ -22,7 +22,7 @@ const Ctx = createContext<AuthCtx>({
 
 /**
  * Satu sumber state auth untuk seluruh app.
- * SSO hand-off dari my.20fit.id: menu.20fit.id/#access_token=...&refresh_token=...
+ * SSO hand-off dari my.20fit.id: recipe.20fit.id/#access_token=...&refresh_token=...
  * Token di FRAGMENT (#) — tak dikirim ke server / tak masuk log — dan langsung
  * di-strip via history.replaceState. Pola identik calories.20fit.id.
  */

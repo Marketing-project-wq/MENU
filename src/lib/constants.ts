@@ -1,4 +1,4 @@
-// Konstanta menu.20fit.id.
+// Konstanta recipe.20fit.id.
 // PENTING: hanya anon key di frontend. Operasi sensitif (submit, moderasi) lewat
 // API my.20fit.id yang mengecek auth/role di SERVER.
 
@@ -36,7 +36,7 @@ export const URLS = {
   SIGN_UP: `${MY20FIT}/login?mode=up&next=menu`,
 };
 
-// Endpoint API my.20fit.id yang dipakai menu.20fit.id.
+// Endpoint API my.20fit.id yang dipakai recipe.20fit.id.
 export const API = {
   CATALOG: "/api/menu/catalog", // publik: resep resmi 20FIT (satu sumber = js/recipes.js)
   PUBLISHED: "/api/menu/published", // publik: kontribusi user yang approved+published

@@ -1,6 +1,10 @@
-# menu.20fit.id
+# recipe.20fit.id
 
 Frontend katalog & kontribusi resep sehat 20FIT — mirip Cookpad, tersambung ke ekosistem **my.20fit.id**.
+
+> Domain resmi adalah **recipe.20fit.id**. Nama lama `menu.20fit.id` tidak pernah punya DNS aktif;
+> domain produksi yang sempat live sebelumnya adalah `recepie.20fit.id` (salah eja) — keduanya
+> di-redirect otomatis ke `recipe.20fit.id` (lihat `index.html`) supaya tautan lama tidak mati.
 
 - **Browse publik** (tanpa login): resep resmi 20FIT + kontribusi member yang sudah **di-approve admin**.
 - **Submit resep** (butuh akun 20FIT): masuk antrian review — **TIDAK langsung tayang**.
@@ -44,7 +48,7 @@ npm start              # serve dist (Railway)
 
 1. Buat service Railway dari repo ini (build `npm run build`, start `npm run start`).
 2. Set env `VITE_SUPABASE_ANON_KEY` (+ `VITE_API_URL` bila staging).
-3. Railway → **Custom Domain** `menu.20fit.id` → dapat target CNAME.
-4. **Cloudflare DNS (20fit.id)**: tambah **CNAME `menu` → target Railway**.
+3. Railway → **Custom Domain** `recipe.20fit.id` → dapat target CNAME.
+4. **Cloudflare DNS (20fit.id)**: tambah **CNAME `recipe` → target Railway**.
 
 > Bagian moderasi + endpoint publik ada di repo **PROFILE20FIT** (my.20fit.id).
