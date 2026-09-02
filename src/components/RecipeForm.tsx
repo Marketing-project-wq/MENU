@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { DIET_TYPES, RULES } from "../lib/constants";
-import { api, type SubmitBody } from "../lib/api";
+import { api, type ConsentText, type SubmitBody } from "../lib/api";
 import { useLang } from "../lib/store";
 import { dietLabel } from "../lib/i18n";
 import type { RecipeStep } from "../lib/types";
@@ -103,6 +103,13 @@ export function RecipeForm({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const [consent, setConsent] = useState<ConsentText | null>(null);
+  const [consentErr, setConsentErr] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+
+  useEffect(() => {
+    api.consentText().then(setConsent).catch(() => setConsentErr(true));
+  }, []);
 
   const L = (id: string, en: string) => (lang === "id" ? id : en);
   const set = (patch: Partial<RecipeFormValues>) => setV((s) => ({ ...s, ...patch }));
@@ -206,6 +213,10 @@ export function RecipeForm({
       );
       return;
     }
+    if (!agreed || !consent) {
+      setErr(L("Anda harus menyetujui pernyataan di atas dulu.", "You must agree to the statement above first."));
+      return;
+    }
     setBusy(true);
     try {
       const num = (x: string, min: number) => (x.trim() === "" ? null : Math.max(min, Math.round(Number(x))) || null);
@@ -224,6 +235,7 @@ export function RecipeForm({
         equipment: v.equipment.trim() || null,
         prep_note: v.prep_note.trim() || null,
         photo_url: v.photo_url,
+        consent_version: consent.version,
       });
       if (draftKey) {
         try {
@@ -501,9 +513,39 @@ export function RecipeForm({
         </div>
       )}
 
+      <div className="rounded-xl border border-fg/10 bg-fg/[0.02] p-3">
+        {consent ? (
+          <div className="flex items-start gap-2.5">
+            <input
+              type="checkbox"
+              id="recipeConsentCheckbox"
+              className="mt-0.5 h-4 w-4 shrink-0"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+            />
+            <label htmlFor="recipeConsentCheckbox" className="cursor-pointer text-xs text-fg/70">
+              {lang === "id" ? consent.text_id : consent.text_en}
+            </label>
+          </div>
+        ) : consentErr ? (
+          <p className="text-xs text-brand-red">
+            {L(
+              "Gagal memuat teks persetujuan -- refresh halaman untuk coba lagi.",
+              "Failed to load the consent statement -- refresh the page to retry."
+            )}
+          </p>
+        ) : (
+          <p className="text-xs text-fg/45">{t("loading")}</p>
+        )}
+      </div>
+
       {err && <div className="rounded-xl bg-brand-red/10 p-3 text-sm text-brand-red">{err}</div>}
 
-      <button type="submit" className="btn-primary w-full sm:w-auto" disabled={busy || anyUploading}>
+      <button
+        type="submit"
+        className="btn-primary w-full sm:w-auto"
+        disabled={busy || anyUploading || !agreed || !consent}
+      >
         {busy ? L("Mengirim…", "Submitting…") : submitLabel}
       </button>
     </form>
