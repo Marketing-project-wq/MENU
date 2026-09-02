@@ -51,6 +51,8 @@ export const API = {
   SAVED: "/api/menu/saved", // auth: koleksi resep tersimpan
   SOCIAL: "/api/menu/social", // publik: jumlah heart (+ state user bila login) batch
   REWARD_CONFIG: "/api/menu/reward-config", // publik: ambang & besaran reward sumbang-resep
+  CATERERS: (id: string) => `/api/menu/${id}/caterers`, // publik: katering penjual resep ini
+  CATERER_CLICK: "/api/menu/caterer-click", // publik (login opsional): catat klik ke katering
 };
 
 // Batas & aturan (samakan dengan server my.20fit.id).
