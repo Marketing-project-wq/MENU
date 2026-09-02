@@ -35,6 +35,13 @@ export interface SubmitBody {
   cook_minutes?: number | null;
   equipment?: string | null;
   prep_note?: string | null;
+  consent_version?: string; // versi teks konsent yang disetujui saat submit (wajib diisi server)
+}
+
+export interface ConsentText {
+  version: string;
+  text_id: string;
+  text_en: string;
 }
 
 /** Kunci sosial gabungan "source:menu_id". */
@@ -97,6 +104,12 @@ export const api = {
   /** Ambang & besaran reward sumbang-resep (publik, tanpa login) -- JANGAN hardcode di UI. */
   async rewardConfig(): Promise<RewardConfig> {
     const r = await fetch(`${API_BASE}${API.REWARD_CONFIG}`);
+    return jsonOrThrow(r);
+  },
+
+  /** Teks konsent aktif utk kirim resep -- CMS-driven (server, bukan hardcode di frontend). */
+  async consentText(): Promise<ConsentText> {
+    const r = await fetch(`${API_BASE}${API.CONSENT_TEXT}`);
     return jsonOrThrow(r);
   },
 

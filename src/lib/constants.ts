@@ -53,6 +53,7 @@ export const API = {
   REWARD_CONFIG: "/api/menu/reward-config", // publik: ambang & besaran reward sumbang-resep
   CATERERS: (id: string) => `/api/menu/${id}/caterers`, // publik: katering penjual resep ini
   CATERER_CLICK: "/api/menu/caterer-click", // publik (login opsional): catat klik ke katering
+  CONSENT_TEXT: "/api/menu/consent-text", // publik: teks konsent aktif utk kirim resep (CMS-driven)
 };
 
 // Batas & aturan (samakan dengan server my.20fit.id).
