@@ -129,6 +129,18 @@ export const api = {
     }
   },
 
+  /** Kunci {source, menu_id} resep yang punya tautan pesan-antar aktif (utk halaman Eat Now). */
+  async eatNowKeys(): Promise<{ source: Source; menu_id: string }[]> {
+    try {
+      const r = await fetch(`${API_BASE}${API.EAT_NOW}`);
+      if (!r.ok) return [];
+      const j = await r.json().catch(() => ({}));
+      return j.items ?? [];
+    } catch {
+      return [];
+    }
+  },
+
   /** Tautan pesan-antar (GrabFood dll) untuk resep ini. Gagal -> [] (jangan blokir render). */
   async deliveryLinks(source: Source, id: string): Promise<DeliveryLink[]> {
     try {

@@ -105,6 +105,19 @@ const STR: Dict = {
     id: "{provider} layanan pihak ketiga -- harga & ketersediaan ditentukan oleh mereka.",
     en: "{provider} is a third-party service -- prices & availability are set by them.",
   },
+  // Halaman Eat Now (Tahap 4)
+  eatNowPageTitle: { id: "Pesan Sekarang", en: "Eat Now" },
+  eatNowPageSub: {
+    id: "Resep yang bisa langsung dipesan lewat katering mitra atau layanan pesan-antar.",
+    en: "Recipes you can order right now via partner caterers or delivery services.",
+  },
+  eatNowEmpty: {
+    id: "Belum ada resep yang bisa dipesan langsung. Nantikan ya!",
+    en: "No orderable recipes yet. Check back soon!",
+  },
+  eatNowSearchPh: { id: "Cari makanan…", en: "Search food…" },
+  eatNowAllCat: { id: "Semua kategori", en: "All categories" },
+  eatNowOther: { id: "Lainnya", en: "Other" },
   // Atribusi pembuat resep -- "20FIT Kitchen" = tim resmi; komunitas pakai nama tampilan
   // yang diisi kontributor sendiri (BUKAN email/nama akun), fallback kalau kosong.
   officialKitchenName: { id: "20FIT Kitchen", en: "20FIT Kitchen" },

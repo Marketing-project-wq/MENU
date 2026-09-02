@@ -55,6 +55,7 @@ export const API = {
   CATERER_CLICK: "/api/menu/caterer-click", // publik (login opsional): catat klik ke katering
   DELIVERY: (id: string) => `/api/menu/${id}/delivery`, // publik: tautan pesan-antar (GrabFood dll)
   DELIVERY_CLICK: "/api/menu/delivery-click", // publik (login opsional): catat klik pesan-antar
+  EAT_NOW: "/api/menu/eat-now", // publik: daftar resep yang punya tautan pesan-antar aktif
 };
 
 // Batas & aturan (samakan dengan server my.20fit.id).
