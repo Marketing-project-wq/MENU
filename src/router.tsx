@@ -58,7 +58,18 @@ export function Link({
 }
 
 export interface Route {
-  name: "browse" | "detail" | "legacy-detail" | "submit" | "mine" | "saved" | "notfound";
+  name:
+    | "home"
+    | "browse"
+    | "detail"
+    | "legacy-detail"
+    | "submit"
+    | "mine"
+    | "saved"
+    | "eatnow"
+    | "articles"
+    | "article"
+    | "notfound";
   params: Record<string, string>;
 }
 
@@ -66,18 +77,29 @@ export interface Route {
 // URL lama /resep/{source}/{id} (mis. link yang sudah tersebar) tetap dikenali
 // sebagai "legacy-detail" supaya bisa di-redirect ke slug baru, bukan 404.
 export function parseRoute(path: string): Route {
-  if (!path || path === "/") return { name: "browse", params: {} };
+  // Home (Tahap 5) di "/". Browse resep pindah ke "/resep" (URL detail /resep/{slug} tak berubah).
+  if (!path || path === "/") return { name: "home", params: {} };
   const parts = path.split("/").filter(Boolean);
+  if (parts[0] === "resep" && parts.length === 1) return { name: "browse", params: {} };
   if (parts[0] === "resep" && parts.length === 2) {
     return { name: "detail", params: { slug: decodeURIComponent(parts[1]) } };
   }
   if (parts[0] === "resep" && parts.length >= 3) {
     return { name: "legacy-detail", params: { source: parts[1], id: decodeURIComponent(parts.slice(2).join("/")) } };
   }
+  if (parts[0] === "artikel" && parts.length === 1) return { name: "articles", params: {} };
+  if (parts[0] === "artikel" && parts.length >= 2) {
+    return { name: "article", params: { slug: decodeURIComponent(parts.slice(1).join("/")) } };
+  }
   if (parts[0] === "submit") return { name: "submit", params: {} };
   if (parts[0] === "submission-saya") return { name: "mine", params: {} };
   if (parts[0] === "tersimpan") return { name: "saved", params: {} };
+  if (parts[0] === "eat-now") return { name: "eatnow", params: {} };
   return { name: "notfound", params: {} };
+}
+
+export function articleHref(slug: string): string {
+  return `/artikel/${encodeURIComponent(slug)}`;
 }
 
 export function recipeHref(slug: string): string {

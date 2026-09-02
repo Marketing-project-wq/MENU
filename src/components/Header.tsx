@@ -49,7 +49,10 @@ export function Header() {
         </Link>
 
         <nav className="ml-2 hidden items-center gap-1 sm:flex">
-          {navItem("/", t("browse"))}
+          {navItem("/", t("homeNav"))}
+          {navItem("/resep", t("browse"))}
+          {navItem("/artikel", t("articlesNav"))}
+          {navItem("/eat-now", t("eatNowPageTitle"))}
           {navItem("/submit", t("submit"))}
           {navItem("/tersimpan", t("saved"))}
           {isAuthenticated && navItem("/submission-saya", t("mySubmissions"))}
@@ -116,7 +119,10 @@ export function Header() {
 
       {/* Nav mobile */}
       <nav className="flex flex-wrap items-center gap-1 border-t border-white/10 px-4 py-2 sm:hidden">
-        {navItem("/", t("browse"))}
+        {navItem("/", t("homeNav"))}
+        {navItem("/resep", t("browse"))}
+        {navItem("/artikel", t("articlesNav"))}
+        {navItem("/eat-now", t("eatNowPageTitle"))}
         {navItem("/submit", t("submit"))}
         {navItem("/tersimpan", t("saved"))}
         {isAuthenticated && navItem("/submission-saya", t("mySubmissions"))}

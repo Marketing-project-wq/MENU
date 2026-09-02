@@ -93,6 +93,55 @@ const STR: Dict = {
   caterersOrderBtn: { id: "Pesan", en: "Order" },
   caterersWhatsappBtn: { id: "WhatsApp", en: "WhatsApp" },
   caterersDistanceKm: { id: "km", en: "km" },
+  // Eat Now -- pesan-antar pihak ketiga (GrabFood dll). Bahasa JUJUR: bukan "restoran X jual ini".
+  eatNowTitle: { id: "Pesan online sekarang", en: "Order online now" },
+  eatNowFind: { id: "Cari", en: "Find" },
+  eatNowOn: { id: "di", en: "on" },
+  eatNowRedirectNote: {
+    id: "Kamu akan diarahkan ke halaman kategori {provider} untuk melihat restoran di dekatmu.",
+    en: "You'll be taken to the {provider} category page to see restaurants near you.",
+  },
+  eatNowThirdParty: {
+    id: "{provider} layanan pihak ketiga -- harga & ketersediaan ditentukan oleh mereka.",
+    en: "{provider} is a third-party service -- prices & availability are set by them.",
+  },
+  // Halaman Eat Now (Tahap 4)
+  eatNowPageTitle: { id: "Pesan Sekarang", en: "Eat Now" },
+  eatNowPageSub: {
+    id: "Resep yang bisa langsung dipesan lewat katering mitra atau layanan pesan-antar.",
+    en: "Recipes you can order right now via partner caterers or delivery services.",
+  },
+  eatNowEmpty: {
+    id: "Belum ada resep yang bisa dipesan langsung. Nantikan ya!",
+    en: "No orderable recipes yet. Check back soon!",
+  },
+  eatNowSearchPh: { id: "Cari makanan…", en: "Search food…" },
+  eatNowAllCat: { id: "Semua kategori", en: "All categories" },
+  eatNowOther: { id: "Lainnya", en: "Other" },
+  // Artikel (Tahap 6)
+  articlesNav: { id: "Artikel", en: "Articles" },
+  articlesTitle: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
+  articlesSub: {
+    id: "Ulasan & rekomendasi tempat makan pilihan 20FIT.",
+    en: "20FIT's picks & reviews of places to eat.",
+  },
+  articlesEmpty: { id: "Belum ada artikel.", en: "No articles yet." },
+  articleBy: { id: "oleh", en: "by" },
+  articleRelatedRecipes: { id: "Mau coba masak sendiri?", en: "Want to cook it yourself?" },
+  recipeRelatedArticles: { id: "Mau makan di luar?", en: "Prefer to eat out?" },
+  backToArticles: { id: "← Semua artikel", en: "← All articles" },
+  seeAll: { id: "Lihat semua", en: "See all" },
+  // Home (Tahap 5)
+  homeNav: { id: "Beranda", en: "Home" },
+  homeHeroTitle: { id: "Makan sehat, gampang.", en: "Healthy eating, made easy." },
+  homeHeroSub: {
+    id: "Resep, rekomendasi tempat makan, dan pesan langsung — dari 20FIT.",
+    en: "Recipes, place recommendations, and instant ordering — from 20FIT.",
+  },
+  homeArticlesHeading: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
+  homeRecipesHeading: { id: "Resep Pilihan", en: "Featured Recipes" },
+  homeEatNowHeading: { id: "Bisa Langsung Dipesan", en: "Order Right Now" },
+  browseAllRecipes: { id: "Jelajah semua resep", en: "Browse all recipes" },
   // Atribusi pembuat resep -- "20FIT Kitchen" = tim resmi; komunitas pakai nama tampilan
   // yang diisi kontributor sendiri (BUKAN email/nama akun), fallback kalau kosong.
   officialKitchenName: { id: "20FIT Kitchen", en: "20FIT Kitchen" },

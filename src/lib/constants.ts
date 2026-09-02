@@ -53,6 +53,12 @@ export const API = {
   REWARD_CONFIG: "/api/menu/reward-config", // publik: ambang & besaran reward sumbang-resep
   CATERERS: (id: string) => `/api/menu/${id}/caterers`, // publik: katering penjual resep ini
   CATERER_CLICK: "/api/menu/caterer-click", // publik (login opsional): catat klik ke katering
+  DELIVERY: (id: string) => `/api/menu/${id}/delivery`, // publik: tautan pesan-antar (GrabFood dll)
+  DELIVERY_CLICK: "/api/menu/delivery-click", // publik (login opsional): catat klik pesan-antar
+  EAT_NOW: "/api/menu/eat-now", // publik: daftar resep yang punya tautan pesan-antar aktif
+  ARTICLES: "/api/menu/articles", // publik: daftar artikel terbit
+  ARTICLE: (slug: string) => `/api/menu/articles/${encodeURIComponent(slug)}`, // publik: 1 artikel + resep terkait
+  RECIPE_ARTICLES: (id: string) => `/api/menu/${id}/articles`, // publik: artikel terkait sebuah resep
 };
 
 // Batas & aturan (samakan dengan server my.20fit.id).
