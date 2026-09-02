@@ -26,6 +26,7 @@ export interface SubmitBody {
   ingredients: string;
   steps: string;
   diet_type: string;
+  display_name?: string | null; // nama tampilan publik -- bukan email/nama akun
   photo_url?: string | null;
   est_kcal?: number | null;
   steps_json?: RecipeStep[] | null;

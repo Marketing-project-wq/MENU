@@ -39,6 +39,7 @@ export interface PublishedContribution {
   id: string;
   name: string;
   diet_type: string;
+  display_name?: string | null; // nama tampilan publik kontributor -- BUKAN email/nama akun
   ingredients: string;
   steps: string;
   steps_json?: RecipeStep[] | null;
@@ -54,6 +55,7 @@ export interface MySubmission {
   id: string;
   name: string;
   diet_type: string;
+  display_name?: string | null;
   status: "pending" | "approved" | "rejected";
   reject_reason: string | null;
   est_kcal: number | null;
@@ -131,4 +133,5 @@ export interface RecipeVM {
   emoji: string;
   tint: string;
   reviewedAt: string | null;
+  creatorName: string; // "20FIT Kitchen" (official) atau nama tampilan kontributor/fallback (member)
 }

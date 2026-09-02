@@ -79,6 +79,9 @@ export function DetailPage({ slug }: { slug: string }) {
           </div>
 
           <h1 className="text-2xl font-extrabold tracking-tight text-fg">{recipe.name}</h1>
+          <p className="mt-1 text-sm text-fg/55">
+            {t("byPrefix")} <span className="font-semibold text-fg/75">{recipe.creatorName}</span>
+          </p>
 
           {(recipe.servings != null || recipe.cookMinutes != null) && (
             <div className="mt-2 flex flex-wrap gap-4 text-sm text-fg/60">
