@@ -93,6 +93,18 @@ const STR: Dict = {
   caterersOrderBtn: { id: "Pesan", en: "Order" },
   caterersWhatsappBtn: { id: "WhatsApp", en: "WhatsApp" },
   caterersDistanceKm: { id: "km", en: "km" },
+  // Eat Now (Tahap 2) -- tautan biasa ke halaman kategori GrabFood/GoFood, BUKAN daftar
+  // restoran real-time. Teks harus jujur: "cari X di Y", bukan "restoran X jual ini".
+  eatNowTitle: { id: "Mau pesan lewat aplikasi?", en: "Prefer to order via app?" },
+  eatNowSearchPrefix: { id: "Cari", en: "Search for" },
+  eatNowGrabfoodHint: {
+    id: "Kamu akan diarahkan ke halaman kategori GrabFood untuk melihat restoran di dekatmu.",
+    en: "You'll be taken to GrabFood's category page to see restaurants near you.",
+  },
+  eatNowDisclaimer: {
+    id: "GrabFood/GoFood adalah layanan pihak ketiga -- harga dan ketersediaan ditentukan oleh mereka, bukan 20FIT.",
+    en: "GrabFood/GoFood are third-party services -- prices and availability are set by them, not 20FIT.",
+  },
   // Atribusi pembuat resep -- "20FIT Kitchen" = tim resmi; komunitas pakai nama tampilan
   // yang diisi kontributor sendiri (BUKAN email/nama akun), fallback kalau kosong.
   officialKitchenName: { id: "20FIT Kitchen", en: "20FIT Kitchen" },

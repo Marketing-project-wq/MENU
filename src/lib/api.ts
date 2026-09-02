@@ -2,6 +2,7 @@ import { API, API_BASE } from "./constants";
 import { getAccessToken } from "./supabase";
 import type {
   Caterer,
+  DeliveryLink,
   MineResponse,
   OfficialRecipe,
   PublishedContribution,
@@ -122,6 +123,33 @@ export const api = {
         credentials: "include",
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ caterer_id: catererId, source, menu_id: id }),
+      });
+    } catch {
+      /* best-effort */
+    }
+  },
+
+  /** Link "Eat Now" (GrabFood/GoFood) utk resep ini. Gagal -> [] (jangan blokir halaman resep). */
+  async deliveryLinks(source: Source, id: string): Promise<DeliveryLink[]> {
+    try {
+      const r = await fetch(`${API_BASE}${API.DELIVERY_LINKS(id)}?source=${encodeURIComponent(source)}`);
+      if (!r.ok) return [];
+      const j = await r.json().catch(() => ({}));
+      return j.links ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  /** Catat klik "Eat Now" (analitik saja -- tanpa ini tak akan pernah tahu fitur dipakai atau
+   *  tidak). Best-effort, tak pernah melempar. */
+  async trackDeliveryClick(provider: "grabfood" | "gofood", source: Source, id: string): Promise<void> {
+    try {
+      await fetch(`${API_BASE}${API.DELIVERY_CLICK}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({ provider, source, menu_id: id }),
       });
     } catch {
       /* best-effort */
