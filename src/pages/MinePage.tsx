@@ -140,6 +140,7 @@ function toFormValues(s: MySubmission): RecipeFormValues {
       : parseStepsText(s.steps ?? "");
   return {
     name: s.name,
+    display_name: s.display_name ?? "",
     diet_type: s.diet_type,
     ingredients: s.ingredients ?? "",
     steps: steps.length ? steps : [{ t: "", photo: null }],

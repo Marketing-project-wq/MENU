@@ -75,6 +75,18 @@ const STR: Dict = {
     id: "Tidak ada resep yang cocok dengan filter ini.",
     en: "No recipes match these filters.",
   },
+  // Atribusi pembuat resep -- "20FIT Kitchen" = tim resmi; komunitas pakai nama tampilan
+  // yang diisi kontributor sendiri (BUKAN email/nama akun), fallback kalau kosong.
+  officialKitchenName: { id: "20FIT Kitchen", en: "20FIT Kitchen" },
+  communityFallbackName: { id: "Kontributor Komunitas", en: "Community Contributor" },
+  byPrefix: { id: "oleh", en: "by" },
+  displayNameLabel: { id: "Nama tampilan (publik)", en: "Display name (public)" },
+  displayNameHint: {
+    id: "Ditampilkan di kartu & halaman resep -- bukan nama akunmu. Kosongkan untuk tampil sebagai \"Kontributor Komunitas\".",
+    en: "Shown on the card & recipe page -- not your account name. Leave blank to show as \"Community Contributor\".",
+  },
+  displayNamePlaceholder: { id: "mis. Dapur Bunda Rina", en: "e.g. Rina's Kitchen" },
+
   // Aksi & sosial
   save: { id: "Simpan", en: "Save" },
   saved: { id: "Tersimpan", en: "Saved" },
@@ -180,6 +192,14 @@ const STATUS_LABELS: Record<string, { id: string; en: string }> = {
   approved: { id: "Disetujui", en: "Approved" },
   rejected: { id: "Ditolak", en: "Rejected" },
 };
+
+export function officialKitchenName(lang: Lang): string {
+  return STR.officialKitchenName[lang];
+}
+
+export function communityFallbackName(lang: Lang): string {
+  return STR.communityFallbackName[lang];
+}
 
 export function statusLabel(status: string, lang: Lang): string {
   return STATUS_LABELS[status]?.[lang] ?? status;

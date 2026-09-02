@@ -49,6 +49,9 @@ export function RecipeCard({ r, priority = false }: { r: RecipeVM; priority?: bo
         <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-tight text-fg">
           {r.name}
         </h3>
+        <p className="mt-0.5 truncate text-xs text-fg/45">
+          {t("byPrefix")} {r.creatorName}
+        </p>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {r.kcal != null && (
             <span className="chip bg-fg/5 text-fg/70">

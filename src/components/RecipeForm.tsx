@@ -12,6 +12,7 @@ const HEALTH_CLAIM_RE =
 
 export interface RecipeFormValues {
   name: string;
+  display_name: string; // nama tampilan publik kontributor -- bukan nama akun/email
   diet_type: string;
   ingredients: string;
   steps: RecipeStep[];
@@ -24,6 +25,7 @@ export interface RecipeFormValues {
 export function emptyValues(): RecipeFormValues {
   return {
     name: "",
+    display_name: "",
     diet_type: "normal",
     ingredients: "",
     steps: [{ t: "", photo: null }],
@@ -137,6 +139,7 @@ export function RecipeForm({
       const stepsText = cleanSteps.map((s, i) => `${i + 1}. ${s.t}`).join("\n");
       await onSubmit({
         name: v.name.trim(),
+        display_name: v.display_name.trim() || null,
         diet_type: v.diet_type,
         ingredients: v.ingredients.trim(),
         steps: stepsText,
@@ -158,6 +161,18 @@ export function RecipeForm({
       <div>
         <label className="label">{L("Nama resep", "Recipe name")}</label>
         <input className="field" value={v.name} onChange={(e) => set({ name: e.target.value })} maxLength={120} />
+      </div>
+
+      <div>
+        <label className="label">{t("displayNameLabel")}</label>
+        <input
+          className="field"
+          value={v.display_name}
+          onChange={(e) => set({ display_name: e.target.value })}
+          maxLength={60}
+          placeholder={t("displayNamePlaceholder")}
+        />
+        <p className="mt-1 text-xs text-fg/45">{t("displayNameHint")}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
