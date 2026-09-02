@@ -10,6 +10,7 @@ import { LegacyDetailRedirect } from "./pages/LegacyDetailRedirect";
 import { SubmitPage } from "./pages/SubmitPage";
 import { MinePage } from "./pages/MinePage";
 import { SavedPage } from "./pages/SavedPage";
+import { EatNowPage } from "./pages/EatNowPage";
 
 function Routes() {
   const { path } = useRouter();
@@ -26,6 +27,8 @@ function Routes() {
       return <MinePage />;
     case "saved":
       return <SavedPage />;
+    case "eatnow":
+      return <EatNowPage />;
     case "browse":
       return <BrowsePage />;
     default:

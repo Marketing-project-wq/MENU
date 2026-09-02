@@ -132,6 +132,18 @@ export interface DeliveryLink {
   url: string;
 }
 
+/** Satu baris pemetaan aktif (via GET /api/menu/delivery-links, Tahap 4) -- dipakai halaman
+ *  "Eat Now" khusus utk dicocokkan ke katalog resep (source+menu_id) di sisi klien, lalu
+ *  dikelompokkan per "label" (nama kategori GrabFood, mis. "Nasi Goreng"). */
+export interface EatNowLink {
+  id: string;
+  source: Source;
+  menu_id: string;
+  provider: "grabfood" | "gofood";
+  label: string;
+  url: string;
+}
+
 /** View-model terpadu untuk kartu & detail. */
 export interface RecipeVM {
   key: string; // unik: "official:<id>" | "member:<uuid>"

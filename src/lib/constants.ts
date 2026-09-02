@@ -54,6 +54,7 @@ export const API = {
   CATERERS: (id: string) => `/api/menu/${id}/caterers`, // publik: katering penjual resep ini
   CATERER_CLICK: "/api/menu/caterer-click", // publik (login opsional): catat klik ke katering
   DELIVERY_LINKS: (id: string) => `/api/menu/${id}/delivery-links`, // publik: link "Eat Now" (GrabFood/GoFood)
+  DELIVERY_LINKS_ALL: "/api/menu/delivery-links", // publik: SELURUH pemetaan aktif -- utk halaman Eat Now (Tahap 4)
   DELIVERY_CLICK: "/api/menu/delivery-click", // publik (login opsional): catat klik "Eat Now"
 };
 

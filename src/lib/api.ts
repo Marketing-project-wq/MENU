@@ -3,6 +3,7 @@ import { getAccessToken } from "./supabase";
 import type {
   Caterer,
   DeliveryLink,
+  EatNowLink,
   MineResponse,
   OfficialRecipe,
   PublishedContribution,
@@ -133,6 +134,19 @@ export const api = {
   async deliveryLinks(source: Source, id: string): Promise<DeliveryLink[]> {
     try {
       const r = await fetch(`${API_BASE}${API.DELIVERY_LINKS(id)}?source=${encodeURIComponent(source)}`);
+      if (!r.ok) return [];
+      const j = await r.json().catch(() => ({}));
+      return j.links ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  /** SELURUH pemetaan "Eat Now" aktif (Tahap 4, halaman khusus) -- gagal -> [] (halaman
+   *  tetap render dgn empty state, bukan error). */
+  async eatNowLinks(): Promise<EatNowLink[]> {
+    try {
+      const r = await fetch(`${API_BASE}${API.DELIVERY_LINKS_ALL}`);
       if (!r.ok) return [];
       const j = await r.json().catch(() => ({}));
       return j.links ?? [];

@@ -105,6 +105,24 @@ const STR: Dict = {
     id: "GrabFood/GoFood adalah layanan pihak ketiga -- harga dan ketersediaan ditentukan oleh mereka, bukan 20FIT.",
     en: "GrabFood/GoFood are third-party services -- prices and availability are set by them, not 20FIT.",
   },
+  // Halaman "Eat Now" khusus (Tahap 4) -- daftar resep yang sudah dipetakan admin,
+  // dikelompokkan per kategori GrabFood/GoFood.
+  eatNowNav: { id: "Eat Now", en: "Eat Now" },
+  eatNowPageTitle: { id: "Eat Now", en: "Eat Now" },
+  eatNowPageIntro: {
+    id: "Resep di sini bisa langsung kamu pesan lewat GrabFood/GoFood, dikelompokkan per kategori.",
+    en: "Recipes here can be ordered right away via GrabFood/GoFood, grouped by category.",
+  },
+  eatNowSearchPlaceholder: { id: "Cari resep…", en: "Search recipes…" },
+  eatNowAllCategories: { id: "Semua kategori", en: "All categories" },
+  eatNowEmptyAll: {
+    id: "Belum ada resep yang dipetakan ke GrabFood/GoFood.",
+    en: "No recipes have been mapped to GrabFood/GoFood yet.",
+  },
+  eatNowEmptyFiltered: {
+    id: "Tidak ada resep yang cocok dengan pencarian/kategori ini.",
+    en: "No recipes match this search/category.",
+  },
   // Atribusi pembuat resep -- "20FIT Kitchen" = tim resmi; komunitas pakai nama tampilan
   // yang diisi kontributor sendiri (BUKAN email/nama akun), fallback kalau kosong.
   officialKitchenName: { id: "20FIT Kitchen", en: "20FIT Kitchen" },
