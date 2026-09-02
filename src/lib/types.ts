@@ -122,6 +122,15 @@ export interface Caterer {
   portion_note: string | null;
 }
 
+/** Tautan pesan-antar (GrabFood dll) untuk sebuah resep — pemetaan eksplisit oleh admin. */
+export interface DeliveryLink {
+  id: string;
+  provider: string; // 'grabfood' | 'gofood' | ...
+  label: string; // mis. "Nasi Goreng"
+  url: string; // URL halaman kategori publik penyedia
+  sort_order?: number;
+}
+
 /** View-model terpadu untuk kartu & detail. */
 export interface RecipeVM {
   key: string; // unik: "official:<id>" | "member:<uuid>"

@@ -2,6 +2,7 @@ import { API, API_BASE } from "./constants";
 import { getAccessToken } from "./supabase";
 import type {
   Caterer,
+  DeliveryLink,
   MineResponse,
   OfficialRecipe,
   PublishedContribution,
@@ -122,6 +123,32 @@ export const api = {
         credentials: "include",
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ caterer_id: catererId, source, menu_id: id }),
+      });
+    } catch {
+      /* best-effort */
+    }
+  },
+
+  /** Tautan pesan-antar (GrabFood dll) untuk resep ini. Gagal -> [] (jangan blokir render). */
+  async deliveryLinks(source: Source, id: string): Promise<DeliveryLink[]> {
+    try {
+      const r = await fetch(`${API_BASE}${API.DELIVERY(id)}?source=${encodeURIComponent(source)}`);
+      if (!r.ok) return [];
+      const j = await r.json().catch(() => ({}));
+      return j.links ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  /** Catat klik ke penyedia pesan-antar (analitik). Best-effort, tak pernah melempar. */
+  async trackDeliveryClick(source: Source, id: string, provider: string): Promise<void> {
+    try {
+      await fetch(`${API_BASE}${API.DELIVERY_CLICK}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({ source, menu_id: id, provider }),
       });
     } catch {
       /* best-effort */

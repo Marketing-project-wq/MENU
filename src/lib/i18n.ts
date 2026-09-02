@@ -93,6 +93,18 @@ const STR: Dict = {
   caterersOrderBtn: { id: "Pesan", en: "Order" },
   caterersWhatsappBtn: { id: "WhatsApp", en: "WhatsApp" },
   caterersDistanceKm: { id: "km", en: "km" },
+  // Eat Now -- pesan-antar pihak ketiga (GrabFood dll). Bahasa JUJUR: bukan "restoran X jual ini".
+  eatNowTitle: { id: "Pesan online sekarang", en: "Order online now" },
+  eatNowFind: { id: "Cari", en: "Find" },
+  eatNowOn: { id: "di", en: "on" },
+  eatNowRedirectNote: {
+    id: "Kamu akan diarahkan ke halaman kategori {provider} untuk melihat restoran di dekatmu.",
+    en: "You'll be taken to the {provider} category page to see restaurants near you.",
+  },
+  eatNowThirdParty: {
+    id: "{provider} layanan pihak ketiga -- harga & ketersediaan ditentukan oleh mereka.",
+    en: "{provider} is a third-party service -- prices & availability are set by them.",
+  },
   // Atribusi pembuat resep -- "20FIT Kitchen" = tim resmi; komunitas pakai nama tampilan
   // yang diisi kontributor sendiri (BUKAN email/nama akun), fallback kalau kosong.
   officialKitchenName: { id: "20FIT Kitchen", en: "20FIT Kitchen" },
