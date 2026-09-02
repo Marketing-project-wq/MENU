@@ -128,8 +128,12 @@ const STR: Dict = {
   },
   // Info porsi/waktu
   servings: { id: "Porsi", en: "Servings" },
-  cookTime: { id: "Waktu masak", en: "Cook time" },
+  cookTime: { id: "Masak", en: "Cook" },
+  prepTime: { id: "Siap-siap", en: "Prep" },
   minutesShort: { id: "mnt", en: "min" },
+  equipmentLabel: { id: "Alat yang dibutuhkan", en: "Equipment needed" },
+  prepNoteLabel: { id: "Sebelum mulai masak", en: "Before you start cooking" },
+  commonMistakeLabel: { id: "Kesalahan umum", en: "Common mistake" },
   // Langkah berfoto (form submit)
   step: { id: "Langkah", en: "Step" },
   addStep: { id: "+ Tambah langkah", en: "+ Add step" },

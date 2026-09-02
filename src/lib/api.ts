@@ -31,7 +31,10 @@ export interface SubmitBody {
   est_kcal?: number | null;
   steps_json?: RecipeStep[] | null;
   servings?: number | null;
+  prep_minutes?: number | null;
   cook_minutes?: number | null;
+  equipment?: string | null;
+  prep_note?: string | null;
 }
 
 /** Kunci sosial gabungan "source:menu_id". */

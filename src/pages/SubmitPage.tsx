@@ -124,6 +124,7 @@ export function SubmitPage() {
         <RecipeForm
           initial={emptyValues()}
           submitLabel={t("submit")}
+          draftKey="menu20fit_submit_draft"
           onSubmit={async (body) => {
             const res = await api.submit(body);
             setDoneId(res.id ?? "ok");
