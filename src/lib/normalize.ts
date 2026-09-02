@@ -6,6 +6,7 @@ import type {
   RecipeStep,
   RecipeVM,
 } from "./types";
+import { communityFallbackName, officialKitchenName } from "./i18n";
 
 /** Pecah teks bahan jadi kelompok. Baris diakhiri ":" = judul kelompok (mis. "Bumbu Halus:"),
  *  baris lain = item. Bullet "-", "*", "•" di depan item dibuang. */
@@ -120,13 +121,14 @@ export function normalizeOfficial(r: OfficialRecipe, lang: Lang): RecipeVM {
     emoji: r.emoji || "🍽️",
     tint: r.tint || "#C41101",
     reviewedAt: null,
+    creatorName: officialKitchenName(lang),
   };
 }
 
 const MEMBER_EMOJI = "🥗";
 const MEMBER_TINT = "#2A7A4F";
 
-export function normalizeMember(m: PublishedContribution): RecipeVM {
+export function normalizeMember(m: PublishedContribution, lang: Lang): RecipeVM {
   const ingredients = m.ingredients || "";
   const steps = m.steps || "";
   return {
@@ -155,6 +157,7 @@ export function normalizeMember(m: PublishedContribution): RecipeVM {
     emoji: MEMBER_EMOJI,
     tint: MEMBER_TINT,
     reviewedAt: m.reviewed_at,
+    creatorName: (m.display_name || "").trim() || communityFallbackName(lang),
   };
 }
 
@@ -164,7 +167,7 @@ export function buildVMs(
   lang: Lang
 ): RecipeVM[] {
   const off = official.map((r) => normalizeOfficial(r, lang));
-  const mem = members.map(normalizeMember);
+  const mem = members.map((m) => normalizeMember(m, lang));
   // Member terbaru dulu, lalu resep resmi.
   const all = [...mem, ...off];
   // Slug final: unik dlm daftar ini (dipakai sbg satu-satunya sumber kebenaran

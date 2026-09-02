@@ -45,6 +45,7 @@ export interface PublishedContribution {
   id: string;
   name: string;
   diet_type: string;
+  display_name?: string | null; // nama tampilan publik kontributor -- BUKAN email/nama akun
   ingredients: string;
   steps: string;
   steps_json?: RecipeStep[] | null;
@@ -63,6 +64,7 @@ export interface MySubmission {
   id: string;
   name: string;
   diet_type: string;
+  display_name?: string | null;
   status: "pending" | "approved" | "rejected";
   reject_reason: string | null;
   est_kcal: number | null;
@@ -97,6 +99,29 @@ export interface RewardConfig {
   reward_scan: number;
 }
 
+/** Katering pihak ketiga yang menjual resep ini (via GET /api/menu/:id/caterers) --
+ *  murni direktori, tanpa transaksi/komisi. price/portion_note khusus utk resep yang dibuka
+ *  (dari my20fit_caterer_menus), field lain milik kateringnya sendiri. */
+export interface Caterer {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  address: string | null;
+  area: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  delivery_areas: string[] | null;
+  min_order: number | null;
+  order_url: string | null;
+  is_verified: boolean;
+  price: number | null;
+  portion_note: string | null;
+}
+
 /** View-model terpadu untuk kartu & detail. */
 export interface RecipeVM {
   key: string; // unik: "official:<id>" | "member:<uuid>"
@@ -124,4 +149,5 @@ export interface RecipeVM {
   emoji: string;
   tint: string;
   reviewedAt: string | null;
+  creatorName: string; // "20FIT Kitchen" (official) atau nama tampilan kontributor/fallback (member)
 }

@@ -83,7 +83,7 @@ export function SavedPage() {
     } else {
       const m = members[row.menu_id];
       if (m) {
-        const vm = normalizeMember(m);
+        const vm = normalizeMember(m, lang);
         vm.slug = slugMap.get(vm.key) ?? vm.slug;
         vms.push(vm);
       }

@@ -8,6 +8,7 @@ import { FoodImage } from "../components/FoodImage";
 import { ActionBar } from "../components/ActionBar";
 import { IngredientGroups } from "../components/IngredientGroups";
 import { StepList } from "../components/StepList";
+import { CatererList } from "../components/CatererList";
 import { RecipeNotFound } from "../components/RecipeNotFound";
 import { api } from "../lib/api";
 import { catLabel, dietLabel } from "../lib/i18n";
@@ -78,6 +79,9 @@ export function DetailPage({ slug }: { slug: string }) {
           </div>
 
           <h1 className="text-2xl font-extrabold tracking-tight text-fg">{recipe.name}</h1>
+          <p className="mt-1 text-sm text-fg/55">
+            {t("byPrefix")} <span className="font-semibold text-fg/75">{recipe.creatorName}</span>
+          </p>
 
           {(recipe.servings != null || recipe.cookMinutes != null || recipe.prepMinutes != null) && (
             <div className="mt-2 flex flex-wrap gap-4 text-sm text-fg/60">
@@ -161,6 +165,8 @@ export function DetailPage({ slug }: { slug: string }) {
               )}
             </section>
           </div>
+
+          <CatererList source={recipe.source} id={recipe.id} />
         </div>
       </div>
     </article>
