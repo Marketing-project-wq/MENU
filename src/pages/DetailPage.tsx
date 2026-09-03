@@ -135,11 +135,23 @@ export function DetailPage({ slug }: { slug: string }) {
               )}
             </div>
             {recipe.macros && (
-              <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                <Macro label={t("protein")} value={`${recipe.macros.p} g`} />
-                <Macro label={t("carbs")} value={`${recipe.macros.c} g`} />
-                <Macro label={t("fat")} value={`${recipe.macros.f} g`} />
-              </div>
+              <>
+                <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                  <Macro label={t("protein")} value={`${recipe.macros.p} g`} />
+                  <Macro label={t("carbs")} value={`${recipe.macros.c} g`} />
+                  <Macro label={t("fat")} value={`${recipe.macros.f} g`} />
+                </div>
+                {/* Gizi mikro -- tampil hanya untuk field yang benar-benar ada di sumber datanya. */}
+                {(recipe.macros.fiber != null ||
+                  recipe.macros.sugar != null ||
+                  recipe.macros.sodium != null) && (
+                  <div className="mt-2 grid grid-cols-3 gap-2 text-center text-sm">
+                    {recipe.macros.fiber != null && <Macro label={t("fiber")} value={`${recipe.macros.fiber} g`} />}
+                    {recipe.macros.sugar != null && <Macro label={t("sugar")} value={`${recipe.macros.sugar} g`} />}
+                    {recipe.macros.sodium != null && <Macro label={t("sodium")} value={`${recipe.macros.sodium} mg`} />}
+                  </div>
+                )}
+              </>
             )}
             <p className="mt-3 text-xs italic text-fg/45">
               {isOfficial ? t("estOfficial") : t("estUser")}
