@@ -15,6 +15,16 @@ export interface IngredientGroup {
   items: string[];
 }
 
+/** Makro + gizi mikro. p/c/f gram; fiber/sugar gram; sodium mg. Mikro opsional (tampil bila ada). */
+export interface Nutrients {
+  p: number;
+  c: number;
+  f: number;
+  fiber?: number;
+  sugar?: number;
+  sodium?: number;
+}
+
 /** Resep resmi 20FIT — bentuk item di js/recipes.js (via GET /api/menu/catalog). */
 export interface OfficialRecipe {
   id: string;
@@ -24,6 +34,9 @@ export interface OfficialRecipe {
   p: number; // protein g
   c: number; // carbs g
   f: number; // fat g
+  fiber?: number; // serat g -- opsional, diisi progresif; UI tampil hanya bila ada
+  sugar?: number; // gula g -- opsional
+  sodium?: number; // natrium mg -- opsional
   types: string[];
   q?: string; // query gambar TheMealDB (opsional)
   cat: string;
@@ -51,6 +64,7 @@ export interface PublishedContribution {
   steps_json?: RecipeStep[] | null;
   photo_url: string | null;
   est_kcal: number | null;
+  macros?: Partial<Nutrients> | null; // dari kolom jsonb my20fit_menu_contribution.macros (bila server mengirimnya)
   servings?: number | null;
   cook_minutes?: number | null;
   prep_minutes?: number | null;
@@ -141,6 +155,7 @@ export interface ArticleSummary {
   category: string | null;
   author_name?: string | null;
   published_at: string | null;
+  read_minutes?: number | null; // opsional: dikirim server bila tersedia; jika tidak, dihitung dari body (lihat lib/readtime.ts)
 }
 export interface ArticleFull extends ArticleSummary {
   body_md: string | null;
@@ -159,7 +174,7 @@ export interface RecipeVM {
   slug: string; // slug URL berbasis nama resep, unik dlm daftar hasil buildVMs() (lihat normalize.ts)
   name: string;
   kcal: number | null;
-  macros: { p: number; c: number; f: number } | null; // hanya official
+  macros: Nutrients | null; // p/c/f (+ mikro opsional bila sumbernya punya). Official selalu; member bila server kirim.
   dietTypes: string[];
   category: string | null;
   ingredients: string; // teks, dipisah newline (disimpan utk print & fallback)

@@ -7,7 +7,11 @@ import { api } from "../lib/api";
 import { GRABFOOD_HOME } from "../lib/constants";
 import { ArticleCard } from "../components/ArticleCard";
 import { RecipeCard } from "../components/RecipeCard";
+import { RecipeCarousel } from "../components/RecipeCarousel";
+import { FoodTypeChips } from "../components/FoodTypeChips";
 import { Spinner } from "../components/Spinner";
+import { pickFavorites } from "../lib/favorites";
+import { getReadMinutesMap } from "../lib/readtime";
 import type { ArticleSummary, RecipeVM } from "../lib/types";
 
 // Beranda pakai DATA ASLI: artikel in-house + resep dari katalog (difilter dari tag diet
@@ -36,6 +40,7 @@ export function HomePage() {
   const { ensure } = useSocial();
   const [articles, setArticles] = useState<ArticleSummary[]>([]);
   const [eatNowKeys, setEatNowKeys] = useState<Set<string>>(new Set());
+  const [readMins, setReadMins] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let alive = true;
@@ -45,6 +50,10 @@ export function HomePage() {
     api.eatNowKeys().then((items) => {
       if (alive) setEatNowKeys(new Set(items.map((i) => `${i.source}:${i.menu_id}`)));
     });
+    // Peta menit-baca (dari body artikel). Best-effort: kalau kosong, kartu tampil tanpa "min read".
+    getReadMinutesMap().then((m) => {
+      if (alive) setReadMins(m);
+    });
     return () => {
       alive = false;
     };
@@ -53,17 +62,24 @@ export function HomePage() {
   const vms = useMemo(() => buildVMs(official, members, lang), [official, members, lang]);
   const healthyPicks = useMemo(() => pickByDiet(vms, HEALTHY_DIETS, 4), [vms]);
   const dietPicks = useMemo(() => pickByDiet(vms, DIET_DIETS, 4), [vms]);
+  const favoritePicks = useMemo(() => pickFavorites(vms, 12), [vms]);
   const eatNowPicks = useMemo(
     () => vms.filter((r) => eatNowKeys.has(`${r.source}:${r.id}`)).slice(0, 4),
     [vms, eatNowKeys]
   );
-  const articlePicks = articles.slice(0, 6);
+  // Kategori tipe makanan yang benar-benar ada di katalog (untuk chip filter paling atas).
+  const foodCategories = useMemo(() => {
+    const set = new Set<string>();
+    vms.forEach((r) => r.category && set.add(r.category));
+    return Array.from(set);
+  }, [vms]);
+  const articlePicks = articles.slice(0, 5); // "Top 5 untuk dibaca hari ini" (terbaru; API sudah urut terbaru)
 
   // Muat jumlah heart untuk resep yang tampil (batch + dedupe di store).
   useEffect(() => {
-    const list = [...healthyPicks, ...dietPicks, ...eatNowPicks];
+    const list = [...favoritePicks, ...healthyPicks, ...dietPicks, ...eatNowPicks];
     if (list.length) ensure(list.map((r) => ({ source: r.source, id: r.id })));
-  }, [healthyPicks, dietPicks, eatNowPicks, ensure]);
+  }, [favoritePicks, healthyPicks, dietPicks, eatNowPicks, ensure]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -75,12 +91,22 @@ export function HomePage() {
         </Link>
       </section>
 
-      {/* Artikel — bagian utama (kartu lebih besar, sampai 6). */}
+      {/* Toggle tipe makanan (paling atas) -- klik -> /resep sudah terfilter kategori itu. */}
+      <FoodTypeChips categories={foodCategories} />
+
+      {/* Resep Favorit -- carousel bisa digeser horizontal. */}
+      {favoritePicks.length > 0 && (
+        <HomeSection title={t("homeFavoritesHeading")} to="/resep">
+          <RecipeCarousel picks={favoritePicks} />
+        </HomeSection>
+      )}
+
+      {/* Top 5 Artikel untuk dibaca hari ini -- kartu tampilkan "X min read" di depan. */}
       {articlePicks.length > 0 && (
-        <HomeSection title={t("homeArticlesHeading")} to="/artikel">
+        <HomeSection title={t("homeTopArticlesHeading")} to="/artikel">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {articlePicks.map((a) => (
-              <ArticleCard key={a.id} a={a} />
+              <ArticleCard key={a.id} a={a} readMinutes={readMins[a.slug]} />
             ))}
           </div>
         </HomeSection>

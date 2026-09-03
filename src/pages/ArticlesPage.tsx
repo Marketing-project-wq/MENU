@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLang } from "../lib/store";
 import { api } from "../lib/api";
+import { getReadMinutesMap } from "../lib/readtime";
 import { ArticleCard } from "../components/ArticleCard";
 import { Spinner } from "../components/Spinner";
 import type { ArticleSummary } from "../lib/types";
@@ -9,12 +10,16 @@ import type { ArticleSummary } from "../lib/types";
 export function ArticlesPage() {
   const { t } = useLang();
   const [articles, setArticles] = useState<ArticleSummary[] | null>(null);
+  const [readMins, setReadMins] = useState<Record<string, number>>({});
   const [cat, setCat] = useState("");
 
   useEffect(() => {
     let alive = true;
     api.articles().then((a) => {
       if (alive) setArticles(a);
+    });
+    getReadMinutesMap().then((m) => {
+      if (alive) setReadMins(m);
     });
     return () => {
       alive = false;
@@ -72,7 +77,7 @@ export function ArticlesPage() {
           )}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {filtered.map((a) => (
-              <ArticleCard key={a.id} a={a} />
+              <ArticleCard key={a.id} a={a} readMinutes={readMins[a.slug]} />
             ))}
           </div>
         </>
