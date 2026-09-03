@@ -1,4 +1,5 @@
 import type {
+  Bilingual,
   IngredientGroup,
   Lang,
   OfficialRecipe,
@@ -7,6 +8,13 @@ import type {
   RecipeVM,
 } from "./types";
 import { communityFallbackName, officialKitchenName } from "./i18n";
+
+/** Pilih teks sesuai lang aktif dari objek bilingual {id,en} — fallback ke bahasa lain kalau
+ *  sisi aktif kosong (mis. artikel yang EN-nya belum diisi), supaya tak pernah tampil kosong. */
+export function pickBi(b: Bilingual | null | undefined, lang: Lang): string {
+  if (!b) return "";
+  return (lang === "id" ? b.id || b.en : b.en || b.id) || "";
+}
 
 /** Pecah teks bahan jadi kelompok. Baris diakhiri ":" = judul kelompok (mis. "Bumbu Halus:"),
  *  baris lain = item. Bullet "-", "*", "•" di depan item dibuang. */

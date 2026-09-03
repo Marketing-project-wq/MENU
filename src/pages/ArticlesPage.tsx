@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLang } from "../lib/store";
 import { api } from "../lib/api";
+import { pickBi } from "../lib/normalize";
 import { ArticleCard } from "../components/ArticleCard";
 import { Spinner } from "../components/Spinner";
 import type { ArticleSummary } from "../lib/types";
 
 /** Daftar artikel rekomendasi tempat makan (in-house, bukan WordPress). */
 export function ArticlesPage() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [articles, setArticles] = useState<ArticleSummary[] | null>(null);
   const [cat, setCat] = useState("");
 
@@ -21,15 +22,24 @@ export function ArticlesPage() {
     };
   }, []);
 
+  // Kategori dibaca sesuai lang aktif -- filter di-reset kalau ganti bahasa (nilai lama, mis.
+  // "Tips Sehat", tak selalu punya padanan persis di sisi EN).
   const categories = useMemo(() => {
     const s = new Set<string>();
-    (articles || []).forEach((a) => a.category && s.add(a.category));
+    (articles || []).forEach((a) => {
+      const c = pickBi(a.category, lang);
+      if (c) s.add(c);
+    });
     return Array.from(s).sort();
-  }, [articles]);
+  }, [articles, lang]);
+
+  useEffect(() => {
+    setCat("");
+  }, [lang]);
 
   const filtered = useMemo(
-    () => (articles || []).filter((a) => !cat || a.category === cat),
-    [articles, cat]
+    () => (articles || []).filter((a) => !cat || pickBi(a.category, lang) === cat),
+    [articles, cat, lang]
   );
 
   return (

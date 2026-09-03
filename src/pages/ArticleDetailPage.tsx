@@ -3,7 +3,7 @@ import { Link } from "../router";
 import { useLang, useRecipes } from "../lib/store";
 import { api } from "../lib/api";
 import { renderMarkdown } from "../lib/markdown";
-import { normalizeMember, normalizeOfficial } from "../lib/normalize";
+import { normalizeMember, normalizeOfficial, pickBi } from "../lib/normalize";
 import { CoverImage } from "../components/CoverImage";
 import { RecipeCard } from "../components/RecipeCard";
 import { Spinner } from "../components/Spinner";
@@ -75,7 +75,9 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
   }
 
   const a = state.article;
-  const html = renderMarkdown(a.body_md || "");
+  const title = pickBi(a.title, lang);
+  const category = pickBi(a.category, lang);
+  const html = renderMarkdown(pickBi(a.body_md, lang));
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-6">
@@ -83,10 +85,10 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
         {t("backToArticles")}
       </Link>
       <div className="mt-3 overflow-hidden app-card">
-        <CoverImage src={a.cover_url} alt={a.title} className="h-56 w-full sm:h-72" priority />
+        <CoverImage src={a.cover_url} alt={title} className="h-56 w-full sm:h-72" priority />
         <div className="p-5 sm:p-6">
-          {a.category && <span className="chip bg-fg/5 text-fg/60">{a.category}</span>}
-          <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-fg">{a.title}</h1>
+          {category && <span className="chip bg-fg/5 text-fg/60">{category}</span>}
+          <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-fg">{title}</h1>
           {a.author_name && (
             <p className="mt-1 text-xs text-fg/45">
               {t("articleBy")} {a.author_name}

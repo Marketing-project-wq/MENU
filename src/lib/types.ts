@@ -131,19 +131,27 @@ export interface DeliveryLink {
   sort_order?: number;
 }
 
-/** Artikel in-house (rekomendasi tempat makan) — di-host di sini, bukan WordPress. */
+/** Teks dua bahasa mentah dari server — klien pilih sesuai lang aktif (pola sama
+ *  OfficialRecipe.nm/ing/steps). Lihat pickBi() di lib/normalize.ts. */
+export interface Bilingual {
+  id: string;
+  en: string;
+}
+
+/** Artikel in-house (rekomendasi tempat makan) — di-host di sini, bukan WordPress. Bilingual
+ *  penuh (title/excerpt/category/body_md) sama seperti resep. */
 export interface ArticleSummary {
   id: string;
   slug: string;
-  title: string;
-  excerpt: string | null;
+  title: Bilingual;
+  excerpt: Bilingual | null;
   cover_url: string | null;
-  category: string | null;
+  category: Bilingual | null;
   author_name?: string | null;
   published_at: string | null;
 }
 export interface ArticleFull extends ArticleSummary {
-  body_md: string | null;
+  body_md: Bilingual | null;
 }
 /** Kunci resep yang ditautkan ke artikel (utk "mau coba masak sendiri?"). */
 export interface ArticleRecipeRef {
