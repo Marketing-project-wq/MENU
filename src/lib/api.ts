@@ -144,11 +144,17 @@ export const api = {
     }
   },
 
-  /** Daftar artikel terbit (opsional filter kategori). Gagal -> []. */
-  async articles(category?: string): Promise<ArticleSummary[]> {
+  /**
+   * Daftar artikel terbit (opsional filter kategori). Minta limit=100 (batas server) supaya
+   * SEMUA artikel tampil, bukan cuma 50 default. (>100 nanti butuh pagination offset di server.)
+   * Gagal -> [].
+   */
+  async articles(category?: string, limit = 100): Promise<ArticleSummary[]> {
     try {
-      const url = `${API_BASE}${API.ARTICLES}` + (category ? `?category=${encodeURIComponent(category)}` : "");
-      const r = await fetch(url);
+      const params = new URLSearchParams();
+      if (category) params.set("category", category);
+      params.set("limit", String(limit));
+      const r = await fetch(`${API_BASE}${API.ARTICLES}?${params.toString()}`);
       if (!r.ok) return [];
       const j = await r.json().catch(() => ({}));
       return j.articles ?? [];

@@ -4,15 +4,31 @@ import { useLang, useRecipes } from "../lib/store";
 import { useSocial } from "../lib/social";
 import { buildVMs } from "../lib/normalize";
 import { api } from "../lib/api";
+import { GRABFOOD_HOME } from "../lib/constants";
 import { ArticleCard } from "../components/ArticleCard";
 import { RecipeCard } from "../components/RecipeCard";
 import { Spinner } from "../components/Spinner";
-import type { ArticleSummary } from "../lib/types";
+import type { ArticleSummary, RecipeVM } from "../lib/types";
+
+// Beranda pakai DATA ASLI: artikel in-house + resep dari katalog (difilter dari tag diet
+// yang benar-benar ada), plus link-out jujur ke GrabFood utk "tempat makan". Tak ada data karangan.
+const HEALTHY_DIETS = ["vegetarian", "vegan", "pescatarian", "low-carb"]; // "makan sehat" = nabati/ringan
+const DIET_DIETS = ["high-protein", "keto", "low-carb"]; // "diet" = fokus makro (protein/keto)
+
+function pickByDiet(vms: RecipeVM[], diets: string[], n: number): RecipeVM[] {
+  return vms.filter((r) => r.dietTypes.some((d) => diets.includes(d))).slice(0, n);
+}
+
+/** UTM supaya trafik keluar ke GrabFood bisa diukur (tanpa mengubah tujuan / tanpa scraping). */
+function grabUrl(): string {
+  const utm = "utm_source=recepie.20fit.id&utm_medium=home_places&utm_campaign=eat_now";
+  return GRABFOOD_HOME + (GRABFOOD_HOME.includes("?") ? "&" : "?") + utm;
+}
 
 /**
- * Home (Tahap 5): tiga bagian — Artikel (utama/hero, kartu lebih besar), Resep pilihan, dan
- * Eat Now. Tiap bagian punya "lihat semua". Bukan tiga blok sama besar (artikel diberi porsi
- * lebih). Browse resep pindah ke /resep; URL detail /resep/{slug} tak berubah.
+ * Home: Artikel (utama) + Rekomendasi Makan Sehat + Rekomendasi Diet (dua-duanya dari katalog
+ * resep nyata, difilter tag diet) + Rekomendasi Tempat Makan (link-out GrabFood). Browse resep
+ * di /resep; URL detail /resep/{slug} tak berubah.
  */
 export function HomePage() {
   const { t, lang } = useLang();
@@ -35,18 +51,19 @@ export function HomePage() {
   }, []);
 
   const vms = useMemo(() => buildVMs(official, members, lang), [official, members, lang]);
-  const recipePicks = useMemo(() => vms.slice(0, 4), [vms]);
+  const healthyPicks = useMemo(() => pickByDiet(vms, HEALTHY_DIETS, 4), [vms]);
+  const dietPicks = useMemo(() => pickByDiet(vms, DIET_DIETS, 4), [vms]);
   const eatNowPicks = useMemo(
     () => vms.filter((r) => eatNowKeys.has(`${r.source}:${r.id}`)).slice(0, 4),
     [vms, eatNowKeys]
   );
-
-  useEffect(() => {
-    const list = [...recipePicks, ...eatNowPicks];
-    if (list.length) ensure(list.map((r) => ({ source: r.source, id: r.id })));
-  }, [recipePicks, eatNowPicks, ensure]);
-
   const articlePicks = articles.slice(0, 6);
+
+  // Muat jumlah heart untuk resep yang tampil (batch + dedupe di store).
+  useEffect(() => {
+    const list = [...healthyPicks, ...dietPicks, ...eatNowPicks];
+    if (list.length) ensure(list.map((r) => ({ source: r.source, id: r.id })));
+  }, [healthyPicks, dietPicks, eatNowPicks, ensure]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -69,29 +86,64 @@ export function HomePage() {
         </HomeSection>
       )}
 
-      {/* Resep pilihan */}
-      <HomeSection title={t("homeRecipesHeading")} to="/resep">
-        {loading && vms.length === 0 ? (
-          <Spinner label={t("loading")} />
-        ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {recipePicks.map((r) => (
-              <RecipeCard key={r.key} r={r} />
-            ))}
-          </div>
-        )}
-      </HomeSection>
+      {loading && vms.length === 0 ? (
+        <Spinner label={t("loading")} />
+      ) : (
+        <>
+          {/* Rekomendasi Makan Sehat — resep nabati/ringan dari katalog. */}
+          {healthyPicks.length > 0 && (
+            <HomeSection title={t("homeHealthyHeading")} to="/resep?diet=vegetarian">
+              <RecipeGrid picks={healthyPicks} />
+            </HomeSection>
+          )}
 
-      {/* Eat Now (kalau ada pemetaan) */}
-      {eatNowPicks.length > 0 && (
-        <HomeSection title={t("homeEatNowHeading")} to="/eat-now">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {eatNowPicks.map((r) => (
-              <RecipeCard key={r.key} r={r} />
-            ))}
-          </div>
-        </HomeSection>
+          {/* Rekomendasi Diet — resep tinggi protein / keto / rendah karbo. */}
+          {dietPicks.length > 0 && (
+            <HomeSection title={t("homeDietHeading")} to="/resep?diet=high-protein">
+              <RecipeGrid picks={dietPicks} />
+            </HomeSection>
+          )}
+        </>
       )}
+
+      {/* Rekomendasi Tempat Makan — link-out JUJUR ke GrabFood + resep yang sudah dipetakan admin. */}
+      <HomeSection title={t("homePlacesHeading")} to="/eat-now">
+        <div className="app-card p-4 sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="grid h-12 w-12 flex-none place-items-center rounded-xl bg-fg/5 text-2xl" aria-hidden>
+              🛵
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-bold text-fg">{t("placesGrabTitle")}</h3>
+              <p className="mt-0.5 text-xs text-fg/55">{t("placesGrabDesc")}</p>
+            </div>
+            <a
+              href={grabUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary flex-none px-4 py-2 text-sm"
+            >
+              {t("placesGrabBtn")} ↗
+            </a>
+          </div>
+
+          {eatNowPicks.length > 0 && (
+            <div className="mt-4 border-t border-fg/10 pt-4">
+              <RecipeGrid picks={eatNowPicks} />
+            </div>
+          )}
+        </div>
+      </HomeSection>
+    </div>
+  );
+}
+
+function RecipeGrid({ picks }: { picks: RecipeVM[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {picks.map((r) => (
+        <RecipeCard key={r.key} r={r} />
+      ))}
     </div>
   );
 }
