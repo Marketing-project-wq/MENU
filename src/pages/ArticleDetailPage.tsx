@@ -77,6 +77,17 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
   const a = state.article;
   const html = renderMarkdown(a.body_md || "");
 
+  // Estimasi waktu baca dari panjang teks nyata (~200 kata/menit). Buang gambar & URL agar
+  // tak menggelembungkan hitungan; minimal 1 menit. Bukan angka karangan -- dihitung dari isi.
+  const words = (a.body_md || "")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\]\([^)]*\)/g, "] ")
+    .replace(/[#*_>`~-]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+  const readMins = Math.max(1, Math.round(words / 200));
+
   return (
     <article className="mx-auto max-w-3xl px-4 py-6">
       <Link to="/artikel" className="text-sm font-semibold text-fg/50 hover:text-brand-red">
@@ -87,11 +98,14 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
         <div className="p-5 sm:p-6">
           {a.category && <span className="chip bg-fg/5 text-fg/60">{a.category}</span>}
           <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-fg">{a.title}</h1>
-          {a.author_name && (
-            <p className="mt-1 text-xs text-fg/45">
-              {t("articleBy")} {a.author_name}
-            </p>
-          )}
+          <p className="mt-1 text-xs text-fg/45">
+            {a.author_name && (
+              <>
+                {t("articleBy")} {a.author_name} <span aria-hidden>·</span>{" "}
+              </>
+            )}
+            ≈ {readMins} {t("readTime")}
+          </p>
           {/* body_md dirender lewat renderMarkdown yang meng-escape HTML dulu (aman). */}
           <div ref={bodyRef} className="mt-4 text-sm" dangerouslySetInnerHTML={{ __html: html }} />
 

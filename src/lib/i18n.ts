@@ -131,6 +131,7 @@ const STR: Dict = {
   recipeRelatedArticles: { id: "Mau makan di luar?", en: "Prefer to eat out?" },
   backToArticles: { id: "← Semua artikel", en: "← All articles" },
   seeAll: { id: "Lihat semua", en: "See all" },
+  readTime: { id: "menit baca", en: "min read" },
   // Home (Tahap 5)
   homeNav: { id: "Beranda", en: "Home" },
   homeHeroTitle: { id: "Makan sehat, gampang.", en: "Healthy eating, made easy." },
@@ -153,9 +154,9 @@ const STR: Dict = {
   },
   placesGrabBtn: { id: "Buka GrabFood", en: "Open GrabFood" },
   placesEatNowLink: { id: "Lihat resep yang bisa dipesan", en: "See recipes you can order" },
-  // Atribusi pembuat resep -- "20FIT Kitchen" = tim resmi; komunitas pakai nama tampilan
-  // yang diisi kontributor sendiri (BUKAN email/nama akun), fallback kalau kosong.
-  officialKitchenName: { id: "20FIT Kitchen", en: "20FIT Kitchen" },
+  // Atribusi pembuat resep -- resep resmi 20FIT diberi label "20FIT" saja (permintaan owner);
+  // komunitas pakai nama tampilan yang diisi kontributor sendiri (BUKAN email/nama akun).
+  officialKitchenName: { id: "20FIT", en: "20FIT" },
   communityFallbackName: { id: "Kontributor Komunitas", en: "Community Contributor" },
   byPrefix: { id: "oleh", en: "by" },
   displayNameLabel: { id: "Nama tampilan (publik)", en: "Display name (public)" },
