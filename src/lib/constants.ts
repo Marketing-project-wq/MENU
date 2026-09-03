@@ -16,6 +16,12 @@ export const LOGO_DARK = "https://media.20fit.id/wp-content/uploads/2026/07/Copy
 // Pusat akun + API = my.20fit.id
 export const MY20FIT = "https://my.20fit.id";
 
+// "Tempat makan" beranda = link-out JUJUR ke GrabFood (situs mereka). BUKAN scraping,
+// BUKAN daftar tempat palsu -- kami hanya mengarahkan ke GrabFood; daftar resto asli
+// muncul di sisi GrabFood setelah user memasukkan alamat. Grab Food tak punya API publik
+// terbuka, jadi hanya redirect yang legal tanpa partnership.
+export const GRABFOOD_HOME = "https://food.grab.com/id/id/";
+
 // Produk/layanan 20FIT lain yang ditautkan di footer (dikonfirmasi pemilik produk).
 export const OTHER_20FIT_PRODUCTS = {
   CLINIC: "https://clinic.20fit.id",

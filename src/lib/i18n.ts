@@ -120,10 +120,10 @@ const STR: Dict = {
   eatNowOther: { id: "Lainnya", en: "Other" },
   // Artikel (Tahap 6)
   articlesNav: { id: "Artikel", en: "Articles" },
-  articlesTitle: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
+  articlesTitle: { id: "Artikel & Tips Sehat", en: "Healthy Articles & Tips" },
   articlesSub: {
-    id: "Ulasan & rekomendasi tempat makan pilihan 20FIT.",
-    en: "20FIT's picks & reviews of places to eat.",
+    id: "Panduan makan sehat, gizi, diet, dan rekomendasi dari 20FIT.",
+    en: "Healthy eating, nutrition, diet guides, and picks from 20FIT.",
   },
   articlesEmpty: { id: "Belum ada artikel.", en: "No articles yet." },
   articleBy: { id: "oleh", en: "by" },
@@ -138,10 +138,21 @@ const STR: Dict = {
     id: "Resep, rekomendasi tempat makan, dan pesan langsung — dari 20FIT.",
     en: "Recipes, place recommendations, and instant ordering — from 20FIT.",
   },
-  homeArticlesHeading: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
+  homeArticlesHeading: { id: "Artikel & Tips", en: "Articles & Tips" },
+  homeHealthyHeading: { id: "Rekomendasi Makan Sehat", en: "Healthy Picks" },
+  homeDietHeading: { id: "Rekomendasi Diet", en: "Diet Picks" },
   homeRecipesHeading: { id: "Resep Pilihan", en: "Featured Recipes" },
+  homePlacesHeading: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
   homeEatNowHeading: { id: "Bisa Langsung Dipesan", en: "Order Right Now" },
   browseAllRecipes: { id: "Jelajah semua resep", en: "Browse all recipes" },
+  // Beranda: tempat makan via link-out GrabFood (jujur -- tanpa scraping / tanpa daftar tempat palsu).
+  placesGrabTitle: { id: "Pesan dari luar via GrabFood", en: "Order out via GrabFood" },
+  placesGrabDesc: {
+    id: "Cari makanan di sekitarmu lewat GrabFood. Kamu akan diarahkan ke situs GrabFood (pihak ketiga).",
+    en: "Find food near you on GrabFood. You'll be taken to GrabFood's site (third party).",
+  },
+  placesGrabBtn: { id: "Buka GrabFood", en: "Open GrabFood" },
+  placesEatNowLink: { id: "Lihat resep yang bisa dipesan", en: "See recipes you can order" },
   // Atribusi pembuat resep -- "20FIT Kitchen" = tim resmi; komunitas pakai nama tampilan
   // yang diisi kontributor sendiri (BUKAN email/nama akun), fallback kalau kosong.
   officialKitchenName: { id: "20FIT Kitchen", en: "20FIT Kitchen" },
