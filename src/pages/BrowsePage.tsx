@@ -44,8 +44,11 @@ export function BrowsePage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // Filter aktif -> URL query param (shareable, bertahan saat refresh).
+  // PENTING: halaman Jelajah ada di "/resep" (sejak Tahap 5 "/" jadi Home). Dulu sync ini
+  // menulis "/" sehingga membuka /resep langsung terlempar balik ke Home (Home cuma tampil
+  // 4 resep) -- itulah bug "resep tinggal 4 + jelajah tak bisa diklik". Harus "/resep".
   useEffect(() => {
-    navigate("/" + filtersToQuery(f), { replace: true });
+    navigate("/resep" + filtersToQuery(f), { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [f.q, f.category, f.diet]);
 
