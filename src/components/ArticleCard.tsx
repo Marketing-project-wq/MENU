@@ -3,8 +3,9 @@ import { useLang } from "../lib/store";
 import { CoverImage } from "./CoverImage";
 import type { ArticleSummary } from "../lib/types";
 
-export function ArticleCard({ a }: { a: ArticleSummary }) {
+export function ArticleCard({ a, readMinutes }: { a: ArticleSummary; readMinutes?: number | null }) {
   const { t } = useLang();
+  const mins = readMinutes ?? a.read_minutes ?? null;
   return (
     <Link
       to={`/artikel/${encodeURIComponent(a.slug)}`}
@@ -14,6 +15,11 @@ export function ArticleCard({ a }: { a: ArticleSummary }) {
         <CoverImage src={a.cover_url} alt={a.title} className="h-full w-full" emoji="📝" />
         {a.category && (
           <span className="chip absolute left-2 top-2 bg-black/45 text-white backdrop-blur">{a.category}</span>
+        )}
+        {mins != null && (
+          <span className="absolute right-2 top-2 rounded-full bg-black/45 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur">
+            {mins} {t("readTime")}
+          </span>
         )}
       </div>
       <div className="p-3">

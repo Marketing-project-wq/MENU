@@ -1,6 +1,7 @@
 import type {
   IngredientGroup,
   Lang,
+  Nutrients,
   OfficialRecipe,
   PublishedContribution,
   RecipeStep,
@@ -83,6 +84,36 @@ export function parseStepsText(text: string): RecipeStep[] {
     .filter((s) => s.t.length > 0);
 }
 
+const numOrUndef = (v: unknown): number | undefined =>
+  typeof v === "number" && Number.isFinite(v) ? v : undefined;
+
+/** Bangun makro (+ mikro opsional) dari angka mentah. Mikro hanya disertakan bila numerik. */
+function buildMacros(
+  p: number,
+  c: number,
+  f: number,
+  micro: { fiber?: unknown; sugar?: unknown; sodium?: unknown }
+): Nutrients {
+  const out: Nutrients = { p, c, f };
+  const fiber = numOrUndef(micro.fiber);
+  const sugar = numOrUndef(micro.sugar);
+  const sodium = numOrUndef(micro.sodium);
+  if (fiber != null) out.fiber = fiber;
+  if (sugar != null) out.sugar = sugar;
+  if (sodium != null) out.sodium = sodium;
+  return out;
+}
+
+/** Makro member dari kolom jsonb (opsional & mungkin parsial). Null bila makro utama tak ada. */
+function macrosFromJson(j: Partial<Nutrients> | null | undefined): Nutrients | null {
+  if (!j || typeof j !== "object") return null;
+  const p = numOrUndef(j.p);
+  const c = numOrUndef(j.c);
+  const f = numOrUndef(j.f);
+  if (p == null && c == null && f == null) return null;
+  return buildMacros(p ?? 0, c ?? 0, f ?? 0, j);
+}
+
 /** Ambil langkah terstruktur dari steps_json (member). Balik null kalau kosong/invalid. */
 function stepsFromJson(j: RecipeStep[] | null | undefined): RecipeStep[] | null {
   if (!Array.isArray(j)) return null;
@@ -102,7 +133,7 @@ export function normalizeOfficial(r: OfficialRecipe, lang: Lang): RecipeVM {
     slug: slugify(r.nm?.[lang] || r.nm?.en || r.id), // default; disempurnakan (unik) oleh buildVMs()
     name: r.nm?.[lang] || r.nm?.en || r.id,
     kcal: typeof r.kcal === "number" ? r.kcal : null,
-    macros: { p: r.p ?? 0, c: r.c ?? 0, f: r.f ?? 0 },
+    macros: buildMacros(r.p ?? 0, r.c ?? 0, r.f ?? 0, r),
     dietTypes: Array.isArray(r.types) ? r.types : [],
     category: r.cat || null,
     ingredients,
@@ -138,7 +169,7 @@ export function normalizeMember(m: PublishedContribution, lang: Lang): RecipeVM 
     slug: slugify(m.name), // default; disempurnakan (unik) oleh buildVMs()
     name: m.name,
     kcal: typeof m.est_kcal === "number" ? m.est_kcal : null,
-    macros: null, // member hanya kasih perkiraan kalori, bukan makro lengkap
+    macros: macrosFromJson(m.macros), // member: dari kolom jsonb bila server mengirimnya (else null)
     dietTypes: m.diet_type ? [m.diet_type] : [],
     category: null,
     ingredients,
