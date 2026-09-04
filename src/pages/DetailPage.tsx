@@ -10,6 +10,7 @@ import { IngredientGroups } from "../components/IngredientGroups";
 import { StepList } from "../components/StepList";
 import { CatererList } from "../components/CatererList";
 import { EatNowLinks } from "../components/EatNowLinks";
+import { EatNowButton } from "../components/EatNowButton";
 import { RelatedArticles } from "../components/RelatedArticles";
 import { RecipeNotFound } from "../components/RecipeNotFound";
 import { api } from "../lib/api";
@@ -122,6 +123,11 @@ export function DetailPage({ slug }: { slug: string }) {
 
           <div className="mt-4">
             <ActionBar source={recipe.source} id={recipe.id} name={recipe.name} />
+          </div>
+
+          {/* Pesan langsung: tombol Eat Now -> kategori GrabFood yang relevan (link, bukan scraping). */}
+          <div className="mt-3">
+            <EatNowButton r={recipe} size="md" />
           </div>
 
           {/* Perkiraan gizi — SELALU ditandai perkiraan; sumber dibedakan. */}

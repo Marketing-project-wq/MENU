@@ -108,8 +108,8 @@ const STR: Dict = {
   // Halaman Eat Now (Tahap 4)
   eatNowPageTitle: { id: "Pesan Sekarang", en: "Eat Now" },
   eatNowPageSub: {
-    id: "Resep yang bisa langsung dipesan lewat katering mitra atau layanan pesan-antar.",
-    en: "Recipes you can order right now via partner caterers or delivery services.",
+    id: "Semua menu 20FIT — tekan \"Eat Now\" untuk cari yang mirip di GrabFood.",
+    en: "All 20FIT menus — tap \"Eat Now\" to find something similar on GrabFood.",
   },
   eatNowEmpty: {
     id: "Belum ada resep yang bisa dipesan langsung. Nantikan ya!",
@@ -118,6 +118,11 @@ const STR: Dict = {
   eatNowSearchPh: { id: "Cari makanan…", en: "Search food…" },
   eatNowAllCat: { id: "Semua kategori", en: "All categories" },
   eatNowOther: { id: "Lainnya", en: "Other" },
+  eatNowBtn: { id: "Eat Now", en: "Eat Now" },
+  eatNowGrabHint: {
+    id: "Buka kategori GrabFood yang relevan — kamu diarahkan ke situs Grab (pihak ketiga).",
+    en: "Opens the related GrabFood category — you'll be taken to Grab's site (third party).",
+  },
   // Artikel (Tahap 6)
   articlesNav: { id: "Artikel", en: "Articles" },
   articlesTitle: { id: "Artikel & Tips Sehat", en: "Healthy Articles & Tips" },
@@ -146,6 +151,13 @@ const STR: Dict = {
   homePlacesHeading: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
   homeEatNowHeading: { id: "Bisa Langsung Dipesan", en: "Order Right Now" },
   browseAllRecipes: { id: "Jelajah semua resep", en: "Browse all recipes" },
+  // Beranda: judul + deskripsi tiap section (biar jelas maksudnya).
+  foodTypesHeading: { id: "Jenis Makanan", en: "Food Categories" },
+  foodTypesSub: { id: "Pilih kategori, langsung lihat menunya.", en: "Pick a category to see its menu." },
+  homeArticlesSub: { id: "Panduan makan sehat, gizi & diet.", en: "Healthy eating, nutrition & diet guides." },
+  homeHealthySub: { id: "Resep nabati & ringan dari katalog resep.", en: "Plant-based & lighter recipes from the catalog." },
+  homeDietSub: { id: "Tinggi protein, keto, rendah karbo.", en: "High-protein, keto, low-carb." },
+  homePlacesSub: { id: "Mau pesan dari luar? Cari di GrabFood.", en: "Prefer to order out? Find it on GrabFood." },
   // Beranda: tempat makan via link-out GrabFood (jujur -- tanpa scraping / tanpa daftar tempat palsu).
   placesGrabTitle: { id: "Pesan dari luar via GrabFood", en: "Order out via GrabFood" },
   placesGrabDesc: {
