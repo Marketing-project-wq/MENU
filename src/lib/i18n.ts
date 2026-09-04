@@ -111,8 +111,8 @@ const STR: Dict = {
   // Halaman Eat Now (Tahap 4)
   eatNowPageTitle: { id: "Pesan Sekarang", en: "Eat Now" },
   eatNowPageSub: {
-    id: "Resep yang bisa langsung dipesan lewat katering mitra atau layanan pesan-antar.",
-    en: "Recipes you can order right now via partner caterers or delivery services.",
+    id: "Semua menu 20FIT — tekan \"Eat Now\" untuk cari yang mirip di GrabFood.",
+    en: "All 20FIT menus — tap \"Eat Now\" to find something similar on GrabFood.",
   },
   eatNowEmpty: {
     id: "Belum ada resep yang bisa dipesan langsung. Nantikan ya!",
@@ -121,6 +121,11 @@ const STR: Dict = {
   eatNowSearchPh: { id: "Cari makanan…", en: "Search food…" },
   eatNowAllCat: { id: "Semua kategori", en: "All categories" },
   eatNowOther: { id: "Lainnya", en: "Other" },
+  eatNowBtn: { id: "Eat Now", en: "Eat Now" },
+  eatNowGrabHint: {
+    id: "Buka kategori GrabFood yang relevan — kamu diarahkan ke situs Grab (pihak ketiga).",
+    en: "Opens the related GrabFood category — you'll be taken to Grab's site (third party).",
+  },
   // Artikel (Tahap 6)
   articlesNav: { id: "Artikel", en: "Articles" },
   articlesTitle: { id: "Artikel & Tips Sehat", en: "Healthy Articles & Tips" },
@@ -149,6 +154,26 @@ const STR: Dict = {
   homeRecipesHeading: { id: "Resep Pilihan", en: "Featured Recipes" },
   homeFavoritesHeading: { id: "Resep Favorit", en: "Favorite Recipes" },
   homeFavoritesSub: { id: "Pilihan resep populer dari dapur 20FIT.", en: "Popular picks from the 20FIT kitchen." },
+  homeFoodTypesSub: {
+    id: "Pilih tipe makanan untuk lihat resep di kategori itu.",
+    en: "Pick a food type to see recipes in that category.",
+  },
+  homeTopArticlesSub: {
+    id: "Tips gizi, diet, dan makan sehat — terbaru dari redaksi 20FIT.",
+    en: "Nutrition, diet, and healthy-eating tips — fresh from the 20FIT team.",
+  },
+  homeHealthySub: {
+    id: "Resep nabati & ringan untuk makan lebih sehat tiap hari.",
+    en: "Plant-based & light recipes to eat healthier every day.",
+  },
+  homeDietSub: {
+    id: "Resep tinggi protein, keto, dan rendah karbo untuk target dietmu.",
+    en: "High-protein, keto, and low-carb recipes for your diet goals.",
+  },
+  homePlacesSub: {
+    id: "Belum sempat masak? Pesan makanan mirip lewat GrabFood.",
+    en: "No time to cook? Order something similar via GrabFood.",
+  },
   homePlacesHeading: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
   homeEatNowHeading: { id: "Bisa Langsung Dipesan", en: "Order Right Now" },
   homeFoodTypesHeading: { id: "Pilih tipe makanan", en: "Browse by food type" },

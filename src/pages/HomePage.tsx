@@ -96,14 +96,14 @@ export function HomePage() {
 
       {/* Resep Favorit -- carousel bisa digeser horizontal. */}
       {favoritePicks.length > 0 && (
-        <HomeSection title={t("homeFavoritesHeading")} to="/resep">
+        <HomeSection title={t("homeFavoritesHeading")} desc={t("homeFavoritesSub")} to="/resep">
           <RecipeCarousel picks={favoritePicks} />
         </HomeSection>
       )}
 
       {/* Top 5 Artikel untuk dibaca hari ini -- kartu tampilkan "X min read" di depan. */}
       {articlePicks.length > 0 && (
-        <HomeSection title={t("homeTopArticlesHeading")} to="/artikel">
+        <HomeSection title={t("homeTopArticlesHeading")} desc={t("homeTopArticlesSub")} to="/artikel">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {articlePicks.map((a) => (
               <ArticleCard key={a.id} a={a} readMinutes={readMins[a.slug]} />
@@ -118,14 +118,14 @@ export function HomePage() {
         <>
           {/* Rekomendasi Makan Sehat — resep nabati/ringan dari katalog. */}
           {healthyPicks.length > 0 && (
-            <HomeSection title={t("homeHealthyHeading")} to="/resep?diet=vegetarian">
+            <HomeSection title={t("homeHealthyHeading")} desc={t("homeHealthySub")} to="/resep?diet=vegetarian">
               <RecipeGrid picks={healthyPicks} />
             </HomeSection>
           )}
 
           {/* Rekomendasi Diet — resep tinggi protein / keto / rendah karbo. */}
           {dietPicks.length > 0 && (
-            <HomeSection title={t("homeDietHeading")} to="/resep?diet=high-protein">
+            <HomeSection title={t("homeDietHeading")} desc={t("homeDietSub")} to="/resep?diet=high-protein">
               <RecipeGrid picks={dietPicks} />
             </HomeSection>
           )}
@@ -133,7 +133,7 @@ export function HomePage() {
       )}
 
       {/* Rekomendasi Tempat Makan — link-out JUJUR ke GrabFood + resep yang sudah dipetakan admin. */}
-      <HomeSection title={t("homePlacesHeading")} to="/eat-now">
+      <HomeSection title={t("homePlacesHeading")} desc={t("homePlacesSub")} to="/eat-now">
         <div className="app-card p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="grid h-12 w-12 flex-none place-items-center rounded-xl bg-fg/5 text-2xl" aria-hidden>
@@ -174,13 +174,26 @@ function RecipeGrid({ picks }: { picks: RecipeVM[] }) {
   );
 }
 
-function HomeSection({ title, to, children }: { title: string; to: string; children: ReactNode }) {
+function HomeSection({
+  title,
+  desc,
+  to,
+  children,
+}: {
+  title: string;
+  desc?: string;
+  to: string;
+  children: ReactNode;
+}) {
   const { t } = useLang();
   return (
     <section className="mb-8">
-      <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-lg font-extrabold tracking-tight text-fg">{title}</h2>
-        <Link to={to} className="text-sm font-semibold text-brand-red">
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-lg font-extrabold tracking-tight text-fg">{title}</h2>
+          {desc && <p className="mt-0.5 text-xs text-fg/55">{desc}</p>}
+        </div>
+        <Link to={to} className="flex-none text-sm font-semibold text-brand-red">
           {t("seeAll")} →
         </Link>
       </div>

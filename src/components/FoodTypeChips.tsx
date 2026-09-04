@@ -36,8 +36,9 @@ export function FoodTypeChips({ categories }: { categories: string[] }) {
   if (ordered.length === 0) return null;
 
   return (
-    <section className="mb-6" aria-label={t("homeFoodTypesHeading")}>
-      <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-fg/60">{t("homeFoodTypesHeading")}</h2>
+    <section className="mb-8" aria-label={t("homeFoodTypesHeading")}>
+      <h2 className="text-lg font-extrabold tracking-tight text-fg">{t("homeFoodTypesHeading")}</h2>
+      <p className="mt-0.5 mb-3 text-xs text-fg/55">{t("homeFoodTypesSub")}</p>
       {/* Bisa digeser horizontal di HP; membungkus di layar lebar. Tak menambah tinggi berlebih. */}
       <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:overflow-visible">
         {ordered.map((cat) => (
