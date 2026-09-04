@@ -70,23 +70,6 @@ export function SubmitPage() {
 
   if (isLoading) return null;
 
-  if (!isAuthenticated) {
-    return (
-      <div className="mx-auto max-w-md px-4 py-16 text-center">
-        <RewardNote lang={lang} reward={reward} mine={null} />
-        <p className="text-sm text-fg/60">{t("loginToSubmit")}</p>
-        <div className="mt-4 flex justify-center gap-2">
-          <button className="btn-primary" onClick={() => login("in")}>
-            {t("login")}
-          </button>
-          <button className="btn-ghost" onClick={() => login("up")}>
-            {t("signUp")}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   if (doneId) {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
@@ -99,10 +82,23 @@ export function SubmitPage() {
             ? "Resepmu masuk antrian review admin. Belum tayang sampai disetujui."
             : "Your recipe is in the admin review queue. It won't be public until approved."}
         </p>
+        {!isAuthenticated && (
+          <p className="mx-auto mt-3 max-w-sm text-xs text-fg/50">
+            {lang === "id"
+              ? "Kamu mengirim tanpa login, jadi statusnya tak bisa dipantau dari sini. Login lain kali supaya bisa lihat progres & dapat kredit scan gratis."
+              : "You submitted without logging in, so its status can't be tracked here. Log in next time to follow progress & earn free scanner credits."}
+          </p>
+        )}
         <div className="mt-5 flex justify-center gap-2">
-          <Link to="/submission-saya" className="btn-primary">
-            {t("mySubmissions")}
-          </Link>
+          {isAuthenticated ? (
+            <Link to="/submission-saya" className="btn-primary">
+              {t("mySubmissions")}
+            </Link>
+          ) : (
+            <Link to="/resep" className="btn-primary">
+              {lang === "id" ? "Jelajah resep" : "Browse recipes"}
+            </Link>
+          )}
           <button className="btn-ghost" onClick={() => setDoneId(null)}>
             {lang === "id" ? "Kirim lagi" : "Submit another"}
           </button>
@@ -117,6 +113,27 @@ export function SubmitPage() {
       <div className="mt-3">
         <RewardNote lang={lang} reward={reward} mine={mine} />
       </div>
+
+      {/* Kirim tanpa login DIBOLEHKAN. Banner ini menjelaskan bahwa resep tetap ditinjau admin,
+          dan mengajak login (OPSIONAL) demi kredit scan + pantau status. Bukan gerbang wajib. */}
+      {!isAuthenticated && (
+        <div className="mb-3 rounded-xl border border-fg/10 bg-fg/[0.03] p-3 text-xs text-fg/70">
+          <p>
+            {lang === "id"
+              ? "Kamu belum login — nggak masalah, resep tetap bisa dikirim dan akan ditinjau admin dulu sebelum tayang. Login (opsional) untuk dapat kredit scan gratis & memantau status resepmu."
+              : "You're not logged in — that's fine, you can still submit and an admin will review it before it goes live. Log in (optional) to earn free scanner credits & track your recipe's status."}
+          </p>
+          <div className="mt-2 flex gap-2">
+            <button className="btn-primary px-3 py-1.5 text-xs" onClick={() => login("in")}>
+              {t("login")}
+            </button>
+            <button className="btn-ghost px-3 py-1.5 text-xs" onClick={() => login("up")}>
+              {t("signUp")}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
         {t("reviewNote")}
       </div>
