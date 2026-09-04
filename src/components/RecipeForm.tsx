@@ -103,6 +103,9 @@ export function RecipeForm({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  // Honeypot anti-bot: input tersembunyi (di luar layar) yang manusia TAK PERNAH isi. Bot yang
+  // auto-isi semua field akan mengisinya -> server tolak diam-diam. TIDAK diautosave ke draf.
+  const [hp, setHp] = useState("");
 
   const L = (id: string, en: string) => (lang === "id" ? id : en);
   const set = (patch: Partial<RecipeFormValues>) => setV((s) => ({ ...s, ...patch }));
@@ -224,6 +227,7 @@ export function RecipeForm({
         equipment: v.equipment.trim() || null,
         prep_note: v.prep_note.trim() || null,
         photo_url: v.photo_url,
+        website: hp, // honeypot: manusia -> "", bot -> terisi
       });
       if (draftKey) {
         try {
@@ -241,6 +245,22 @@ export function RecipeForm({
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      {/* Honeypot: di luar layar + aria-hidden + tabIndex -1 -> tak terlihat/terjangkau manusia,
+          tapi ADA di DOM sehingga bot pengisi-otomatis mengisinya. Bukan display:none (sebagian
+          bot melewati field display:none). Jangan diisi. */}
+      <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}>
+        <label htmlFor="rf-website">Website</label>
+        <input
+          id="rf-website"
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={hp}
+          onChange={(e) => setHp(e.target.value)}
+        />
+      </div>
+
       {draftRestored && (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-red/20 bg-brand-red/5 p-3 text-xs text-fg/70">
           <span>{L("Draf sebelumnya dipulihkan.", "Your earlier draft was restored.")}</span>

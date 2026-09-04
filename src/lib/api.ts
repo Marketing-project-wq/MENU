@@ -39,6 +39,7 @@ export interface SubmitBody {
   cook_minutes?: number | null;
   equipment?: string | null;
   prep_note?: string | null;
+  website?: string; // honeypot anti-bot: DIBIARKAN kosong oleh manusia; terisi -> ditolak diam-diam server
 }
 
 /** Kunci sosial gabungan "source:menu_id". */
@@ -82,10 +83,13 @@ export const api = {
     }
   },
 
-  /** Submit resep baru (butuh login). */
+  /** Submit resep baru. BOLEH tanpa login (kontributor anonim) -- server tetap taruh di antrean
+   *  moderasi admin. `credentials: "include"` wajib supaya cookie sesi anonim (eco_anon) untuk
+   *  batas harian ikut terkirim/terbaca lintas-origin. Kalau login, token tetap ikut. */
   async submit(body: SubmitBody): Promise<{ ok: boolean; id?: string }> {
     const r = await fetch(`${API_BASE}${API.SUBMIT}`, {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
       body: JSON.stringify(body),
     });
