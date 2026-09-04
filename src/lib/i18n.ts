@@ -154,6 +154,26 @@ const STR: Dict = {
   homeRecipesHeading: { id: "Resep Pilihan", en: "Featured Recipes" },
   homeFavoritesHeading: { id: "Resep Favorit", en: "Favorite Recipes" },
   homeFavoritesSub: { id: "Pilihan resep populer dari dapur 20FIT.", en: "Popular picks from the 20FIT kitchen." },
+  homeFoodTypesSub: {
+    id: "Pilih tipe makanan untuk lihat resep di kategori itu.",
+    en: "Pick a food type to see recipes in that category.",
+  },
+  homeTopArticlesSub: {
+    id: "Tips gizi, diet, dan makan sehat — terbaru dari redaksi 20FIT.",
+    en: "Nutrition, diet, and healthy-eating tips — fresh from the 20FIT team.",
+  },
+  homeHealthySub: {
+    id: "Resep nabati & ringan untuk makan lebih sehat tiap hari.",
+    en: "Plant-based & light recipes to eat healthier every day.",
+  },
+  homeDietSub: {
+    id: "Resep tinggi protein, keto, dan rendah karbo untuk target dietmu.",
+    en: "High-protein, keto, and low-carb recipes for your diet goals.",
+  },
+  homePlacesSub: {
+    id: "Belum sempat masak? Pesan makanan mirip lewat GrabFood.",
+    en: "No time to cook? Order something similar via GrabFood.",
+  },
   homePlacesHeading: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
   homeEatNowHeading: { id: "Bisa Langsung Dipesan", en: "Order Right Now" },
   homeFoodTypesHeading: { id: "Pilih tipe makanan", en: "Browse by food type" },
