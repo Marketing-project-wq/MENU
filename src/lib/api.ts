@@ -264,7 +264,7 @@ export const api = {
   /**
    * Toggle heart pada resep. TIDAK butuh login -- guest diidentifikasi lewat cookie httpOnly
    * (eco_anon) di server, makanya wajib `credentials: "include"` biar cookie lintas-origin
-   * (menu.20fit.id -> my.20fit.id) ikut terkirim/tersimpan.
+   * (recipe.20fit.id -> my.20fit.id) ikut terkirim/tersimpan.
    */
   async react(source: Source, id: string): Promise<{ reacted: boolean; count: number }> {
     const r = await fetch(`${API_BASE}${API.REACT(id)}`, {

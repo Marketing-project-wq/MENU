@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Katalog resep sehat 20FIT — jelajahi resep resmi & kontribusi member. Submit resepmu, direview admin sebelum tayang." />
+    <!-- Domain resmi = recipe.20fit.id. Redirect PERMANEN dari domain lama supaya tautan lama &
+         indeks pencarian tidak mati -- "menu.20fit.id" (tak pernah punya DNS, cuma dokumen lama)
+         dan "recepie.20fit.id" (salah eja, domain produksi yang SEMPAT live -- lihat js/auth.js
+         MENU_ORIGIN di repo PROFILE20FIT). Ini redirect sisi-klien (SPA statis, tanpa server
+         custom) -- kalau memungkinkan pasang JUGA 301 asli di layer Cloudflare/DNS untuk transfer
+         SEO yang lebih kuat, ini cuma jaring pengaman. Taruh SEBELUM apa pun lain di <head>.
+         Cek path/query/hash ikut terbawa. -->
+    <script>
+      (function () {
+        var OLD_HOSTS = ["menu.20fit.id", "recepie.20fit.id"];
+        if (OLD_HOSTS.indexOf(location.hostname) !== -1) {
+          location.replace("https://recipe.20fit.id" + location.pathname + location.search + location.hash);
+        }
+      })();
+    </script>
     <!-- Terapkan tema sebelum paint (hindari kedip) -->
     <script>
       try {
