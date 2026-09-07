@@ -1,23 +1,27 @@
 import { useState } from "react";
+import { Icon, type IconName } from "./Icon";
 
 /**
  * Cover/ilustrasi artikel dengan JARING PENGAMAN.
  *
- * Foto artikel bersumber dari stok pihak ketiga (URL eksternal). Kalau sebuah URL gagal muat,
- * jangan tampilkan ikon "gambar rusak" — ganti dengan tile ber-brand 20FIT (gradient + ikon).
- * Ini membuat halaman tetap rapi walau ada foto yang hilang/berubah di sumbernya.
+ * Foto artikel bersumber dari URL eksternal. Kalau sebuah URL gagal muat, jangan tampilkan ikon
+ * "gambar rusak" bawaan browser — ganti dengan tile ber-brand 20FIT (gradient + ikon garis
+ * minimalis, bukan emoji). Ini membuat halaman tetap rapi walau ada foto yang hilang/berubah di
+ * sumbernya. `icon` boleh diisi ikon kategori supaya placeholder tetap relevan dengan isinya.
  */
 export function CoverImage({
   src,
   alt,
   className = "",
-  emoji = "🍽️",
+  icon = "note",
+  iconSize = 40,
   priority = false,
 }: {
   src?: string | null;
   alt: string;
   className?: string;
-  emoji?: string;
+  icon?: IconName;
+  iconSize?: number;
   priority?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
@@ -27,11 +31,11 @@ export function CoverImage({
       <div
         className={
           className +
-          " grid place-items-center bg-gradient-to-br from-brand-red/20 via-amber-100/50 to-brand-red/10 text-5xl dark:via-amber-500/10"
+          " grid place-items-center bg-gradient-to-br from-brand-red/15 via-amber-100/40 to-brand-red/5 text-brand-red/50 dark:via-amber-500/10"
         }
         aria-hidden
       >
-        {emoji}
+        <Icon name={icon} size={iconSize} strokeWidth={1.5} />
       </div>
     );
   }

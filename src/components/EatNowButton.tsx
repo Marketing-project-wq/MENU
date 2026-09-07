@@ -1,6 +1,7 @@
 import { grabUrlForCategory } from "../lib/grab";
 import { useLang } from "../lib/store";
 import { api } from "../lib/api";
+import { Icon } from "./Icon";
 import type { RecipeVM } from "../lib/types";
 
 /**
@@ -31,9 +32,11 @@ export function EatNowButton({
         void api.trackDeliveryClick(r.source, r.id, "grabfood");
         window.open(grabUrlForCategory(r.category, r.source + ":" + r.id), "_blank", "noopener,noreferrer");
       }}
-      className={"btn-primary inline-flex items-center justify-center gap-1 " + pad + " " + className}
+      className={"btn-primary inline-flex items-center justify-center gap-1.5 " + pad + " " + className}
     >
-      🛵 {t("eatNowBtn")} ↗
+      <Icon name="scooter" size={size === "md" ? 17 : 15} />
+      {t("eatNowBtn")}
+      <Icon name="external" size={size === "md" ? 15 : 13} />
     </button>
   );
 }

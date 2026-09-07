@@ -4,6 +4,7 @@ import { useAuth } from "../lib/auth";
 import { useLang } from "../lib/store";
 import { api } from "../lib/api";
 import { RecipeForm, emptyValues } from "../components/RecipeForm";
+import { Icon } from "../components/Icon";
 import type { MineResponse, RewardConfig } from "../lib/types";
 
 /** Catatan ajakan sumbang-resep + food scanner. Angka SELALU dari server (reward-config /
@@ -73,7 +74,9 @@ export function SubmitPage() {
   if (doneId) {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
-        <div className="text-4xl">✅</div>
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-600/10 text-emerald-600 dark:text-emerald-400">
+          <Icon name="check" size={30} strokeWidth={2.5} />
+        </div>
         <h2 className="mt-3 text-lg font-bold text-fg">
           {lang === "id" ? "Resep terkirim!" : "Recipe submitted!"}
         </h2>

@@ -3,6 +3,7 @@ import { DIET_TYPES, RULES } from "../lib/constants";
 import { api, type SubmitBody } from "../lib/api";
 import { useLang } from "../lib/store";
 import { dietLabel } from "../lib/i18n";
+import { Icon } from "./Icon";
 import type { RecipeStep } from "../lib/types";
 
 // Kata-kata yang menandakan KLAIM KESEHATAN berisiko. Peringatan lembut di client —
@@ -406,7 +407,7 @@ export function RecipeForm({
                     disabled={i === 0}
                     aria-label={t("moveUp")}
                   >
-                    ↑
+                    <Icon name="arrowUp" size={14} />
                   </button>
                   <button
                     type="button"
@@ -415,7 +416,7 @@ export function RecipeForm({
                     disabled={i === v.steps.length - 1}
                     aria-label={t("moveDown")}
                   >
-                    ↓
+                    <Icon name="arrowDown" size={14} />
                   </button>
                   <button
                     type="button"

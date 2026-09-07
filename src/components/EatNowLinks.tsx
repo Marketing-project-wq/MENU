@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { useLang } from "../lib/store";
+import { Icon } from "./Icon";
 import type { DeliveryLink, Source } from "../lib/types";
 
 function providerName(p: string): string {
@@ -57,10 +58,10 @@ export function EatNowLinks({ source, id }: { source: Source; id: string }) {
             <li key={link.id} className="rounded-xl bg-card p-3">
               <div className="flex items-center gap-3">
                 <div
-                  className="grid h-11 w-11 flex-none place-items-center rounded-lg bg-fg/5 text-xl"
+                  className="grid h-11 w-11 flex-none place-items-center rounded-lg bg-fg/5 text-fg/55"
                   aria-hidden
                 >
-                  🛵
+                  <Icon name="scooter" size={22} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-fg">
@@ -73,9 +74,10 @@ export function EatNowLinks({ source, id }: { source: Source; id: string }) {
                 <button
                   type="button"
                   onClick={() => open(link)}
-                  className="btn-primary flex-none px-3 py-1.5 text-xs"
+                  className="btn-primary inline-flex flex-none items-center gap-1 px-3 py-1.5 text-xs"
                 >
-                  {prov} ↗
+                  {prov}
+                  <Icon name="external" size={13} />
                 </button>
               </div>
               <p className="mt-2 text-[11px] text-fg/40">

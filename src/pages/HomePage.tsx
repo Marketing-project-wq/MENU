@@ -9,6 +9,7 @@ import { ArticleCard } from "../components/ArticleCard";
 import { RecipeCard } from "../components/RecipeCard";
 import { RecipeCarousel } from "../components/RecipeCarousel";
 import { FoodTypeChips } from "../components/FoodTypeChips";
+import { Icon } from "../components/Icon";
 import { Spinner } from "../components/Spinner";
 import { pickFavorites } from "../lib/favorites";
 import { getReadMinutesMap } from "../lib/readtime";
@@ -136,8 +137,8 @@ export function HomePage() {
       <HomeSection title={t("homePlacesHeading")} desc={t("homePlacesSub")} to="/eat-now">
         <div className="app-card p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="grid h-12 w-12 flex-none place-items-center rounded-xl bg-fg/5 text-2xl" aria-hidden>
-              🛵
+            <div className="grid h-12 w-12 flex-none place-items-center rounded-xl bg-fg/5 text-fg/55" aria-hidden>
+              <Icon name="scooter" size={24} />
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-sm font-bold text-fg">{t("placesGrabTitle")}</h3>
@@ -147,9 +148,10 @@ export function HomePage() {
               href={grabUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-primary flex-none px-4 py-2 text-sm"
+              className="btn-primary inline-flex flex-none items-center gap-1.5 px-4 py-2 text-sm"
             >
-              {t("placesGrabBtn")} ↗
+              {t("placesGrabBtn")}
+              <Icon name="external" size={15} />
             </a>
           </div>
 
@@ -193,8 +195,9 @@ function HomeSection({
           <h2 className="text-lg font-extrabold tracking-tight text-fg">{title}</h2>
           {desc && <p className="mt-0.5 text-xs text-fg/55">{desc}</p>}
         </div>
-        <Link to={to} className="flex-none text-sm font-semibold text-brand-red">
-          {t("seeAll")} →
+        <Link to={to} className="inline-flex flex-none items-center gap-1 text-sm font-semibold text-brand-red">
+          {t("seeAll")}
+          <Icon name="arrowRight" size={15} />
         </Link>
       </div>
       {children}

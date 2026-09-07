@@ -13,6 +13,7 @@ import { EatNowLinks } from "../components/EatNowLinks";
 import { EatNowButton } from "../components/EatNowButton";
 import { RelatedArticles } from "../components/RelatedArticles";
 import { RecipeNotFound } from "../components/RecipeNotFound";
+import { Icon } from "../components/Icon";
 import { api } from "../lib/api";
 import { catLabel, dietLabel } from "../lib/i18n";
 import type { RecipeVM } from "../lib/types";
@@ -47,7 +48,11 @@ export function DetailPage({ slug }: { slug: string }) {
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-6 print-area">
-      <Link to="/resep" className="no-print text-sm font-semibold text-fg/50 hover:text-brand-red">
+      <Link
+        to="/resep"
+        className="no-print inline-flex items-center gap-1 text-sm font-semibold text-fg/50 hover:text-brand-red"
+      >
+        <Icon name="arrowLeft" size={15} />
         {t("backToBrowse")}
       </Link>
 
@@ -89,18 +94,21 @@ export function DetailPage({ slug }: { slug: string }) {
           {(recipe.servings != null || recipe.cookMinutes != null || recipe.prepMinutes != null) && (
             <div className="mt-2 flex flex-wrap gap-4 text-sm text-fg/60">
               {recipe.servings != null && (
-                <span>
-                  🍽️ {recipe.servings} {t("servings")}
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon name="servings" size={16} className="text-fg/45" />
+                  {recipe.servings} {t("servings")}
                 </span>
               )}
               {recipe.prepMinutes != null && (
-                <span>
-                  🔪 {t("prepTime")} {recipe.prepMinutes} {t("minutesShort")}
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon name="knife" size={16} className="text-fg/45" />
+                  {t("prepTime")} {recipe.prepMinutes} {t("minutesShort")}
                 </span>
               )}
               {recipe.cookMinutes != null && (
-                <span>
-                  ⏱️ {t("cookTime")} {recipe.cookMinutes} {t("minutesShort")}
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon name="clock" size={16} className="text-fg/45" />
+                  {t("cookTime")} {recipe.cookMinutes} {t("minutesShort")}
                 </span>
               )}
             </div>

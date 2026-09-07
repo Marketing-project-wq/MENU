@@ -1,6 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { resolveFoodPhoto } from "../lib/foodphoto";
 import { buildSrcSet, sizedUrl } from "../lib/imageTransform";
+import { Icon, type IconName } from "./Icon";
+
+// Peta emoji katalog -> ikon garis untuk placeholder saat foto belum/tak ada. Emoji tetap dipakai
+// sebagai KUNCI (dari data), tapi yang ditampilkan ikon minimalis, bukan emoji mentah.
+const EMOJI_TO_ICON: Record<string, IconName> = {
+  "🥗": "salad",
+  "🍗": "drumstick",
+  "🥩": "steak",
+  "🦐": "fish",
+  "🐟": "fish",
+  "🍚": "bowlRice",
+  "🍜": "noodles",
+  "🍝": "noodles",
+  "🌱": "sprout",
+  "🍎": "apple",
+};
 
 const CARD_WIDTHS = [220, 440]; // kartu daftar: ~1x & ~2x kerapatan layar di slot ~220px
 const CARD_SIZES = "(min-width: 1024px) 260px, (min-width: 640px) 33vw, 50vw";
@@ -134,8 +150,8 @@ export function FoodImage({
           onError={() => setFailed(true)}
         />
       ) : (
-        <span className={emojiClass} aria-hidden>
-          {emoji}
+        <span className={emojiClass + " grid place-items-center text-fg/35"} aria-hidden>
+          <Icon name={EMOJI_TO_ICON[emoji] ?? "utensils"} size="1em" strokeWidth={1.5} />
         </span>
       )}
     </div>
