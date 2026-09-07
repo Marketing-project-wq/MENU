@@ -68,12 +68,6 @@ export function HomePage() {
     () => vms.filter((r) => eatNowKeys.has(`${r.source}:${r.id}`)).slice(0, 4),
     [vms, eatNowKeys]
   );
-  // Kategori tipe makanan yang benar-benar ada di katalog (untuk chip filter paling atas).
-  const foodCategories = useMemo(() => {
-    const set = new Set<string>();
-    vms.forEach((r) => r.category && set.add(r.category));
-    return Array.from(set);
-  }, [vms]);
   const articlePicks = articles.slice(0, 5); // "Top 5 untuk dibaca hari ini" (terbaru; API sudah urut terbaru)
 
   // Muat jumlah heart untuk resep yang tampil (batch + dedupe di store).
@@ -84,16 +78,14 @@ export function HomePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <section className="mb-8 rounded-2xl bg-brand-red/5 p-6 text-center sm:p-10">
+      {/* Hero = pertanyaan + toggle tipe makanan (foto asli, bukan emoji/ikon) -- klik langsung
+          ke /resep sudah terfilter kategori/diet itu. */}
+      <section className="mb-8 text-center">
         <h1 className="text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">{t("homeHeroTitle")}</h1>
-        <p className="mx-auto mt-2 max-w-xl text-sm text-fg/60">{t("homeHeroSub")}</p>
-        <Link to="/resep" className="btn-primary mt-4 inline-flex">
-          {t("browseAllRecipes")}
-        </Link>
+        <div className="mt-4">
+          <FoodTypeChips vms={vms} />
+        </div>
       </section>
-
-      {/* Toggle tipe makanan (paling atas) -- klik -> /resep sudah terfilter kategori itu. */}
-      <FoodTypeChips categories={foodCategories} />
 
       {/* Resep Favorit -- carousel bisa digeser horizontal. */}
       {favoritePicks.length > 0 && (

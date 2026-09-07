@@ -142,11 +142,7 @@ const STR: Dict = {
   readTime: { id: "menit baca", en: "min read" },
   // Home (Tahap 5)
   homeNav: { id: "Beranda", en: "Home" },
-  homeHeroTitle: { id: "Makan sehat, gampang.", en: "Healthy eating, made easy." },
-  homeHeroSub: {
-    id: "Resep, rekomendasi tempat makan, dan pesan langsung — dari 20FIT.",
-    en: "Recipes, place recommendations, and instant ordering — from 20FIT.",
-  },
+  homeHeroTitle: { id: "Mau makan apa hari ini?", en: "What are you going to eat today?" },
   homeArticlesHeading: { id: "Artikel & Tips", en: "Articles & Tips" },
   homeTopArticlesHeading: { id: "5 Artikel untuk Dibaca Hari Ini", en: "Top 5 Articles to Read Today" },
   homeHealthyHeading: { id: "Rekomendasi Makan Sehat", en: "Healthy Picks" },
@@ -154,10 +150,6 @@ const STR: Dict = {
   homeRecipesHeading: { id: "Resep Pilihan", en: "Featured Recipes" },
   homeFavoritesHeading: { id: "Resep Favorit", en: "Favorite Recipes" },
   homeFavoritesSub: { id: "Pilihan resep populer dari dapur 20FIT.", en: "Popular picks from the 20FIT kitchen." },
-  homeFoodTypesSub: {
-    id: "Pilih tipe makanan untuk lihat resep di kategori itu.",
-    en: "Pick a food type to see recipes in that category.",
-  },
   homeTopArticlesSub: {
     id: "Tips gizi, diet, dan makan sehat — terbaru dari redaksi 20FIT.",
     en: "Nutrition, diet, and healthy-eating tips — fresh from the 20FIT team.",
@@ -176,8 +168,6 @@ const STR: Dict = {
   },
   homePlacesHeading: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
   homeEatNowHeading: { id: "Bisa Langsung Dipesan", en: "Order Right Now" },
-  homeFoodTypesHeading: { id: "Pilih tipe makanan", en: "Browse by food type" },
-  browseAllRecipes: { id: "Lihat semua resep", en: "See all recipes" },
   // Beranda: tempat makan via link-out GrabFood (jujur -- tanpa scraping / tanpa daftar tempat palsu).
   placesGrabTitle: { id: "Pesan dari luar via GrabFood", en: "Order out via GrabFood" },
   placesGrabDesc: {
@@ -294,6 +284,8 @@ const CAT_LABELS: Record<string, { id: string; en: string }> = {
   Vegan: { id: "Vegan", en: "Vegan" },
   Pasta: { id: "Pasta", en: "Pasta" },
   Noodle: { id: "Mie", en: "Noodle" },
+  Fish: { id: "Ikan", en: "Fish" },
+  Snack: { id: "Camilan", en: "Snack" },
 };
 
 export function catLabel(cat: string, lang: Lang): string {
