@@ -4,6 +4,44 @@
 
 ---
 
+## 2026-09-07 — Seluruh 54 artikel diperpanjang jadi prosa ~5 menit (batch 2–9)
+
+Branch: `claude/menu-20fit-moderation-9qqf9t`
+
+Lanjutan dari entry di bawah (PR #37 sudah merge ke `main`). Menuntaskan perpanjangan
+**seluruh 54 artikel** di DB `my20fit_recipe_article` (Supabase project `cpvzwqptzcxnwzfzgrmt`,
+kolom `body_md`) menjadi prosa mengalir ~1.000+ kata (≈5 menit baca). Konten edukatif, tidak
+mengarang, tanpa klaim kesehatan berlebihan, disclaimer dipertahankan.
+
+### Cakupan (per kategori, semua tuntas)
+- Batch 1 (Tips Sehat + campuran) — sudah live via PR #37.
+- Batch 2 **Camilan Sehat**, 3 **Gaya Hidup**, 4 **Makan Sehat**, 5 **Panduan Diet**,
+  6 **Rekomendasi Menu**, 7 **Resep & Dapur**, 8 **Tempat Makan Sehat**, 9 **Tips Gizi** —
+  SQL tersimpan di `docs/articles_expand_batch{2..9}.sql`.
+- **Verifikasi DB akhir: 54/54 artikel `length(body_md) ≥ 3000`** (min 6.589, rata-rata ~7.051,
+  maks 7.955 karakter). 0 artikel pendek, 0 artikel tanpa cover.
+
+### Prinsip konten
+- **Prosa, bukan poin**: tiap artikel paragraf mengalir dengan subjudul `##`; bullet hanya
+  dipakai bila memang daftar wajar (mis. contoh menu / ringkasan langkah).
+- **Waktu baca dihitung otomatis** dari jumlah kata (`Math.round(kata/200)`, min 1) di
+  `ArticleDetailPage` — tidak pernah diketik manual. Semua artikel kini ≈5 menit.
+- **Gambar**: tiap artikel punya cover (`cover_url`, hero di halaman detail) + 1 gambar inline
+  di body. Semua foto Unsplash bebas-lisensi & topik-relevan; inline selalu dibedakan dari cover
+  artikel itu (tak ada gambar identik dua kali dalam satu artikel). Beberapa foto dipakai ulang
+  antar-artikel (kumpulan foto makanan/gizi terbatas) — relevan, bukan acak. Tidak ada foto
+  bermuatan hak cipta / media.20fit (artikel ini in-house, bukan WordPress).
+
+### Cara jalan
+- SQL dijalankan ke DB lewat Supabase MCP `execute_sql` (dollar-quoting `$md$…$md$`,
+  dibungkus `begin;…commit;`). File SQL di-commit sebagai rekam jejak & reproduksi (UPDATE
+  idempoten — aman dijalankan ulang).
+- Hanya `body_md` (bahasa ID, kolom yang dirender halaman detail) yang diubah. Judul, kategori,
+  `cover_url`, serta `body_md_en`/`body_md_id` tidak disentuh; terjemahan EN tetap pekerjaan
+  terpisah.
+
+---
+
 ## 2026-09-07 — Ikon minimalis (ganti emoji) + artikel prosa panjang + gambar
 
 Branch: `claude/menu-20fit-moderation-9qqf9t`
