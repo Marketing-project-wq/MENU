@@ -7,6 +7,8 @@ import { normalizeMember, normalizeOfficial } from "../lib/normalize";
 import { CoverImage } from "../components/CoverImage";
 import { RecipeCard } from "../components/RecipeCard";
 import { Spinner } from "../components/Spinner";
+import { Icon, categoryIconName } from "../components/Icon";
+import { cleanTitle } from "../lib/text";
 import type { ArticleFull, ArticleRecipeRef, RecipeVM } from "../lib/types";
 
 type State = "loading" | "notfound" | { article: ArticleFull; recipes: ArticleRecipeRef[] };
@@ -67,7 +69,8 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 text-center">
         <p className="text-sm text-fg/60">404 — {t("notFound")}</p>
-        <Link to="/artikel" className="mt-3 inline-block text-sm font-semibold text-brand-red">
+        <Link to="/artikel" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-red">
+          <Icon name="arrowLeft" size={15} />
           {t("backToArticles")}
         </Link>
       </div>
@@ -75,6 +78,7 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
   }
 
   const a = state.article;
+  const title = cleanTitle(a.title);
   const html = renderMarkdown(a.body_md || "");
 
   // Estimasi waktu baca dari panjang teks nyata (~200 kata/menit). Buang gambar & URL agar
@@ -90,15 +94,28 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-6">
-      <Link to="/artikel" className="text-sm font-semibold text-fg/50 hover:text-brand-red">
+      <Link to="/artikel" className="inline-flex items-center gap-1 text-sm font-semibold text-fg/50 hover:text-brand-red">
+        <Icon name="arrowLeft" size={15} />
         {t("backToArticles")}
       </Link>
       <div className="mt-3 overflow-hidden app-card">
-        <CoverImage src={a.cover_url} alt={a.title} className="h-56 w-full sm:h-72" priority />
+        <CoverImage
+          src={a.cover_url}
+          alt={title}
+          className="h-56 w-full sm:h-72"
+          icon={categoryIconName(a.category)}
+          iconSize={64}
+          priority
+        />
         <div className="p-5 sm:p-6">
-          {a.category && <span className="chip bg-fg/5 text-fg/60">{a.category}</span>}
-          <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-fg">{a.title}</h1>
-          <p className="mt-1 text-xs text-fg/45">
+          {a.category && (
+            <span className="chip inline-flex items-center gap-1.5 bg-fg/5 text-fg/60">
+              <Icon name={categoryIconName(a.category)} size={14} />
+              {a.category}
+            </span>
+          )}
+          <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">{title}</h1>
+          <p className="mt-2 text-xs text-fg/45">
             {a.author_name && (
               <>
                 {t("articleBy")} {a.author_name} <span aria-hidden>·</span>{" "}
@@ -106,8 +123,9 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
             )}
             ≈ {readMins} {t("readTime")}
           </p>
-          {/* body_md dirender lewat renderMarkdown yang meng-escape HTML dulu (aman). */}
-          <div ref={bodyRef} className="mt-4 text-sm" dangerouslySetInnerHTML={{ __html: html }} />
+          {/* body_md dirender lewat renderMarkdown yang meng-escape HTML dulu (aman). Kelas prosa
+              (ukuran, jarak, line-height) diatur per-elemen di lib/markdown.ts. */}
+          <div ref={bodyRef} className="mt-5" dangerouslySetInnerHTML={{ __html: html }} />
 
           {relatedVMs.length > 0 && (
             <section className="mt-8 border-t border-fg/10 pt-5">

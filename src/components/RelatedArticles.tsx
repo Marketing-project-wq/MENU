@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "../router";
 import { api } from "../lib/api";
 import { useLang } from "../lib/store";
+import { Icon, categoryIconName } from "./Icon";
+import { cleanTitle } from "../lib/text";
 import type { ArticleSummary, Source } from "../lib/types";
 
 /** "Mau makan di luar?" — artikel rekomendasi tempat makan yang terkait resep ini. Sembunyi kalau kosong. */
@@ -34,12 +36,12 @@ export function RelatedArticles({ source, id }: { source: Source; id: string }) 
               {a.cover_url ? (
                 <img src={a.cover_url} alt="" className="h-12 w-12 flex-none rounded-lg object-cover" />
               ) : (
-                <div className="grid h-12 w-12 flex-none place-items-center rounded-lg bg-fg/5" aria-hidden>
-                  📝
+                <div className="grid h-12 w-12 flex-none place-items-center rounded-lg bg-fg/5 text-fg/45" aria-hidden>
+                  <Icon name={categoryIconName(a.category)} size={22} />
                 </div>
               )}
               <div className="min-w-0">
-                <div className="truncate text-sm font-semibold text-fg">{a.title}</div>
+                <div className="truncate text-sm font-semibold text-fg">{cleanTitle(a.title)}</div>
                 {a.excerpt && <div className="truncate text-xs text-fg/50">{a.excerpt}</div>}
               </div>
             </Link>

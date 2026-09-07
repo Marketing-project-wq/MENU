@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLang } from "../lib/store";
+import { Icon, type IconName } from "./Icon";
 
 /**
  * Popover bagikan resep: link terlihat + tombol salin, tombol share langsung
@@ -51,34 +52,34 @@ export function ShareMenu({
   const encUrl = encodeURIComponent(url);
   const encTitle = encodeURIComponent(title);
 
-  const targets = [
+  const targets: { key: string; label: string; href: string; cls: string; icon: IconName }[] = [
     {
       key: "whatsapp",
       label: "WhatsApp",
       href: `https://wa.me/?text=${encodeURIComponent(`${title} — ${url}`)}`,
       cls: "bg-[#25D366]/10 text-[#1a8e4b] dark:text-[#25D366]",
-      icon: "💬",
+      icon: "whatsapp",
     },
     {
       key: "telegram",
       label: "Telegram",
       href: `https://t.me/share/url?url=${encUrl}&text=${encTitle}`,
       cls: "bg-[#229ED9]/10 text-[#1a7ba8] dark:text-[#229ED9]",
-      icon: "✈️",
+      icon: "telegram",
     },
     {
       key: "facebook",
       label: "Facebook",
       href: `https://www.facebook.com/sharer/sharer.php?u=${encUrl}`,
       cls: "bg-[#1877F2]/10 text-[#1877F2]",
-      icon: "📘",
+      icon: "facebook",
     },
     {
       key: "x",
       label: "X",
       href: `https://twitter.com/intent/tweet?text=${encTitle}&url=${encUrl}`,
       cls: "bg-fg/10 text-fg",
-      icon: "✕",
+      icon: "xSocial",
     },
   ];
 
@@ -103,7 +104,7 @@ export function ShareMenu({
             className="grid h-7 w-7 place-items-center rounded-full text-fg/50 hover:bg-fg/10"
             aria-label={t("close")}
           >
-            ✕
+            <Icon name="close" size={16} />
           </button>
         </div>
 
@@ -132,11 +133,9 @@ export function ShareMenu({
               target="_blank"
               rel="noopener noreferrer"
               onClick={onClose}
-              className={"flex flex-col items-center gap-1 rounded-xl py-2.5 text-[11px] font-semibold " + tg.cls}
+              className={"flex flex-col items-center gap-1.5 rounded-xl py-2.5 text-[11px] font-semibold " + tg.cls}
             >
-              <span className="text-xl leading-none" aria-hidden>
-                {tg.icon}
-              </span>
+              <Icon name={tg.icon} size={20} />
               {tg.label}
             </a>
           ))}

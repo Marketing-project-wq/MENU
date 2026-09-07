@@ -56,7 +56,7 @@ const STR: Dict = {
   sodium: { id: "Natrium", en: "Sodium" },
   noResults: { id: "Tidak ada resep yang cocok.", en: "No recipes match." },
   loading: { id: "Memuat…", en: "Loading…" },
-  backToBrowse: { id: "← Kembali ke resep", en: "← Back to recipes" },
+  backToBrowse: { id: "Kembali ke resep", en: "Back to recipes" },
   loginToSubmit: {
     id: "Masuk dulu untuk mengirim resep.",
     en: "Log in first to submit a recipe.",
@@ -137,7 +137,7 @@ const STR: Dict = {
   articleBy: { id: "oleh", en: "by" },
   articleRelatedRecipes: { id: "Mau coba masak sendiri?", en: "Want to cook it yourself?" },
   recipeRelatedArticles: { id: "Mau makan di luar?", en: "Prefer to eat out?" },
-  backToArticles: { id: "← Semua artikel", en: "← All articles" },
+  backToArticles: { id: "Semua artikel", en: "All articles" },
   seeAll: { id: "Lihat semua", en: "See all" },
   readTime: { id: "menit baca", en: "min read" },
   // Home (Tahap 5)

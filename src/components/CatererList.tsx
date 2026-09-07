@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
 import { useLang } from "../lib/store";
+import { Icon } from "./Icon";
 import type { Caterer, Source } from "../lib/types";
 
 /** Jarak haversine (km) antara dua titik lat/lng. */
@@ -106,11 +107,12 @@ export function CatererList({ source, id }: { source: Source; id: string }) {
           type="button"
           onClick={sortNearest ? () => setSortNearest(false) : tryNearest}
           className={
-            "chip border " +
+            "chip inline-flex items-center gap-1.5 border " +
             (sortNearest ? "border-brand-red bg-brand-red/10 text-brand-red" : "border-fg/15 text-fg/70")
           }
         >
-          📍 {sortNearest ? t("caterersSortNearest") : t("caterersSortDefault")}
+          <Icon name="pin" size={14} />
+          {sortNearest ? t("caterersSortNearest") : t("caterersSortDefault")}
         </button>
         {areas.length > 1 && (
           <select
@@ -135,16 +137,17 @@ export function CatererList({ source, id }: { source: Source; id: string }) {
             {c.logo_url ? (
               <img src={c.logo_url} alt={c.name} className="h-12 w-12 flex-none rounded-lg object-cover" />
             ) : (
-              <div className="grid h-12 w-12 flex-none place-items-center rounded-lg bg-fg/5 text-xl" aria-hidden>
-                🍱
+              <div className="grid h-12 w-12 flex-none place-items-center rounded-lg bg-fg/5 text-fg/50" aria-hidden>
+                <Icon name="store" size={22} />
               </div>
             )}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <span className="truncate text-sm font-semibold text-fg">{c.name}</span>
                 {c.is_verified && (
-                  <span className="chip flex-none bg-emerald-600/10 text-[10px] text-emerald-700 dark:text-emerald-400">
-                    ✓ {t("caterersVerifiedBadge")}
+                  <span className="chip inline-flex flex-none items-center gap-1 bg-emerald-600/10 text-[10px] text-emerald-700 dark:text-emerald-400">
+                    <Icon name="check" size={11} strokeWidth={2.5} />
+                    {t("caterersVerifiedBadge")}
                   </span>
                 )}
               </div>

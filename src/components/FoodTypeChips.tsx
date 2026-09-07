@@ -1,17 +1,19 @@
 import { useRouter } from "../router";
 import { useLang } from "../lib/store";
 import { catLabel } from "../lib/i18n";
+import { Icon, type IconName } from "./Icon";
 
-// Emoji per tipe makanan (murni hiasan; kunci = nilai kategori mentah dari katalog).
-const FOOD_EMOJI: Record<string, string> = {
-  Chicken: "🍗",
-  Beef: "🥩",
-  Seafood: "🦐",
-  Vegetarian: "🥗",
-  Vegan: "🌱",
-  Rice: "🍚",
-  Pasta: "🍝",
-  Noodle: "🍜",
+// Ikon garis per tipe makanan (hiasan; kunci = nilai kategori mentah dari katalog). Menggantikan
+// emoji lama supaya konsisten dengan sistem ikon 20FIT.
+const FOOD_ICON: Record<string, IconName> = {
+  Chicken: "drumstick",
+  Beef: "steak",
+  Seafood: "fish",
+  Vegetarian: "salad",
+  Vegan: "sprout",
+  Rice: "bowlRice",
+  Pasta: "noodles",
+  Noodle: "noodles",
 };
 
 // Urutan tampil yang diinginkan; kategori lain yang tak terdaftar ditaruh di belakang (stabil).
@@ -48,7 +50,7 @@ export function FoodTypeChips({ categories }: { categories: string[] }) {
             onClick={() => navigate(`/resep?category=${encodeURIComponent(cat)}`)}
             className="chip inline-flex flex-none items-center gap-1.5 border border-fg/15 bg-card text-fg/80 transition-colors hover:border-brand-red/60 hover:text-brand-red"
           >
-            <span aria-hidden>{FOOD_EMOJI[cat] ?? "🍽️"}</span>
+            <Icon name={FOOD_ICON[cat] ?? "utensils"} size={16} className="flex-none text-fg/60" />
             <span className="whitespace-nowrap">{catLabel(cat, lang)}</span>
           </button>
         ))}

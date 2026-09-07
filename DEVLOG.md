@@ -4,6 +4,71 @@
 
 ---
 
+## 2026-09-07 — Ikon minimalis (ganti emoji) + artikel prosa panjang + gambar
+
+Branch: `claude/menu-20fit-moderation-9qqf9t`
+
+Empat perbaikan area Menu/Artikel. **Frontend** self-contained di repo ini (butuh CI build lulus,
+lalu merge → Railway). **Konten artikel** ada di DB `my20fit_recipe_article` (Supabase, dipakai
+bersama my.20fit.id) — disiapkan sebagai **SQL yang DITULIS, bukan dijalankan** (owner review dulu).
+
+### 1) Semua emoji UI → sistem ikon garis (line icon) minimalis
+- Komponen baru `src/components/Icon.tsx`: 35 ikon garis inline-SVG (`currentColor`, stroke
+  membulat, viewBox 24). Tanpa dependency (registry npm diblok kebijakan org).
+- Emoji diganti ikon di: `FoodTypeChips` (🍗🥩🦐🥗🌱🍚🍝🍜 → drumstick/steak/fish/salad/sprout/
+  bowlRice/noodles), `DetailPage` (🍽️🔪⏱️ → servings/knife/clock), `HomePage` (🛵 + panah),
+  `EatNowLinks`, `EatNowButton`, `CatererList` (📍🍱✓ → pin/store/check), `SubmitPage` (✅ → check),
+  `Header` (☀️🌙 → sun/moon), `ShareMenu` (💬✈️📘✕ → whatsapp/telegram/facebook/xSocial + close),
+  `RelatedArticles` (📝), `ArticleCard`/`CoverImage`/`FoodImage` (fallback pakai ikon kategori/
+  makanan, bukan emoji). Panah teks `←` pada tombol "kembali" juga → ikon `arrowLeft`.
+- **Fungsi tidak diubah** — murni tampilan simbol.
+
+### 2) Emoji di JUDUL artikel dibersihkan
+- **50 dari 54 judul** tersimpan diawali emoji kategori (🍎🏃🥗⚖️🍱👩‍🍳📍🧬) di DB.
+- Frontend: helper `src/lib/text.ts` `cleanTitle()` strip emoji di awal judul saat render
+  (`ArticleCard`, `ArticleDetailPage`, `RelatedArticles`; Home pakai `ArticleCard`). Ikon kategori
+  minimalis (`categoryIconName`) menggantikan peran emoji itu.
+- DB: SQL (A) di `docs/articles_expand_batch1.sql` merapikan judul di sumbernya juga.
+
+### 3) Renderer artikel dirapikan jadi prosa enak dibaca
+- `src/lib/markdown.ts`: paragraf `text-[15px] leading-7` + jarak antar paragraf lebih lega,
+  subjudul lebih menonjol, gambar `rounded-2xl` + margin, dukungan blockquote `>`.
+- `ArticleDetailPage`: judul lebih besar, chip kategori + ikon, wrapper prosa.
+
+### 4) Gambar artikel — diagnosis + isi konten
+- **Akar masalah**: 50 artikel punya cover+1 gambar body dari **hotlink Unsplash**; **4 artikel
+  terbaru TIDAK punya gambar** (tampil placeholder). App menyembunyikan gambar yang gagal load,
+  jadi hotlink pihak-ketiga yang gagal = tampil kosong. **0 gambar dari media.20fit** (artikel ini
+  in-house, bukan WordPress — jadi tak ada "gambar sumber asli" untuk ditarik).
+- **Perbaikan batch 1**: tiap artikel dapat 1 gambar relevan; 4 yang kosong memakai ULANG URL
+  Unsplash yang **sudah dipakai & cocok topik** di situs ini (bukan ID karangan yang bisa 404).
+
+### Konten: `docs/articles_expand_batch1.sql` (BATCH 1 — 6 artikel, WRITE-not-RUN)
+- Artikel diperpanjang dari ~150 kata → **1.000–1.140 kata (5–6 menit baca)**, format **prosa**
+  (bukan daftar bullet), framing edukasi + disclaimer dipertahankan. "Min read" tetap dihitung
+  otomatis dari jumlah kata (`src/lib/readtime.ts`).
+- Artikel: `baca-menu-restoran-5-kata-kunci`, `cara-pilih-menu-sehat-saat-pesan-online`,
+  `masak-sendiri-vs-pesan-makan`, `ngemil-tanpa-rasa-bersalah`,
+  `protein-harian-...`, `defisit-kalori-101-...` (mencakup ke-4 artikel yang tadinya tak bergambar).
+- **TIDAK mengarang**: isi = perluasan jujur topik praktis; klaim kesehatan umum & hati-hati.
+- Jalankan manual di Supabase (`BEGIN; ... COMMIT;`) setelah review.
+
+### Sisa (belum & sengaja tak dijalankan)
+- **48 artikel lain** menyusul di batch berikutnya, format & standar yang sama (tak ada yang perlu
+  dikarang untuk mencapai panjang; kalau ada yang tak bisa dipanjangkan jujur → dilaporkan).
+- **Keandalan gambar**: kalau Unsplash gagal load untuk user, solusi tahan-lama = rehost ke Storage
+  20FIT (butuh egress/instruksi owner) — diusulkan, belum dikerjakan.
+- **Body EN**: artikel saat ini ID saja (path render `body_md`). Terjemahan EN + switch bahasa
+  per-artikel = pekerjaan terpisah (butuh perubahan backend).
+
+Files: `src/components/Icon.tsx` (baru), `src/lib/text.ts` (baru),
+`docs/articles_expand_batch1.sql` (baru), `src/lib/markdown.ts`, `src/pages/ArticleDetailPage.tsx`,
+`src/pages/DetailPage.tsx`, `src/pages/HomePage.tsx`, `src/pages/SubmitPage.tsx`,
+`src/components/{FoodTypeChips,EatNowLinks,EatNowButton,CatererList,Header,ShareMenu,RelatedArticles,ArticleCard,CoverImage,FoodImage,RecipeForm,RecipeNotFound}.tsx`,
+`src/lib/i18n.ts`.
+
+---
+
 ## 2026-09-03 — Menu/Diet/Home enhancements (5 fitur)
 
 Branch: `claude/menu-diet-home-enhancements-ibp58o`

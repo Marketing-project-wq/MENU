@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useRouter } from "../router";
 import { useAuth } from "../lib/auth";
 import { useLang, useTheme } from "../lib/store";
+import { Icon } from "./Icon";
 import { LOGO_DARK } from "../lib/constants";
 
 /**
@@ -66,7 +67,7 @@ export function Header() {
             aria-label="Ganti tema"
             title={theme === "dark" ? "Mode terang" : "Mode gelap"}
           >
-            {theme === "dark" ? "☀️" : "🌙"}
+            <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
           </button>
 
           {/* Toggle bahasa [ID | EN] */}
