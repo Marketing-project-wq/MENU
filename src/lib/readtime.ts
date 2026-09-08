@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { API_BASE } from "./constants";
 
 /**
  * Estimasi waktu baca dari panjang teks nyata (~200 kata/menit). Buang gambar & URL markdown
@@ -20,35 +20,24 @@ export function computeReadMinutes(body: string): number {
 let cache: Promise<Record<string, number>> | null = null;
 
 /**
- * Peta { slug -> menit baca } untuk SEMUA artikel terbit, dihitung dari body_md.
+ * Peta { slug -> menit baca } untuk SEMUA artikel terbit.
  *
- * Diambil LANGSUNG dari Supabase (anon) karena endpoint daftar artikel (ArticleSummary) tidak
- * mengangkut body, jadi kartu tak bisa menghitung sendiri. Ini hanya metadata read-only publik
- * (artikel-nya memang sudah tayang di situs), bukan menggantikan sumber daftar artikel (tetap API).
+ * SUMBER TUNGGAL: endpoint my.20fit `GET /api/menu/article-readtimes` (dihitung server dari
+ * body_md, rumus SAMA dengan computeReadMinutes). Sebelumnya membaca Supabase langsung (anon) —
+ * itu menduplikasi logika & bergantung pada RLS; sekarang lewat API yang sama dengan sisa app.
  *
- * Tahan-banting: kalau tabel belum anon-readable / gagal, kembalikan {} supaya kartu tetap
- * tampil tanpa "min read" (tidak pernah melempar / memblokir render).
- *
- * Catatan: butuh policy SELECT anon di my20fit_recipe_article (status='published'). SQL-nya
- * ada di DEVLOG.md — dijalankan lewat jalur Supabase terpisah.
+ * Tahan-banting: kalau gagal, kembalikan {} supaya kartu tetap tampil tanpa "min read"
+ * (tidak pernah melempar / memblokir render).
  */
 export function getReadMinutesMap(): Promise<Record<string, number>> {
   if (cache) return cache;
   cache = (async () => {
     try {
-      const { data, error } = await supabase
-        .from("my20fit_recipe_article")
-        .select("slug, body_md, body_md_id, body_md_en")
-        .eq("status", "published");
-      if (error || !Array.isArray(data)) return {};
-      const map: Record<string, number> = {};
-      for (const row of data as Array<Record<string, string | null>>) {
-        const slug = (row.slug || "").toString();
-        if (!slug) continue;
-        const body = row.body_md || row.body_md_id || row.body_md_en || "";
-        map[slug] = computeReadMinutes(body);
-      }
-      return map;
+      const r = await fetch(`${API_BASE}/api/menu/article-readtimes`);
+      if (!r.ok) return {};
+      const j = await r.json();
+      const m = j && j.minutes;
+      return (m && typeof m === "object") ? (m as Record<string, number>) : {};
     } catch {
       return {};
     }
