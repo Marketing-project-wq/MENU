@@ -57,6 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         api.claimAnonLikes().catch(() => {
           /* best-effort — kegagalan di sini tak boleh mengganggu login */
         });
+        // Klaim SEMUA data anonim (scan/like/kontribusi) via anon_id bersama .20fit.id.
+        api.claimAnon().catch(() => { /* best-effort */ });
         // Resep yang diklik "Simpan" sebelum login -> simpan sekarang juga, otomatis.
         const pending = takePendingSave();
         if (pending) {

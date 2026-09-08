@@ -1,5 +1,6 @@
 import { API, API_BASE } from "./constants";
 import { getAccessToken } from "./supabase";
+import { getAnonId } from "./anon";
 import type {
   ArticleFull,
   ArticleRecipeRef,
@@ -16,7 +17,11 @@ import type {
 
 async function authHeaders(): Promise<Record<string, string>> {
   const tok = await getAccessToken();
-  return tok ? { Authorization: `Bearer ${tok}` } : {};
+  // x-anon-id SELALU dikirim: mengikat aksi anonim ke id bersama .20fit.id supaya
+  // datanya bisa diklaim ke akun saat login (lintas properti 20FIT).
+  const h: Record<string, string> = { "x-anon-id": getAnonId() };
+  if (tok) h.Authorization = `Bearer ${tok}`;
+  return h;
 }
 
 async function jsonOrThrow(r: Response): Promise<any> {
@@ -292,6 +297,22 @@ export const api = {
     });
     const j = await jsonOrThrow(r);
     return { migrated: j.migrated || 0 };
+  },
+
+  /** Klaim SEMUA data anonim (scan/like/kontribusi) ke akun setelah login, pakai anon_id
+   *  bersama .20fit.id. Idempoten di server (RPC my20fit_claim_anon). Best-effort. */
+  async claimAnon(): Promise<void> {
+    const tok = await getAccessToken();
+    if (!tok) return;
+    try {
+      await fetch(`${API_BASE}/api/anon/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({ anon_ids: [getAnonId()] }),
+      });
+    } catch {
+      /* best-effort */
+    }
   },
 
   /** Toggle simpan resep ke koleksi. Butuh login. */
