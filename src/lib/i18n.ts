@@ -195,8 +195,8 @@ const STR: Dict = {
   like: { id: "Suka", en: "Like" },
   linkCopied: { id: "Link disalin!", en: "Link copied!" },
   loginToInteract: {
-    id: "Masuk atau daftar dulu, biar resep ini tersimpan permanen dan bisa kamu buka lagi kapan saja di my.20fit.id.",
-    en: "Log in or sign up first, so this recipe is saved permanently and you can open it again anytime on my.20fit.id.",
+    id: "Masuk atau daftar dulu, biar resep ini tersimpan permanen dan bisa kamu buka lagi kapan saja di akun 20FIT-mu.",
+    en: "Log in or sign up first, so this recipe is saved permanently and you can open it again anytime with your 20FIT account.",
   },
   savedRecipes: { id: "Resep Tersimpan", en: "Saved Recipes" },
   emptySaved: { id: "Belum ada resep tersimpan.", en: "No saved recipes yet." },
@@ -252,6 +252,56 @@ const STR: Dict = {
   footerGym: { id: "20FIT Gym", en: "20FIT Gym" },
   footerArena: { id: "20FIT Arena", en: "20FIT Arena" },
   footerRights: { id: "Semua hak dilindungi.", en: "All rights reserved." },
+
+  // Auth in-place (daftar/masuk langsung di recepie.20fit.id — tanpa lompat ke my.20fit.id).
+  authSignInTitle: { id: "Masuk", en: "Log in" },
+  authSignUpTitle: { id: "Daftar akun 20FIT", en: "Create your 20FIT account" },
+  authWelcome: {
+    id: "Simpan resep, kirim resep, dan kelola koleksimu — langsung di sini dengan akun 20FIT.",
+    en: "Save recipes, submit recipes, and manage your collection — right here with a 20FIT account.",
+  },
+  authEmail: { id: "Email", en: "Email" },
+  authPassword: { id: "Password", en: "Password" },
+  authName: { id: "Nama (opsional)", en: "Name (optional)" },
+  authNamePlaceholder: { id: "mis. Rina", en: "e.g. Rina" },
+  authShowPw: { id: "Lihat", en: "Show" },
+  authHidePw: { id: "Sembunyikan", en: "Hide" },
+  authSignInBtn: { id: "Masuk", en: "Log in" },
+  authSignUpBtn: { id: "Daftar", en: "Sign up" },
+  authProcessing: { id: "Memproses…", en: "Processing…" },
+  authToSignUp: { id: "Belum punya akun? Daftar", en: "No account yet? Sign up" },
+  authToSignIn: { id: "Sudah punya akun? Masuk", en: "Already have an account? Log in" },
+  authForgot: { id: "Lupa password?", en: "Forgot password?" },
+  authResetTitle: { id: "Reset password", en: "Reset password" },
+  authResetIntro: {
+    id: "Masukkan email akunmu. Kami kirim link untuk atur ulang password.",
+    en: "Enter your account email. We'll send a link to reset your password.",
+  },
+  authResetBtn: { id: "Kirim link reset", en: "Send reset link" },
+  authResetSent: {
+    id: "Kalau email itu terdaftar, link reset sudah dikirim. Cek inbox (dan folder spam).",
+    en: "If that email is registered, a reset link has been sent. Check your inbox (and spam).",
+  },
+  authBackToSignIn: { id: "Kembali ke Masuk", en: "Back to log in" },
+  authNewPasswordTitle: { id: "Buat password baru", en: "Set a new password" },
+  authNewPassword: { id: "Password baru", en: "New password" },
+  authUpdatePwBtn: { id: "Simpan password", en: "Save password" },
+  authPwUpdated: {
+    id: "Password diperbarui. Kamu sudah masuk.",
+    en: "Password updated. You're now logged in.",
+  },
+  authConfirmSent: {
+    id: "Akun dibuat! Cek email untuk konfirmasi, lalu masuk.",
+    en: "Account created! Check your email to confirm, then log in.",
+  },
+  authPwMin: { id: "Password minimal 6 karakter.", en: "Password must be at least 6 characters." },
+  authEmailInvalid: { id: "Masukkan email yang valid.", en: "Enter a valid email address." },
+  authErrInvalidLogin: { id: "Email atau password salah.", en: "Wrong email or password." },
+  authErrExists: {
+    id: "Email ini sudah terdaftar. Coba masuk.",
+    en: "This email is already registered. Try logging in.",
+  },
+  authErrGeneric: { id: "Terjadi kesalahan. Coba lagi.", en: "Something went wrong. Please try again." },
 };
 
 export function makeT(lang: Lang) {

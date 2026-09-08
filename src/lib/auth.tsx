@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "./supabase";
-import { URLS } from "./constants";
 import { api } from "./api";
 import { takePendingSave } from "./pendingSave";
+import { AuthModal, type AuthMode } from "../components/AuthModal";
 
 interface AuthCtx {
   user: any | null;
@@ -22,13 +22,21 @@ const Ctx = createContext<AuthCtx>({
 
 /**
  * Satu sumber state auth untuk seluruh app.
- * SSO hand-off dari my.20fit.id: menu.20fit.id/#access_token=...&refresh_token=...
- * Token di FRAGMENT (#) — tak dikirim ke server / tak masuk log — dan langsung
- * di-strip via history.replaceState. Pola identik calories.20fit.id.
+ *
+ * Daftar/masuk terjadi LANGSUNG di sini (recepie.20fit.id) lewat <AuthModal> —
+ * TIDAK lagi lompat ke my.20fit.id. Akun = pool Supabase 20FIT yang sama, jadi sesi
+ * yang dibuat di sini tetap berlaku untuk simpan-resep, submit, dan produk 20FIT lain.
+ *
+ * SSO hand-off lama (my.20fit.id -> recepie/#access_token=...&refresh_token=...) tetap
+ * didukung untuk backward-compat; token di FRAGMENT (#) tak dikirim ke server / tak masuk
+ * log dan langsung di-strip. Link reset password Supabase memakai fragment yang sama
+ * dengan type=recovery -> kita buka modal "buat password baru".
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>("in");
 
   useEffect(() => {
     (async () => {
@@ -36,9 +44,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const h = new URLSearchParams(location.hash.slice(1));
         const at = h.get("access_token");
         const rt = h.get("refresh_token");
+        const type = h.get("type");
         if (at && rt) {
           await supabase.auth.setSession({ access_token: at, refresh_token: rt });
           history.replaceState(null, "", location.pathname + location.search);
+          // Kembali dari link reset password -> minta user buat password baru.
+          if (type === "recovery") {
+            setAuthMode("newpw");
+            setAuthOpen(true);
+          }
         }
       } catch {
         /* lanjut sebagai guest */
@@ -69,8 +83,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Buka modal daftar/masuk in-place (dulu redirect ke my.20fit.id).
   const login = (mode: "in" | "up" = "in") => {
-    window.location.href = mode === "up" ? URLS.SIGN_UP : URLS.LOGIN;
+    setAuthMode(mode);
+    setAuthOpen(true);
   };
   const logout = async () => {
     await supabase.auth.signOut();
@@ -79,6 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={{ user, isLoading, isAuthenticated: !!user, login, logout }}>
       {children}
+      {authOpen && (
+        <AuthModal mode={authMode} onModeChange={setAuthMode} onClose={() => setAuthOpen(false)} />
+      )}
     </Ctx.Provider>
   );
 }
