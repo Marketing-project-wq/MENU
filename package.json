@@ -1,9 +1,9 @@
 {
-  "name": "menu.20fit.id",
+  "name": "recipe.20fit.id",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "menu.20fit.id — katalog & kontribusi resep sehat 20FIT (browse publik + submit + moderasi admin di my.20fit.id)",
+  "description": "recipe.20fit.id — katalog & kontribusi resep sehat 20FIT (browse publik + submit + moderasi admin di my.20fit.id)",
   "engines": {
     "node": ">=18"
   },

@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE } from "./constants";
 
-// menu.20fit.id bisa dipakai TANPA login (browse publik). Jadi createClient tidak
+// recipe.20fit.id bisa dipakai TANPA login (browse publik). Jadi createClient tidak
 // boleh throw hanya karena anon key belum diset saat build — hanya login/submit
 // yang tidak akan berfungsi.
 if (!SUPABASE.ANON_KEY) {

@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// menu.20fit.id — SPA statis, di-deploy di Railway (serve dist -s).
+// recipe.20fit.id — SPA statis, di-deploy di Railway (serve dist -s).
 export default defineConfig({
   plugins: [react()],
   server: {
