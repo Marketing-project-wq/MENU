@@ -26,7 +26,7 @@ function pickByDiet(vms: RecipeVM[], diets: string[], n: number): RecipeVM[] {
 
 /** UTM supaya trafik keluar ke GrabFood bisa diukur (tanpa mengubah tujuan / tanpa scraping). */
 function grabUrl(): string {
-  const utm = "utm_source=recepie.20fit.id&utm_medium=home_places&utm_campaign=eat_now";
+  const utm = "utm_source=recipe.20fit.id&utm_medium=home_places&utm_campaign=eat_now";
   return GRABFOOD_HOME + (GRABFOOD_HOME.includes("?") ? "&" : "?") + utm;
 }
 

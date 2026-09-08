@@ -14,7 +14,7 @@ function providerName(p: string): string {
 /** Tambah parameter UTM milik kita supaya trafik keluar bisa diukur (tanpa mengubah tujuan). */
 function withUtm(url: string, source: Source, id: string): string {
   const utm =
-    "utm_source=recepie.20fit.id&utm_medium=eat_now&utm_campaign=recipe_delivery" +
+    "utm_source=recipe.20fit.id&utm_medium=eat_now&utm_campaign=recipe_delivery" +
     "&utm_content=" +
     encodeURIComponent(source + ":" + id);
   return url + (url.includes("?") ? "&" : "?") + utm;
