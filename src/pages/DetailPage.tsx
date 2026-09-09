@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "../router";
 import { useRecipes, useLang } from "../lib/store";
 import { buildVMs } from "../lib/normalize";
@@ -18,6 +18,9 @@ import { api } from "../lib/api";
 import { catLabel, dietLabel } from "../lib/i18n";
 import type { RecipeVM } from "../lib/types";
 
+const MIN_PORTIONS = 1;
+const MAX_PORTIONS = 12;
+
 export function DetailPage({ slug }: { slug: string }) {
   const { official, members, loading } = useRecipes();
   const { lang, t } = useLang();
@@ -26,6 +29,17 @@ export function DetailPage({ slug }: { slug: string }) {
     const vms = buildVMs(official, members, lang);
     return vms.find((r) => r.slug === slug);
   }, [official, members, lang, slug]);
+
+  // Kontrol porsi (F1) -- basis = porsi asli resep (default 1 bila tidak diisi). Skala ANGKA
+  // gizi saja (kcal/makro); teks bahan sengaja TIDAK ikut diskalakan otomatis (lihat i18n.ts).
+  const baseServings = recipe?.servings ?? 1;
+  const [portions, setPortions] = useState(baseServings);
+
+  // Reset ke porsi dasar tiap ganti resep (komponen tidak remount saat slug berubah).
+  useEffect(() => {
+    setPortions(recipe?.servings ?? 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recipe?.key]);
 
   // Best-effort: catat buka detail (sinyal minat) — hanya sekali per resep.
   useEffect(() => {
@@ -45,6 +59,18 @@ export function DetailPage({ slug }: { slug: string }) {
   if (!recipe) return <RecipeNotFound />;
 
   const isOfficial = recipe.source === "official";
+  const ratio = baseServings > 0 ? portions / baseServings : 1;
+  const isScaled = Math.abs(ratio - 1) > 1e-9;
+  const scaledKcal = recipe.kcal != null ? Math.round(recipe.kcal * ratio) : null;
+  const scaledMacros = recipe.macros && {
+    p: Math.round(recipe.macros.p * ratio),
+    c: Math.round(recipe.macros.c * ratio),
+    f: Math.round(recipe.macros.f * ratio),
+    fiber: recipe.macros.fiber != null ? Math.round(recipe.macros.fiber * ratio) : undefined,
+    sugar: recipe.macros.sugar != null ? Math.round(recipe.macros.sugar * ratio) : undefined,
+    sodium: recipe.macros.sodium != null ? Math.round(recipe.macros.sodium * ratio) : undefined,
+  };
+  const scaleMultiplierNumber = parseFloat(ratio.toFixed(2));
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-6 print-area">
@@ -142,42 +168,85 @@ export function DetailPage({ slug }: { slug: string }) {
           <div className="mt-5 rounded-xl border border-fg/10 bg-fg/[0.02] p-4">
             <div className="mb-2 flex items-baseline justify-between">
               <span className="label mb-0">{t("nutrition")}</span>
-              {recipe.kcal != null && (
+              {scaledKcal != null && (
                 <span className="text-lg font-bold text-fg">
-                  {recipe.kcal} <span className="text-xs font-medium text-fg/50">{t("calories")}</span>
+                  {scaledKcal} <span className="text-xs font-medium text-fg/50">{t("calories")}</span>
                 </span>
               )}
             </div>
-            {recipe.macros && (
+
+            {/* Kontrol porsi (F1) — skala ANGKA gizi di bawah saja, teks bahan TIDAK ikut berubah. */}
+            {recipe.kcal != null && (
+              <div className="mb-3 flex items-center justify-between gap-3 rounded-lg bg-card px-3 py-2">
+                <span className="text-xs font-semibold text-fg/60">{t("portionControlLabel")}</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPortions((p) => Math.max(MIN_PORTIONS, p - 1))}
+                    disabled={portions <= MIN_PORTIONS}
+                    aria-label={t("decreasePortions")}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-fg/15 text-sm font-bold text-fg/70 disabled:opacity-30"
+                  >
+                    −
+                  </button>
+                  <span className="w-6 text-center text-sm font-bold text-fg">{portions}</span>
+                  <button
+                    type="button"
+                    onClick={() => setPortions((p) => Math.min(MAX_PORTIONS, p + 1))}
+                    disabled={portions >= MAX_PORTIONS}
+                    aria-label={t("increasePortions")}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-fg/15 text-sm font-bold text-fg/70 disabled:opacity-30"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {scaledMacros && (
               <>
                 <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                  <Macro label={t("protein")} value={`${recipe.macros.p} g`} />
-                  <Macro label={t("carbs")} value={`${recipe.macros.c} g`} />
-                  <Macro label={t("fat")} value={`${recipe.macros.f} g`} />
+                  <Macro label={t("protein")} value={`${scaledMacros.p} g`} />
+                  <Macro label={t("carbs")} value={`${scaledMacros.c} g`} />
+                  <Macro label={t("fat")} value={`${scaledMacros.f} g`} />
                 </div>
                 {/* Gizi mikro -- tampil hanya untuk field yang benar-benar ada di sumber datanya. */}
-                {(recipe.macros.fiber != null ||
-                  recipe.macros.sugar != null ||
-                  recipe.macros.sodium != null) && (
+                {(scaledMacros.fiber != null ||
+                  scaledMacros.sugar != null ||
+                  scaledMacros.sodium != null) && (
                   <div className="mt-2 grid grid-cols-3 gap-2 text-center text-sm">
-                    {recipe.macros.fiber != null && <Macro label={t("fiber")} value={`${recipe.macros.fiber} g`} />}
-                    {recipe.macros.sugar != null && <Macro label={t("sugar")} value={`${recipe.macros.sugar} g`} />}
-                    {recipe.macros.sodium != null && <Macro label={t("sodium")} value={`${recipe.macros.sodium} mg`} />}
+                    {scaledMacros.fiber != null && <Macro label={t("fiber")} value={`${scaledMacros.fiber} g`} />}
+                    {scaledMacros.sugar != null && <Macro label={t("sugar")} value={`${scaledMacros.sugar} g`} />}
+                    {scaledMacros.sodium != null && <Macro label={t("sodium")} value={`${scaledMacros.sodium} mg`} />}
                   </div>
                 )}
               </>
             )}
             <p className="mt-3 text-xs italic text-fg/45">
               {isOfficial ? t("estOfficial") : t("estUser")}
+              {recipe.kcal != null && " — " + t("estimateForPortions").replace("{n}", String(portions))}
             </p>
           </div>
 
           {/* Dua kolom: Bahan | Cara membuat -- panel "kaca padat". Di HP jadi satu kolom mengalir. */}
           <div className="mt-6 grid gap-4 md:grid-cols-[1fr_1.35fr] md:gap-6">
             <section className="glass-solid rounded-2xl p-4">
-              <h2 className="mb-3 border-b border-fg/10 pb-2 text-sm font-bold uppercase tracking-wide text-fg/70">
-                {t("ingredients")}
-              </h2>
+              <div className="mb-1 flex items-center justify-between gap-2 border-b border-fg/10 pb-2">
+                <h2 className="text-sm font-bold uppercase tracking-wide text-fg/70">
+                  {t("ingredients")}
+                </h2>
+                {isScaled && (
+                  <span
+                    className="chip bg-brand-red/10 text-brand-red"
+                    title={t("ingredientsScaleNote")}
+                  >
+                    {t("ingredientsScaleBadge").replace("{n}", String(scaleMultiplierNumber))}
+                  </span>
+                )}
+              </div>
+              {isScaled && (
+                <p className="mb-3 mt-2 text-xs text-fg/50">{t("ingredientsScaleNote")}</p>
+              )}
               <IngredientGroups groups={recipe.ingredientGroups} />
             </section>
 

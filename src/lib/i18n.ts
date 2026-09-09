@@ -210,6 +210,16 @@ const STR: Dict = {
   },
   // Info porsi/waktu
   servings: { id: "Porsi", en: "Servings" },
+  // Kontrol porsi (F1) -- skala ANGKA gizi saja; teks bahan sengaja TIDAK ikut diskalakan otomatis.
+  portionControlLabel: { id: "Mau makan berapa porsi?", en: "How many servings?" },
+  decreasePortions: { id: "Kurangi porsi", en: "Decrease servings" },
+  increasePortions: { id: "Tambah porsi", en: "Increase servings" },
+  estimateForPortions: { id: "untuk {n} porsi (perkiraan)", en: "for {n} serving(s) (estimate)" },
+  ingredientsScaleBadge: { id: "×{n} dari resep asli", en: "×{n} of the original recipe" },
+  ingredientsScaleNote: {
+    id: "Jumlah bahan di bawah TIDAK ikut disesuaikan otomatis — sesuaikan sendiri sesuai kelipatan di atas.",
+    en: "The ingredient amounts below are NOT scaled automatically — adjust them yourself using the multiplier above.",
+  },
   cookTime: { id: "Masak", en: "Cook" },
   prepTime: { id: "Siap-siap", en: "Prep" },
   minutesShort: { id: "mnt", en: "min" },
