@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 interface RouterCtx {
   path: string;
@@ -15,6 +15,22 @@ export function RouterProvider({ children }: { children: ReactNode }) {
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
+
+  // GA4 page_view untuk navigasi SPA (klik <Link>/back-forward) -- gtag('config', ...) di index.html
+  // cuma kirim page_view untuk load pertama, bukan perpindahan rute berikutnya. Lewati render pertama
+  // supaya tidak dobel hitung dengan page_view otomatis dari gtag('config', ...) itu.
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    window.gtag?.("event", "page_view", {
+      page_path: path,
+      page_location: window.location.href,
+      page_title: document.title,
+    });
+  }, [path]);
 
   const navigate = (to: string, opts?: { replace?: boolean }) => {
     if (to === window.location.pathname + window.location.search) return;
