@@ -8,3 +8,9 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+// GA4 -- gtag.js dimuat via <script> langsung di index.html (bukan npm package).
+interface Window {
+  dataLayer?: unknown[];
+  gtag?: (...args: unknown[]) => void;
+}

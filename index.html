@@ -21,6 +21,18 @@
       href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <!-- GA4 -- satu Measurement ID dipakai di semua properti *.20fit.id (20fit.id, arena.20fit.id,
+         clinic.20fit.id) supaya traffic lintas subdomain (mis. lompat dari media.20fit.id ke sini)
+         tetap terhitung satu user journey. cookie_domain:'auto' WAJIB -- itu yang bikin cookie GA
+         ke-set di level .20fit.id, bukan cuma recipe.20fit.id. Halaman ini SPA (client-side route),
+         jadi page_view untuk navigasi setelah load pertama dikirim manual dari src/router.tsx. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-70JD631GZC"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag("js", new Date());
+      gtag("config", "G-70JD631GZC", { cookie_domain: "auto" });
+    </script>
   </head>
   <body>
     <div id="root"></div>
