@@ -34,7 +34,7 @@ export function grabUrlForCategory(category: string | null | undefined, utmConte
   const path = (category && CUISINE_PATH[category]) || FALLBACK_PATH;
   const url = GRAB_BASE + path;
   const utm =
-    "utm_source=recepie.20fit.id&utm_medium=eat_now&utm_campaign=grabfood" +
+    "utm_source=recipe.20fit.id&utm_medium=eat_now&utm_campaign=grabfood" +
     (utmContent ? "&utm_content=" + encodeURIComponent(utmContent) : "");
   return url + (url.includes("?") ? "&" : "?") + utm;
 }
