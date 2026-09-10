@@ -175,6 +175,14 @@ const STR: Dict = {
     id: "Siap dalam 15 menit atau kurang — cocok untuk hari sibuk.",
     en: "Ready in 15 minutes or less — perfect for busy days.",
   },
+  homeGreeting: { id: "Halo, {name}!", en: "Hi, {name}!" },
+  homeRecipeCount: { id: "Jelajahi {n}+ resep sehat", en: "Explore {n}+ healthy recipes" },
+  homeCtaTitle: { id: "Simpan & kelola resep favoritmu", en: "Save & manage your favorite recipes" },
+  homeCtaDesc: {
+    id: "Daftar gratis untuk menyimpan resep, mengirim resep sendiri, dan mengakses koleksimu kapan saja.",
+    en: "Sign up for free to save recipes, submit your own, and access your collection anytime.",
+  },
+  searchBtn: { id: "Cari", en: "Search" },
   // Beranda: tempat makan via link-out GrabFood (jujur -- tanpa scraping / tanpa daftar tempat palsu).
   placesGrabTitle: { id: "Pesan dari luar via GrabFood", en: "Order out via GrabFood" },
   placesGrabDesc: {

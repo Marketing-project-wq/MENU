@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode, type FormEvent } from "react";
 import { Link } from "../router";
+import { useRouter } from "../router";
 import { useLang, useRecipes } from "../lib/store";
+import { useAuth } from "../lib/auth";
 import { useSocial } from "../lib/social";
 import { buildVMs } from "../lib/normalize";
 import { api } from "../lib/api";
@@ -53,10 +55,13 @@ function grabUrl(): string {
 export function HomePage() {
   const { t, lang } = useLang();
   const { official, members, loading } = useRecipes();
+  const { user, isAuthenticated, login } = useAuth();
+  const { navigate } = useRouter();
   const { ensure } = useSocial();
   const [articles, setArticles] = useState<ArticleSummary[]>([]);
   const [eatNowKeys, setEatNowKeys] = useState<Set<string>>(new Set());
   const [readMins, setReadMins] = useState<Record<string, number>>({});
+  const [heroQ, setHeroQ] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -91,16 +96,79 @@ export function HomePage() {
     if (list.length) ensure(list.map((r) => ({ source: r.source, id: r.id })));
   }, [favoritePicks, healthyPicks, dietPicks, quickPicks, eatNowPicks, ensure]);
 
+  function handleHeroSearch(e: FormEvent) {
+    e.preventDefault();
+    const q = heroQ.trim();
+    if (q) navigate(`/resep?q=${encodeURIComponent(q)}`);
+  }
+
+  const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "";
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      {/* Hero = pertanyaan + toggle tipe makanan (foto asli, bukan emoji/ikon) -- klik langsung
-          ke /resep sudah terfilter kategori/diet itu. */}
+      {/* Hero */}
       <section className="mb-8 text-center">
+        {isAuthenticated && displayName ? (
+          <p className="mb-1 text-sm font-medium text-fg/55">{t("homeGreeting").replace("{name}", displayName)}</p>
+        ) : null}
         <h1 className="text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">{t("homeHeroTitle")}</h1>
+        {vms.length > 0 && (
+          <p className="mt-1 text-sm text-fg/45">
+            {t("homeRecipeCount").replace("{n}", String(vms.length))}
+          </p>
+        )}
+
+        {/* Search bar */}
+        <form onSubmit={handleHeroSearch} className="mx-auto mt-4 flex max-w-md items-center gap-2">
+          <div className="relative flex-1">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-fg/35">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                <circle cx="11" cy="11" r="7" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+            </span>
+            <input
+              type="search"
+              value={heroQ}
+              onChange={(e) => setHeroQ(e.target.value)}
+              placeholder={t("search")}
+              className="w-full rounded-xl border border-fg/10 bg-card py-2.5 pl-9 pr-3 text-sm text-fg placeholder:text-fg/35 focus:border-brand-red/40 focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+            />
+          </div>
+          <button type="submit" className="btn-primary flex-none rounded-xl px-4 py-2.5 text-sm">
+            {t("searchBtn")}
+          </button>
+        </form>
+
         <div className="mt-4">
           <FoodTypeChips vms={vms} />
         </div>
       </section>
+
+      {/* CTA signup banner for guests */}
+      {!isAuthenticated && (
+        <section className="mb-8">
+          <div className="app-card overflow-hidden">
+            <div className="flex flex-col items-center gap-3 p-5 text-center sm:flex-row sm:text-left">
+              <div className="grid h-11 w-11 flex-none place-items-center rounded-full bg-brand-red/10 text-brand-red">
+                <Icon name="sparkles" size={22} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-bold text-fg">{t("homeCtaTitle")}</h3>
+                <p className="mt-0.5 text-xs text-fg/55">{t("homeCtaDesc")}</p>
+              </div>
+              <div className="flex flex-none gap-2">
+                <button type="button" onClick={() => login("up")} className="btn-primary px-4 py-2 text-sm">
+                  {t("signUp")}
+                </button>
+                <button type="button" onClick={() => login("in")} className="btn-ghost px-4 py-2 text-sm">
+                  {t("login")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Resep Favorit -- carousel bisa digeser horizontal. */}
       {favoritePicks.length > 0 && (
