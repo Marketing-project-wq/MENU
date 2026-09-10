@@ -3,11 +3,12 @@ import { useRecipes, useLang } from "../lib/store";
 import { useSocial } from "../lib/social";
 import { buildVMs } from "../lib/normalize";
 import { RecipeCard } from "../components/RecipeCard";
-import { Filters, KCAL_RANGES, type FilterState } from "../components/Filters";
+import { Filters, KCAL_RANGES, SORT_OPTIONS, type FilterState } from "../components/Filters";
 import { FilterChips } from "../components/FilterChips";
 import { Spinner } from "../components/Spinner";
 import { useRouter } from "../router";
 import { catLabel, dietLabel } from "../lib/i18n";
+import type { RecipeVM } from "../lib/types";
 
 // Jumlah resep yang ditampilkan per "halaman" — sisanya baru dimuat pas klik "Muat lebih banyak".
 const PAGE_SIZE = 15;
@@ -20,9 +21,10 @@ function readFiltersFromURL(): FilterState {
       category: params.get("category") || "",
       diet: params.get("diet") || "",
       kcalRange: params.get("kcal") || "",
+      sort: params.get("sort") || "",
     };
   } catch {
-    return { q: "", category: "", diet: "", kcalRange: "" };
+    return { q: "", category: "", diet: "", kcalRange: "", sort: "" };
   }
 }
 
@@ -32,8 +34,32 @@ function filtersToQuery(f: FilterState): string {
   if (f.category) params.set("category", f.category);
   if (f.diet) params.set("diet", f.diet);
   if (f.kcalRange) params.set("kcal", f.kcalRange);
+  if (f.sort) params.set("sort", f.sort);
   const s = params.toString();
   return s ? `?${s}` : "";
+}
+
+function applySort(list: RecipeVM[], sort: string): RecipeVM[] {
+  if (!sort) return list;
+  const sorted = [...list];
+  switch (sort) {
+    case "kcal-asc":
+      return sorted.sort((a, b) => (a.kcal ?? Infinity) - (b.kcal ?? Infinity));
+    case "kcal-desc":
+      return sorted.sort((a, b) => (b.kcal ?? 0) - (a.kcal ?? 0));
+    case "protein-desc":
+      return sorted.sort((a, b) => (b.macros?.p ?? 0) - (a.macros?.p ?? 0));
+    case "time-asc":
+      return sorted.sort((a, b) => {
+        const ta = (a.prepMinutes ?? 0) + (a.cookMinutes ?? 0) || Infinity;
+        const tb = (b.prepMinutes ?? 0) + (b.cookMinutes ?? 0) || Infinity;
+        return ta - tb;
+      });
+    case "name-asc":
+      return sorted.sort((a, b) => a.name.localeCompare(b.name));
+    default:
+      return sorted;
+  }
 }
 
 export function BrowsePage() {
@@ -47,7 +73,7 @@ export function BrowsePage() {
   useEffect(() => {
     navigate("/resep" + filtersToQuery(f), { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [f.q, f.category, f.diet, f.kcalRange]);
+  }, [f.q, f.category, f.diet, f.kcalRange, f.sort]);
 
   const vms = useMemo(() => buildVMs(official, members, lang), [official, members, lang]);
 
@@ -60,14 +86,15 @@ export function BrowsePage() {
   const filtered = useMemo(() => {
     const q = f.q.trim().toLowerCase();
     const kcalDef = KCAL_RANGES.find((r) => r.value === f.kcalRange);
-    return vms.filter((r) => {
-      if (q && !r.name.toLowerCase().includes(q)) return false;
+    const base = vms.filter((r) => {
+      if (q && !r.name.toLowerCase().includes(q) && !r.ingredients.toLowerCase().includes(q)) return false;
       if (f.category && r.category !== f.category) return false;
       if (f.diet && !r.dietTypes.includes(f.diet)) return false;
       if (kcalDef && r.kcal != null && (r.kcal < kcalDef.min || r.kcal > kcalDef.max)) return false;
       if (kcalDef && r.kcal == null) return false;
       return true;
     });
+    return applySort(base, f.sort);
   }, [vms, f]);
 
   // Filter/pencarian berubah -> mulai lagi dari halaman pertama.
@@ -91,13 +118,17 @@ export function BrowsePage() {
     const kcalDef = KCAL_RANGES.find((r) => r.value === f.kcalRange);
     if (kcalDef) activeFilterLabels.push(kcalDef.label[lang]);
   }
+  if (f.sort) {
+    const sortDef = SORT_OPTIONS.find((s) => s.value === f.sort);
+    if (sortDef) activeFilterLabels.push(sortDef.label[lang]);
+  }
   const hasActiveFilters = activeFilterLabels.length > 0;
 
   function removeFilter(key: keyof FilterState) {
     setF((prev) => ({ ...prev, [key]: "" }));
   }
   function clearAllFilters() {
-    setF({ q: "", category: "", diet: "", kcalRange: "" });
+    setF({ q: "", category: "", diet: "", kcalRange: "", sort: "" });
   }
 
   return (

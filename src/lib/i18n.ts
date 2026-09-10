@@ -32,6 +32,7 @@ const STR: Dict = {
   allCategories: { id: "Semua kategori", en: "All categories" },
   allDiets: { id: "Semua tipe diet", en: "All diet types" },
   allCalories: { id: "Semua kalori", en: "All calories" },
+  sortBy: { id: "Urutkan", en: "Sort by" },
   official: { id: "Resmi 20FIT", en: "Official 20FIT" },
   member: { id: "Dari member", en: "From member" },
   login: { id: "Masuk", en: "Log in" },
@@ -169,6 +170,11 @@ const STR: Dict = {
   },
   homePlacesHeading: { id: "Rekomendasi Tempat Makan", en: "Where to Eat" },
   homeEatNowHeading: { id: "Bisa Langsung Dipesan", en: "Order Right Now" },
+  homeQuickHeading: { id: "Resep Cepat", en: "Quick Recipes" },
+  homeQuickSub: {
+    id: "Siap dalam 15 menit atau kurang — cocok untuk hari sibuk.",
+    en: "Ready in 15 minutes or less — perfect for busy days.",
+  },
   // Beranda: tempat makan via link-out GrabFood (jujur -- tanpa scraping / tanpa daftar tempat palsu).
   placesGrabTitle: { id: "Pesan dari luar via GrabFood", en: "Order out via GrabFood" },
   placesGrabDesc: {

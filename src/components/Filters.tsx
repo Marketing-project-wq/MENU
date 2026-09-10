@@ -7,6 +7,7 @@ export interface FilterState {
   category: string;
   diet: string;
   kcalRange: string;
+  sort: string;
 }
 
 export const KCAL_RANGES: { value: string; label: { id: string; en: string }; min: number; max: number }[] = [
@@ -14,6 +15,14 @@ export const KCAL_RANGES: { value: string; label: { id: string; en: string }; mi
   { value: "300-500", label: { id: "300–500 kal", en: "300–500 cal" }, min: 300, max: 500 },
   { value: "500-700", label: { id: "500–700 kal", en: "500–700 cal" }, min: 500, max: 700 },
   { value: "700+", label: { id: "700+ kal", en: "700+ cal" }, min: 700, max: Infinity },
+];
+
+export const SORT_OPTIONS: { value: string; label: { id: string; en: string } }[] = [
+  { value: "kcal-asc", label: { id: "Kalori terendah", en: "Lowest calories" } },
+  { value: "kcal-desc", label: { id: "Kalori tertinggi", en: "Highest calories" } },
+  { value: "protein-desc", label: { id: "Protein tertinggi", en: "Most protein" } },
+  { value: "time-asc", label: { id: "Tercepat dimasak", en: "Quickest to cook" } },
+  { value: "name-asc", label: { id: "Nama A–Z", en: "Name A–Z" } },
 ];
 
 export function Filters({
@@ -72,6 +81,19 @@ export function Filters({
         {KCAL_RANGES.map((r) => (
           <option key={r.value} value={r.value}>
             {r.label[lang]}
+          </option>
+        ))}
+      </select>
+      <select
+        className={"field sm:max-w-[200px]" + (value.sort ? " " + activeCls : "")}
+        value={value.sort}
+        onChange={(e) => onChange({ ...value, sort: e.target.value })}
+        aria-label={t("sortBy")}
+      >
+        <option value="">{t("sortBy")}</option>
+        {SORT_OPTIONS.map((s) => (
+          <option key={s.value} value={s.value}>
+            {s.label[lang]}
           </option>
         ))}
       </select>
