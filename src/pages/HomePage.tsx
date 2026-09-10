@@ -17,11 +17,26 @@ import type { ArticleSummary, RecipeVM } from "../lib/types";
 
 // Beranda pakai DATA ASLI: artikel in-house + resep dari katalog (difilter dari tag diet
 // yang benar-benar ada), plus link-out jujur ke GrabFood utk "tempat makan". Tak ada data karangan.
-const HEALTHY_DIETS = ["vegetarian", "vegan", "pescatarian", "low-carb"]; // "makan sehat" = nabati/ringan
-const DIET_DIETS = ["high-protein", "keto", "low-carb"]; // "diet" = fokus makro (protein/keto)
+const HEALTHY_DIETS = ["vegetarian", "vegan", "pescatarian", "low-carb"];
+const DIET_DIETS = ["high-protein", "keto", "low-carb"];
+const QUICK_MAX_MINUTES = 15;
 
 function pickByDiet(vms: RecipeVM[], diets: string[], n: number): RecipeVM[] {
   return vms.filter((r) => r.dietTypes.some((d) => diets.includes(d))).slice(0, n);
+}
+
+function pickQuick(vms: RecipeVM[], maxMin: number, n: number): RecipeVM[] {
+  return vms
+    .filter((r) => {
+      const total = (r.prepMinutes ?? 0) + (r.cookMinutes ?? 0);
+      return total > 0 && total <= maxMin;
+    })
+    .sort((a, b) => {
+      const ta = (a.prepMinutes ?? 0) + (a.cookMinutes ?? 0);
+      const tb = (b.prepMinutes ?? 0) + (b.cookMinutes ?? 0);
+      return ta - tb;
+    })
+    .slice(0, n);
 }
 
 /** UTM supaya trafik keluar ke GrabFood bisa diukur (tanpa mengubah tujuan / tanpa scraping). */
@@ -63,6 +78,7 @@ export function HomePage() {
   const vms = useMemo(() => buildVMs(official, members, lang), [official, members, lang]);
   const healthyPicks = useMemo(() => pickByDiet(vms, HEALTHY_DIETS, 4), [vms]);
   const dietPicks = useMemo(() => pickByDiet(vms, DIET_DIETS, 4), [vms]);
+  const quickPicks = useMemo(() => pickQuick(vms, QUICK_MAX_MINUTES, 4), [vms]);
   const favoritePicks = useMemo(() => pickFavorites(vms, 12), [vms]);
   const eatNowPicks = useMemo(
     () => vms.filter((r) => eatNowKeys.has(`${r.source}:${r.id}`)).slice(0, 4),
@@ -70,11 +86,10 @@ export function HomePage() {
   );
   const articlePicks = articles.slice(0, 5); // "Top 5 untuk dibaca hari ini" (terbaru; API sudah urut terbaru)
 
-  // Muat jumlah heart untuk resep yang tampil (batch + dedupe di store).
   useEffect(() => {
-    const list = [...favoritePicks, ...healthyPicks, ...dietPicks, ...eatNowPicks];
+    const list = [...favoritePicks, ...healthyPicks, ...dietPicks, ...quickPicks, ...eatNowPicks];
     if (list.length) ensure(list.map((r) => ({ source: r.source, id: r.id })));
-  }, [favoritePicks, healthyPicks, dietPicks, eatNowPicks, ensure]);
+  }, [favoritePicks, healthyPicks, dietPicks, quickPicks, eatNowPicks, ensure]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -120,6 +135,13 @@ export function HomePage() {
           {dietPicks.length > 0 && (
             <HomeSection title={t("homeDietHeading")} desc={t("homeDietSub")} to="/resep?diet=high-protein">
               <RecipeGrid picks={dietPicks} />
+            </HomeSection>
+          )}
+
+          {/* Resep Cepat — siap dalam 15 menit atau kurang. */}
+          {quickPicks.length > 0 && (
+            <HomeSection title={t("homeQuickHeading")} desc={t("homeQuickSub")} to="/resep?sort=time-asc">
+              <RecipeGrid picks={quickPicks} />
             </HomeSection>
           )}
         </>
