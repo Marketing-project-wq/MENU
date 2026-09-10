@@ -1,5 +1,4 @@
 import { Link, recipeHref } from "../router";
-import { SourceBadge } from "./SourceBadge";
 import { FoodImage } from "./FoodImage";
 import { useLang } from "../lib/store";
 import { useSocial } from "../lib/social";
@@ -33,9 +32,6 @@ export function RecipeCard({ r, priority = false }: { r: RecipeVM; priority?: bo
           emojiClass="text-4xl"
           priority={priority}
         />
-        <div className="absolute left-2 top-2">
-          <SourceBadge source={r.source} />
-        </div>
         {hearts > 0 && (
           <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/45 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -64,6 +60,13 @@ export function RecipeCard({ r, priority = false }: { r: RecipeVM; priority?: bo
             </span>
           ))}
         </div>
+        {r.macros && (
+          <div className="mt-1.5 flex items-center gap-2 text-[11px] text-fg/50">
+            <span><span className="font-semibold text-fg/65">P</span> {r.macros.p}g</span>
+            <span><span className="font-semibold text-fg/65">C</span> {r.macros.c}g</span>
+            <span><span className="font-semibold text-fg/65">F</span> {r.macros.f}g</span>
+          </div>
+        )}
       </div>
     </Link>
   );
