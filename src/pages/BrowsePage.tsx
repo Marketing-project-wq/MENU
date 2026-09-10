@@ -3,7 +3,7 @@ import { useRecipes, useLang } from "../lib/store";
 import { useSocial } from "../lib/social";
 import { buildVMs } from "../lib/normalize";
 import { RecipeCard } from "../components/RecipeCard";
-import { Filters, type FilterState } from "../components/Filters";
+import { Filters, KCAL_RANGES, type FilterState } from "../components/Filters";
 import { FilterChips } from "../components/FilterChips";
 import { Spinner } from "../components/Spinner";
 import { useRouter } from "../router";
@@ -12,7 +12,6 @@ import { catLabel, dietLabel } from "../lib/i18n";
 // Jumlah resep yang ditampilkan per "halaman" — sisanya baru dimuat pas klik "Muat lebih banyak".
 const PAGE_SIZE = 15;
 
-/** Baca filter awal dari URL (?q=&category=&diet=) supaya link bisa dibagikan & bertahan saat refresh. */
 function readFiltersFromURL(): FilterState {
   try {
     const params = new URLSearchParams(window.location.search);
@@ -20,9 +19,10 @@ function readFiltersFromURL(): FilterState {
       q: params.get("q") || "",
       category: params.get("category") || "",
       diet: params.get("diet") || "",
+      kcalRange: params.get("kcal") || "",
     };
   } catch {
-    return { q: "", category: "", diet: "" };
+    return { q: "", category: "", diet: "", kcalRange: "" };
   }
 }
 
@@ -31,6 +31,7 @@ function filtersToQuery(f: FilterState): string {
   if (f.q.trim()) params.set("q", f.q.trim());
   if (f.category) params.set("category", f.category);
   if (f.diet) params.set("diet", f.diet);
+  if (f.kcalRange) params.set("kcal", f.kcalRange);
   const s = params.toString();
   return s ? `?${s}` : "";
 }
@@ -43,14 +44,10 @@ export function BrowsePage() {
   const [f, setF] = useState<FilterState>(() => readFiltersFromURL());
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  // Filter aktif -> URL query param (shareable, bertahan saat refresh).
-  // PENTING: halaman Jelajah ada di "/resep" (sejak Tahap 5 "/" jadi Home). Dulu sync ini
-  // menulis "/" sehingga membuka /resep langsung terlempar balik ke Home (Home cuma tampil
-  // 4 resep) -- itulah bug "resep tinggal 4 + jelajah tak bisa diklik". Harus "/resep".
   useEffect(() => {
     navigate("/resep" + filtersToQuery(f), { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [f.q, f.category, f.diet]);
+  }, [f.q, f.category, f.diet, f.kcalRange]);
 
   const vms = useMemo(() => buildVMs(official, members, lang), [official, members, lang]);
 
@@ -62,10 +59,13 @@ export function BrowsePage() {
 
   const filtered = useMemo(() => {
     const q = f.q.trim().toLowerCase();
+    const kcalDef = KCAL_RANGES.find((r) => r.value === f.kcalRange);
     return vms.filter((r) => {
       if (q && !r.name.toLowerCase().includes(q)) return false;
       if (f.category && r.category !== f.category) return false;
       if (f.diet && !r.dietTypes.includes(f.diet)) return false;
+      if (kcalDef && r.kcal != null && (r.kcal < kcalDef.min || r.kcal > kcalDef.max)) return false;
+      if (kcalDef && r.kcal == null) return false;
       return true;
     });
   }, [vms, f]);
@@ -87,13 +87,17 @@ export function BrowsePage() {
   if (f.q.trim()) activeFilterLabels.push(`"${f.q.trim()}"`);
   if (f.category) activeFilterLabels.push(catLabel(f.category, lang));
   if (f.diet) activeFilterLabels.push(dietLabel(f.diet, lang));
+  if (f.kcalRange) {
+    const kcalDef = KCAL_RANGES.find((r) => r.value === f.kcalRange);
+    if (kcalDef) activeFilterLabels.push(kcalDef.label[lang]);
+  }
   const hasActiveFilters = activeFilterLabels.length > 0;
 
   function removeFilter(key: keyof FilterState) {
     setF((prev) => ({ ...prev, [key]: "" }));
   }
   function clearAllFilters() {
-    setF({ q: "", category: "", diet: "" });
+    setF({ q: "", category: "", diet: "", kcalRange: "" });
   }
 
   return (

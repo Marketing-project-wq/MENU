@@ -205,12 +205,12 @@ export function DetailPage({ slug }: { slug: string }) {
 
             {scaledMacros && (
               <>
-                <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                  <Macro label={t("protein")} value={`${scaledMacros.p} g`} />
-                  <Macro label={t("carbs")} value={`${scaledMacros.c} g`} />
-                  <Macro label={t("fat")} value={`${scaledMacros.f} g`} />
+                <MacroProportionBar p={scaledMacros.p} c={scaledMacros.c} f={scaledMacros.f} t={t} />
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center text-sm">
+                  <Macro label={t("protein")} value={`${scaledMacros.p} g`} color="bg-blue-500" />
+                  <Macro label={t("carbs")} value={`${scaledMacros.c} g`} color="bg-amber-400" />
+                  <Macro label={t("fat")} value={`${scaledMacros.f} g`} color="bg-rose-400" />
                 </div>
-                {/* Gizi mikro -- tampil hanya untuk field yang benar-benar ada di sumber datanya. */}
                 {(scaledMacros.fiber != null ||
                   scaledMacros.sugar != null ||
                   scaledMacros.sodium != null) && (
@@ -273,11 +273,38 @@ export function DetailPage({ slug }: { slug: string }) {
   );
 }
 
-function Macro({ label, value }: { label: string; value: string }) {
+function Macro({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div className="rounded-lg bg-card py-2">
-      <div className="text-[11px] uppercase tracking-wide text-fg/40">{label}</div>
+      <div className="flex items-center justify-center gap-1 text-[11px] uppercase tracking-wide text-fg/40">
+        {color && <span className={`inline-block h-2 w-2 rounded-full ${color}`} />}
+        {label}
+      </div>
       <div className="font-semibold text-fg">{value}</div>
+    </div>
+  );
+}
+
+function MacroProportionBar({ p, c, f, t }: { p: number; c: number; f: number; t: (k: string) => string }) {
+  const pCal = p * 4;
+  const cCal = c * 4;
+  const fCal = f * 9;
+  const total = pCal + cCal + fCal || 1;
+  const pPct = Math.round((pCal / total) * 100);
+  const cPct = Math.round((cCal / total) * 100);
+  const fPct = 100 - pPct - cPct;
+  return (
+    <div className="mt-3">
+      <div className="flex h-3 overflow-hidden rounded-full">
+        <div className="bg-blue-500 transition-all" style={{ width: `${pPct}%` }} title={`${t("protein")} ${pPct}%`} />
+        <div className="bg-amber-400 transition-all" style={{ width: `${cPct}%` }} title={`${t("carbs")} ${cPct}%`} />
+        <div className="bg-rose-400 transition-all" style={{ width: `${fPct}%` }} title={`${t("fat")} ${fPct}%`} />
+      </div>
+      <div className="mt-1.5 flex justify-between text-[11px] text-fg/50">
+        <span><span className="inline-block h-2 w-2 rounded-full bg-blue-500 mr-1" />{t("protein")} {pPct}%</span>
+        <span><span className="inline-block h-2 w-2 rounded-full bg-amber-400 mr-1" />{t("carbs")} {cPct}%</span>
+        <span><span className="inline-block h-2 w-2 rounded-full bg-rose-400 mr-1" />{t("fat")} {fPct}%</span>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useLang } from "../lib/store";
 import { catLabel, dietLabel } from "../lib/i18n";
-import type { FilterState } from "./Filters";
+import { KCAL_RANGES, type FilterState } from "./Filters";
 
 interface ActiveFilter {
   key: keyof FilterState;
@@ -22,6 +22,10 @@ export function FilterChips({
   if (value.q.trim()) active.push({ key: "q", label: `${t("searchPrefix")}: ${value.q.trim()}` });
   if (value.category) active.push({ key: "category", label: catLabel(value.category, lang) });
   if (value.diet) active.push({ key: "diet", label: dietLabel(value.diet, lang) });
+  if (value.kcalRange) {
+    const kcalDef = KCAL_RANGES.find((r) => r.value === value.kcalRange);
+    if (kcalDef) active.push({ key: "kcalRange", label: kcalDef.label[lang] });
+  }
 
   if (active.length === 0) return null;
 

@@ -31,6 +31,7 @@ const STR: Dict = {
   search: { id: "Cari resep…", en: "Search recipes…" },
   allCategories: { id: "Semua kategori", en: "All categories" },
   allDiets: { id: "Semua tipe diet", en: "All diet types" },
+  allCalories: { id: "Semua kalori", en: "All calories" },
   official: { id: "Resmi 20FIT", en: "Official 20FIT" },
   member: { id: "Dari member", en: "From member" },
   login: { id: "Masuk", en: "Log in" },
