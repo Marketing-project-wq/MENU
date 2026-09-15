@@ -158,15 +158,15 @@ const STR: Dict = {
   homeNav: { id: "Beranda", en: "Home" },
   homeHeroTitle: { id: "Mau makan apa hari ini?", en: "What are you going to eat today?" },
   homeArticlesHeading: { id: "Artikel & Tips", en: "Articles & Tips" },
-  homeTopArticlesHeading: { id: "5 Artikel untuk Dibaca Hari Ini", en: "Top 5 Articles to Read Today" },
+  homeTopArticlesHeading: { id: "6 Artikel untuk Dibaca Hari Ini", en: "6 Articles to Read Today" },
   homeHealthyHeading: { id: "Rekomendasi Makan Sehat", en: "Healthy Picks" },
   homeDietHeading: { id: "Rekomendasi Diet", en: "Diet Picks" },
   homeRecipesHeading: { id: "Resep Pilihan", en: "Featured Recipes" },
   homeFavoritesHeading: { id: "Resep Favorit", en: "Favorite Recipes" },
   homeFavoritesSub: { id: "Pilihan resep populer dari dapur 20FIT.", en: "Popular picks from the 20FIT kitchen." },
   homeTopArticlesSub: {
-    id: "Tips gizi, diet, dan makan sehat — terbaru dari redaksi 20FIT.",
-    en: "Nutrition, diet, and healthy-eating tips — fresh from the 20FIT team.",
+    id: "Pilihan harian dari redaksi 20FIT — ganti tiap hari.",
+    en: "A fresh daily pick from the 20FIT team — changes every day.",
   },
   homeHealthySub: {
     id: "Resep nabati & ringan untuk makan lebih sehat tiap hari.",

@@ -12,6 +12,7 @@ import { FoodTypeChips } from "../components/FoodTypeChips";
 import { Icon } from "../components/Icon";
 import { Spinner } from "../components/Spinner";
 import { pickFavorites } from "../lib/favorites";
+import { pickDaily } from "../lib/dailyPick";
 import { getReadMinutesMap } from "../lib/readtime";
 import type { ArticleSummary, RecipeVM } from "../lib/types";
 
@@ -84,7 +85,9 @@ export function HomePage() {
     () => vms.filter((r) => eatNowKeys.has(`${r.source}:${r.id}`)).slice(0, 4),
     [vms, eatNowKeys]
   );
-  const articlePicks = articles.slice(0, 5); // "Top 5 untuk dibaca hari ini" (terbaru; API sudah urut terbaru)
+  // 6 artikel "untuk dibaca hari ini" — pilihan acak DETERMINISTIK per tanggal: ganti tiap hari,
+  // stabil sepanjang hari itu, sama untuk semua user (pola sama dgn rotasi foto harian).
+  const articlePicks = useMemo(() => pickDaily(articles, 6), [articles]);
 
   useEffect(() => {
     const list = [...favoritePicks, ...healthyPicks, ...dietPicks, ...quickPicks, ...eatNowPicks];
