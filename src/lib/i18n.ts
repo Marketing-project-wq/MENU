@@ -56,6 +56,18 @@ const STR: Dict = {
   fiber: { id: "Serat", en: "Fiber" },
   sugar: { id: "Gula", en: "Sugar" },
   sodium: { id: "Natrium", en: "Sodium" },
+  // F3 — Log ke kalori harianku (kirim ke tracker Calories 20FIT). Angka tetap PERKIRAAN.
+  logToCalories: { id: "Tambah ke kalori harianku", en: "Add to my daily calories" },
+  logging: { id: "Menyimpan…", en: "Saving…" },
+  loggedToCalories: {
+    id: "Masuk ke kalori hari ini (perkiraan)",
+    en: "Added to today's calories (estimate)",
+  },
+  logCaloriesError: { id: "Gagal menyimpan. Coba lagi.", en: "Couldn't save. Try again." },
+  logCaloriesLoginPrompt: {
+    id: "Masuk dulu supaya kalorinya tercatat di akunmu.",
+    en: "Sign in so it's logged to your account.",
+  },
   noResults: { id: "Tidak ada resep yang cocok.", en: "No recipes match." },
   loading: { id: "Memuat…", en: "Loading…" },
   backToBrowse: { id: "Kembali ke resep", en: "Back to recipes" },
