@@ -4,6 +4,24 @@
 
 ---
 
+## 2026-09-15 — Artikel "untuk dibaca hari ini": 6 artikel, rotasi harian
+
+Branch: `claude/menu-20fit-moderation-9qqf9t`
+
+Permintaan owner: bagian "Artikel untuk dibaca hari ini" di Home rekomendasikan **6 artikel** dan
+**ganti tiap hari** (sebelumnya 5 artikel terbaru, statis).
+
+- `src/lib/dailyPick.ts` (baru) — `pickDaily(arr, n, salt)`: acak DETERMINISTIK per tanggal (hash
+  string → PRNG → Fisher–Yates). Stabil sepanjang hari, ganti keesokan harinya, sama untuk semua
+  user. Pola sama dengan rotasi foto harian my.20fit.
+- `HomePage.tsx` — `articlePicks = pickDaily(articles, 6)` (dari ~67 artikel), ganti `slice(0, 5)`.
+- `i18n.ts` — heading "6 Artikel untuk Dibaca Hari Ini"; sub "Pilihan harian… ganti tiap hari".
+
+Verifikasi: unit test (6 unik, deterministik per hari, ganti tiap hari, aman bila item < 6) PASS.
+Build penuh via CI.
+
+---
+
 ## 2026-09-15 — Log resep → Kalori Harian (nyambung Calories 20FIT); catatan F1/F2
 
 Branch: `claude/menu-20fit-moderation-9qqf9t`
