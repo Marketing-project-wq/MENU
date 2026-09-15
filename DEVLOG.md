@@ -4,6 +4,53 @@
 
 ---
 
+## 2026-09-15 — Artikel "untuk dibaca hari ini": 6 artikel, rotasi harian
+
+Branch: `claude/menu-20fit-moderation-9qqf9t`
+
+Permintaan owner: bagian "Artikel untuk dibaca hari ini" di Home rekomendasikan **6 artikel** dan
+**ganti tiap hari** (sebelumnya 5 artikel terbaru, statis).
+
+- `src/lib/dailyPick.ts` (baru) — `pickDaily(arr, n, salt)`: acak DETERMINISTIK per tanggal (hash
+  string → PRNG → Fisher–Yates). Stabil sepanjang hari, ganti keesokan harinya, sama untuk semua
+  user. Pola sama dengan rotasi foto harian my.20fit.
+- `HomePage.tsx` — `articlePicks = pickDaily(articles, 6)` (dari ~67 artikel), ganti `slice(0, 5)`.
+- `i18n.ts` — heading "6 Artikel untuk Dibaca Hari Ini"; sub "Pilihan harian… ganti tiap hari".
+
+Verifikasi: unit test (6 unik, deterministik per hari, ganti tiap hari, aman bila item < 6) PASS.
+Build penuh via CI.
+
+---
+
+## 2026-09-15 — Log resep → Kalori Harian (nyambung Calories 20FIT); catatan F1/F2
+
+Branch: `claude/menu-20fit-moderation-9qqf9t`
+
+Permintaan owner: 3 fitur — (1) skala porsi, (2) breakdown gizi per bahan, (3) log ke calorie
+tracker. STEP 0 cek data dulu → keputusan owner: bangun **F3 + F1 (skala angka)**, **F2 ditunda**.
+
+Kondisi awal (main `afa4cc2`, PR #43):
+- **F1 skala porsi SUDAH ADA** (`DetailPage.tsx`: stepper −/N/+, skala kcal+makro, teks bahan tetap
+  + badge ×N). TIDAK dibangun ulang.
+- **F2 breakdown per bahan**: kebentur data — `my20fit_food_ref` cuma 7 bahan + bahan resep teks
+  bebas tanpa gram. Ditunda; tidak mengarang angka gizi per bahan.
+
+Yang ditambah (F3):
+- `src/lib/calorieLog.ts` — `logToCalories()`: append 1 item ke `my20fit_daily_log.cal_items`, pola
+  PERSIS `Auth.saveDaily` my.20fit (read-modify-write + upsert `onConflict: auth_user_id,log_date`).
+  RLS own-row (`auth.uid() = auth_user_id`); JWT lewat header supabase-js (bukan URL). Item bentuknya
+  `{name,kcal,p,c,f,t}` — sama dengan tracker yang sudah ada.
+- `src/components/LogCalorieButton.tsx` — tombol "Tambah ke kalori harianku" di blok gizi; kirim kcal
+  + makro yang SUDAH diskalakan sesuai porsi terpilih. Belum login → ajakan masuk in-place.
+- `DetailPage.tsx` render tombol (hanya bila kcal ada); `i18n.ts` +5 string ID/EN.
+- Angka = PERKIRAAN → disclaimer dipertahankan + label "(perkiraan)" saat sukses.
+
+Verifikasi: `calorieLog.ts` tsc bersih; unit test skala + bentuk item PASS; DB constraint
+`(auth_user_id, log_date)` unik + `cal_items` jsonb + RLS dicek. Build penuh lewat CI (`build.yml`)
+— `npm install` lokal keblok proxy (403). BELUM e2e login-di-browser → perlu cek manual di staging.
+
+---
+
 ## 2026-09-08 — Daftar/Masuk in-place di recepie.20fit.id (tanpa lompat ke my.20fit.id)
 
 Branch: `claude/menu-20fit-moderation-9qqf9t`

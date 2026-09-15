@@ -112,7 +112,7 @@ export function parseRoute(path: string): Route {
   if (parts[0] === "submission-saya") return { name: "mine", params: {} };
   if (parts[0] === "tersimpan") return { name: "saved", params: {} };
   if (parts[0] === "eat-now") return { name: "eatnow", params: {} };
-  if (parts[0] === "admin") return { name: "admin", params: {} };
+  if (parts[0] === "admin" && parts.length === 1) return { name: "admin", params: {} };
   return { name: "notfound", params: {} };
 }
 

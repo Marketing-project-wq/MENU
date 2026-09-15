@@ -56,6 +56,18 @@ const STR: Dict = {
   fiber: { id: "Serat", en: "Fiber" },
   sugar: { id: "Gula", en: "Sugar" },
   sodium: { id: "Natrium", en: "Sodium" },
+  // F3 — Log ke kalori harianku (kirim ke tracker Calories 20FIT). Angka tetap PERKIRAAN.
+  logToCalories: { id: "Tambah ke kalori harianku", en: "Add to my daily calories" },
+  logging: { id: "Menyimpan…", en: "Saving…" },
+  loggedToCalories: {
+    id: "Masuk ke kalori hari ini (perkiraan)",
+    en: "Added to today's calories (estimate)",
+  },
+  logCaloriesError: { id: "Gagal menyimpan. Coba lagi.", en: "Couldn't save. Try again." },
+  logCaloriesLoginPrompt: {
+    id: "Masuk dulu supaya kalorinya tercatat di akunmu.",
+    en: "Sign in so it's logged to your account.",
+  },
   noResults: { id: "Tidak ada resep yang cocok.", en: "No recipes match." },
   loading: { id: "Memuat…", en: "Loading…" },
   backToBrowse: { id: "Kembali ke resep", en: "Back to recipes" },
@@ -146,15 +158,15 @@ const STR: Dict = {
   homeNav: { id: "Beranda", en: "Home" },
   homeHeroTitle: { id: "Mau makan apa hari ini?", en: "What are you going to eat today?" },
   homeArticlesHeading: { id: "Artikel & Tips", en: "Articles & Tips" },
-  homeTopArticlesHeading: { id: "5 Artikel untuk Dibaca Hari Ini", en: "Top 5 Articles to Read Today" },
+  homeTopArticlesHeading: { id: "6 Artikel untuk Dibaca Hari Ini", en: "6 Articles to Read Today" },
   homeHealthyHeading: { id: "Rekomendasi Makan Sehat", en: "Healthy Picks" },
   homeDietHeading: { id: "Rekomendasi Diet", en: "Diet Picks" },
   homeRecipesHeading: { id: "Resep Pilihan", en: "Featured Recipes" },
   homeFavoritesHeading: { id: "Resep Favorit", en: "Favorite Recipes" },
   homeFavoritesSub: { id: "Pilihan resep populer dari dapur 20FIT.", en: "Popular picks from the 20FIT kitchen." },
   homeTopArticlesSub: {
-    id: "Tips gizi, diet, dan makan sehat — terbaru dari redaksi 20FIT.",
-    en: "Nutrition, diet, and healthy-eating tips — fresh from the 20FIT team.",
+    id: "Pilihan harian dari redaksi 20FIT — ganti tiap hari.",
+    en: "A fresh daily pick from the 20FIT team — changes every day.",
   },
   homeHealthySub: {
     id: "Resep nabati & ringan untuk makan lebih sehat tiap hari.",
@@ -327,6 +339,22 @@ const STR: Dict = {
     en: "This email is already registered. Try logging in.",
   },
   authErrGeneric: { id: "Terjadi kesalahan. Coba lagi.", en: "Something went wrong. Please try again." },
+  // Gerbang /admin (pintu SSO ke CMS my.20fit.id).
+  adminChecking: { id: "Memeriksa akses…", en: "Checking access…" },
+  adminGateTitle: { id: "Area Admin", en: "Admin area" },
+  adminGuestBody: {
+    id: "Halaman ini khusus admin 20FIT. Masuk dulu dengan akun admin.",
+    en: "This page is for 20FIT admins only. Please sign in with an admin account.",
+  },
+  adminDeniedTitle: { id: "Akses ditolak", en: "Access denied" },
+  adminDeniedBody: {
+    id: "Akun ini bukan admin. Kalau kamu memang admin, masuk dengan akun admin yang benar atau minta akses ke tim.",
+    en: "This account is not an admin. If you are an admin, sign in with the correct admin account or ask the team for access.",
+  },
+  adminGrantedTitle: { id: "Terverifikasi sebagai admin", en: "Verified as admin" },
+  adminOpening: { id: "Membuka CMS admin…", en: "Opening the admin CMS…" },
+  adminOpenCms: { id: "Buka CMS admin", en: "Open admin CMS" },
+  adminBackHome: { id: "Kembali ke beranda", en: "Back to home" },
 };
 
 export function makeT(lang: Lang) {
