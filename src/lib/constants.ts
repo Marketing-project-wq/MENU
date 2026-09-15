@@ -40,6 +40,12 @@ export const URLS = {
   MY_20FIT: MY20FIT,
   LOGIN: `${MY20FIT}/login?next=menu`,
   SIGN_UP: `${MY20FIT}/login?mode=up&next=menu`,
+  // CMS admin 20FIT (di my.20fit.id). Pintu /admin recepie hand-off ke sini SETELAH verifikasi
+  // role server-side. Pakai /admin-dashboard (entri kanonik) — BUKAN /admin: /admin melakukan
+  // redirect client-side (location.replace) yang membuang fragment SSO. Redirect server (302)
+  // dari /admin-dashboard mempertahankan fragment. my.20fit route ke admin-v2 / admin lama
+  // sesuai feature flag di sisi mereka.
+  ADMIN_CMS: `${MY20FIT}/admin-dashboard`,
 };
 
 // Endpoint API my.20fit.id yang dipakai menu.20fit.id.
@@ -65,6 +71,7 @@ export const API = {
   ARTICLES: "/api/menu/articles", // publik: daftar artikel terbit
   ARTICLE: (slug: string) => `/api/menu/articles/${encodeURIComponent(slug)}`, // publik: 1 artikel + resep terkait
   RECIPE_ARTICLES: (id: string) => `/api/menu/${id}/articles`, // publik: artikel terkait sebuah resep
+  ADMIN_ME: "/api/admin/me", // auth admin: cek role caller (dicek SERVER-SIDE) utk gerbang /admin
 };
 
 // Batas & aturan (samakan dengan server my.20fit.id).

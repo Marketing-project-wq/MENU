@@ -23,3 +23,13 @@ export async function getAccessToken(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token ?? null;
 }
+
+// Dua token sesi untuk hand-off SSO (mis. ke CMS admin my.20fit.id lewat fragment #).
+// null kalau belum login. Token TIDAK boleh masuk query/log — hanya fragment (#).
+export async function getSessionTokens(): Promise<{ access_token: string; refresh_token: string } | null> {
+  const { data } = await supabase.auth.getSession();
+  const s = data.session;
+  return s?.access_token && s?.refresh_token
+    ? { access_token: s.access_token, refresh_token: s.refresh_token }
+    : null;
+}

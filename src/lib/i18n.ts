@@ -331,6 +331,22 @@ const STR: Dict = {
     en: "This email is already registered. Try logging in.",
   },
   authErrGeneric: { id: "Terjadi kesalahan. Coba lagi.", en: "Something went wrong. Please try again." },
+  // Gerbang /admin (pintu SSO ke CMS my.20fit.id).
+  adminChecking: { id: "Memeriksa akses…", en: "Checking access…" },
+  adminGateTitle: { id: "Area Admin", en: "Admin area" },
+  adminGuestBody: {
+    id: "Halaman ini khusus admin 20FIT. Masuk dulu dengan akun admin.",
+    en: "This page is for 20FIT admins only. Please sign in with an admin account.",
+  },
+  adminDeniedTitle: { id: "Akses ditolak", en: "Access denied" },
+  adminDeniedBody: {
+    id: "Akun ini bukan admin. Kalau kamu memang admin, masuk dengan akun admin yang benar atau minta akses ke tim.",
+    en: "This account is not an admin. If you are an admin, sign in with the correct admin account or ask the team for access.",
+  },
+  adminGrantedTitle: { id: "Terverifikasi sebagai admin", en: "Verified as admin" },
+  adminOpening: { id: "Membuka CMS admin…", en: "Opening the admin CMS…" },
+  adminOpenCms: { id: "Buka CMS admin", en: "Open admin CMS" },
+  adminBackHome: { id: "Kembali ke beranda", en: "Back to home" },
 };
 
 export function makeT(lang: Lang) {

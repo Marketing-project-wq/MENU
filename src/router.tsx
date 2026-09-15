@@ -85,6 +85,7 @@ export interface Route {
     | "eatnow"
     | "articles"
     | "article"
+    | "admin"
     | "notfound";
   params: Record<string, string>;
 }
@@ -111,6 +112,8 @@ export function parseRoute(path: string): Route {
   if (parts[0] === "submission-saya") return { name: "mine", params: {} };
   if (parts[0] === "tersimpan") return { name: "saved", params: {} };
   if (parts[0] === "eat-now") return { name: "eatnow", params: {} };
+  // Pintu admin: gerbang SSO ke CMS my.20fit.id. Akses diputuskan SERVER-SIDE (lihat AdminGate).
+  if (parts[0] === "admin" && parts.length === 1) return { name: "admin", params: {} };
   return { name: "notfound", params: {} };
 }
 
