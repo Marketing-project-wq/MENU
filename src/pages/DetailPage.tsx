@@ -13,6 +13,7 @@ import { EatNowLinks } from "../components/EatNowLinks";
 import { EatNowButton } from "../components/EatNowButton";
 import { RelatedArticles } from "../components/RelatedArticles";
 import { RecipeNotFound } from "../components/RecipeNotFound";
+import { LogCalorieButton } from "../components/LogCalorieButton";
 import { Icon } from "../components/Icon";
 import { api } from "../lib/api";
 import { catLabel, dietLabel } from "../lib/i18n";
@@ -226,6 +227,16 @@ export function DetailPage({ slug }: { slug: string }) {
               {isOfficial ? t("estOfficial") : t("estUser")}
               {recipe.kcal != null && " — " + t("estimateForPortions").replace("{n}", String(portions))}
             </p>
+
+            {/* F3 — log kcal/makro (SUDAH diskalakan sesuai porsi terpilih) ke tracker Calories 20FIT. */}
+            {scaledKcal != null && (
+              <LogCalorieButton
+                name={recipe.name}
+                kcal={scaledKcal}
+                macros={scaledMacros ? { p: scaledMacros.p, c: scaledMacros.c, f: scaledMacros.f } : null}
+                portions={portions}
+              />
+            )}
           </div>
 
           {/* Dua kolom: Bahan | Cara membuat -- panel "kaca padat". Di HP jadi satu kolom mengalir. */}
