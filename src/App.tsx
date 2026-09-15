@@ -14,7 +14,7 @@ import { EatNowPage } from "./pages/EatNowPage";
 import { HomePage } from "./pages/HomePage";
 import { ArticlesPage } from "./pages/ArticlesPage";
 import { ArticleDetailPage } from "./pages/ArticleDetailPage";
-import { AdminGate } from "./pages/AdminGate";
+import { AdminPage } from "./pages/AdminPage";
 
 function Routes() {
   const { path } = useRouter();
@@ -39,10 +39,10 @@ function Routes() {
       return <SavedPage />;
     case "eatnow":
       return <EatNowPage />;
+    case "admin":
+      return <AdminPage />;
     case "browse":
       return <BrowsePage />;
-    case "admin":
-      return <AdminGate />;
     default:
       return <HomePage />;
   }
