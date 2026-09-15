@@ -258,6 +258,10 @@ const STR: Dict = {
   stepPhoto: { id: "Foto langkah", en: "Step photo" },
   addStepPhoto: { id: "+ Foto proses", en: "+ Process photo" },
   mainPhoto: { id: "Foto utama (opsional)", en: "Main photo (optional)" },
+  photoNeedLogin: {
+    id: "Login dulu untuk menambahkan foto (utama & per-langkah).",
+    en: "Log in first to add photos (main & per-step).",
+  },
   uploading: { id: "Mengunggah…", en: "Uploading…" },
   removePhoto: { id: "hapus foto", en: "remove photo" },
   stepsHint: {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { DIET_TYPES, RULES } from "../lib/constants";
 import { api, type SubmitBody } from "../lib/api";
 import { useLang } from "../lib/store";
+import { useAuth } from "../lib/auth";
 import { dietLabel } from "../lib/i18n";
 import { Icon } from "./Icon";
 import type { RecipeStep } from "../lib/types";
@@ -82,6 +83,9 @@ export function RecipeForm({
   draftKey?: string;
 }) {
   const { lang, t } = useLang();
+  // Upload foto butuh login (endpoint /api/menu/upload menolak tanpa auth). Kirim resep sendiri
+  // BOLEH anonim — jadi utk guest kita tampilkan ajakan login (bukan tombol foto yang gagal 401).
+  const { isAuthenticated, login } = useAuth();
   const [v, setV] = useState<RecipeFormValues>(() => {
     if (!draftKey) return initial;
     try {
@@ -446,7 +450,7 @@ export function RecipeForm({
                       {t("removePhoto")}
                     </button>
                   </>
-                ) : (
+                ) : isAuthenticated ? (
                   <label className="cursor-pointer text-xs font-semibold text-brand-red">
                     {uploading["step" + i] ? t("uploading") : t("addStepPhoto")}
                     <input
@@ -456,7 +460,7 @@ export function RecipeForm({
                       onChange={(e) => handleStepPhoto(i, e.target.files?.[0])}
                     />
                   </label>
-                )}
+                ) : null}
               </div>
             </div>
           ))}
@@ -485,32 +489,48 @@ export function RecipeForm({
 
       <div>
         <label className="label">{t("mainPhoto")}</label>
-        <div className="flex items-center gap-3">
-          <label className="btn-ghost cursor-pointer text-sm">
-            {uploading["main"] ? t("uploading") : L("Pilih foto", "Choose photo")}
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={(e) => handleMainPhoto(e.target.files?.[0])}
-            />
-          </label>
-          {v.photo_url && (
-            <>
-              <img src={v.photo_url} alt="preview" className="h-16 w-16 rounded-lg object-cover" />
-              <button type="button" className="text-xs text-fg/50 underline" onClick={() => set({ photo_url: null })}>
-                {t("removePhoto")}
-              </button>
-            </>
-          )}
-        </div>
-        {photoErr && <p className="mt-1 text-xs text-brand-red">{photoErr}</p>}
-        <p className="mt-1 text-xs text-fg/45">
-          {L(
-            "Gunakan foto milikmu sendiri. Jangan pakai foto berhak cipta.",
-            "Use your own photo. Do not use copyrighted images."
-          )}
-        </p>
+        {isAuthenticated ? (
+          <>
+            <div className="flex items-center gap-3">
+              <label className="btn-ghost cursor-pointer text-sm">
+                {uploading["main"] ? t("uploading") : L("Pilih foto", "Choose photo")}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => handleMainPhoto(e.target.files?.[0])}
+                />
+              </label>
+              {v.photo_url && (
+                <>
+                  <img src={v.photo_url} alt="preview" className="h-16 w-16 rounded-lg object-cover" />
+                  <button type="button" className="text-xs text-fg/50 underline" onClick={() => set({ photo_url: null })}>
+                    {t("removePhoto")}
+                  </button>
+                </>
+              )}
+            </div>
+            {photoErr && <p className="mt-1 text-xs text-brand-red">{photoErr}</p>}
+            <p className="mt-1 text-xs text-fg/45">
+              {L(
+                "Gunakan foto milikmu sendiri. Jangan pakai foto berhak cipta.",
+                "Use your own photo. Do not use copyrighted images."
+              )}
+            </p>
+          </>
+        ) : (
+          /* Guest: upload butuh login -> ajakan masuk in-place, bukan tombol yang gagal. */
+          <div className="mt-1 flex flex-wrap items-center gap-2 rounded-xl border border-fg/10 bg-fg/[0.03] px-3 py-2 text-xs text-fg/70">
+            <span>{t("photoNeedLogin")}</span>
+            <button type="button" className="font-bold text-brand-red underline" onClick={() => login("in")}>
+              {t("login")}
+            </button>
+            <span aria-hidden>·</span>
+            <button type="button" className="font-bold text-brand-red underline" onClick={() => login("up")}>
+              {t("signUp")}
+            </button>
+          </div>
+        )}
       </div>
 
       {healthWarn && (

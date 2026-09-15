@@ -4,6 +4,23 @@
 
 ---
 
+## 2026-09-15 — Kirim resep: foto untuk guest → ajakan login (bukan tombol gagal)
+
+Branch: `claude/menu-20fit-moderation-9qqf9t`
+
+Temuan: form Kirim Resep **sudah** punya upload foto (utama + per-langkah), TAPI endpoint
+`/api/menu/upload` (server.js:5148) wajib login → buat pengirim **anonim** tombolnya gagal 401.
+Keputusan owner: **login-gate + pesan jelas** (frontend saja), tanpa membuka upload anonim.
+
+- `RecipeForm.tsx`: pakai `useAuth`. Guest → bagian foto utama jadi ajakan "Login dulu untuk
+  menambahkan foto" (+ tombol Masuk/Daftar in-place); tombol foto per-langkah disembunyikan untuk
+  guest. User login → UI foto seperti biasa (tak berubah).
+- `i18n.ts`: +1 string `photoNeedLogin` (ID/EN).
+
+Verifikasi: review JSX balance; build penuh via CI. Backend upload tak diubah (tetap butuh login).
+
+---
+
 ## 2026-09-15 — Artikel "untuk dibaca hari ini": 6 artikel, rotasi harian
 
 Branch: `claude/menu-20fit-moderation-9qqf9t`
