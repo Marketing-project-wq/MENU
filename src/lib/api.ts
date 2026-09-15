@@ -102,6 +102,17 @@ export const api = {
     return jsonOrThrow(r);
   },
 
+  /**
+   * Cek apakah user login ini admin — role diputuskan SERVER-SIDE di my.20fit
+   * (requireAdmin -> lookup my20fit_admin_roles). MELEMPAR kalau bukan admin (401/403) atau
+   * belum login. Dipakai gerbang /admin sebelum hand-off ke CMS. TIDAK memberi akses apa pun
+   * dengan sendirinya — hanya menanyakan status ke server.
+   */
+  async adminMe(): Promise<{ ok: boolean; role: string; email?: string; via?: string }> {
+    const r = await fetch(`${API_BASE}${API.ADMIN_ME}`, { headers: { ...(await authHeaders()) } });
+    return jsonOrThrow(r);
+  },
+
   /** Ambang & besaran reward sumbang-resep (publik, tanpa login) -- JANGAN hardcode di UI. */
   async rewardConfig(): Promise<RewardConfig> {
     const r = await fetch(`${API_BASE}${API.REWARD_CONFIG}`);
