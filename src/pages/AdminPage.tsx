@@ -130,7 +130,7 @@ function AdminLoginForm() {
 export function AdminPage() {
   const { t } = useLang();
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
-  const { isAdmin, role, loading: adminLoading } = useAdmin();
+  const { isAdmin, role, loading: adminLoading, mustChangePassword } = useAdmin();
 
   if (authLoading || adminLoading) {
     return (
@@ -166,10 +166,105 @@ export function AdminPage() {
     );
   }
 
+  // Wajib ganti password saat login pertama (akun dibuat/di-reset dengan password sementara).
+  if (mustChangePassword) {
+    return <ForceChangePassword email={user?.email ?? ""} onLogout={logout} />;
+  }
+
   return (
     <div className="min-h-screen bg-[var(--bg,#f7f5f0)]">
       <AdminHeader email={user?.email} onLogout={logout} />
       <AdminDashboard role={role!} userId={user!.id} userEmail={user?.email ?? ""} />
+    </div>
+  );
+}
+
+// Gerbang "wajib ganti password". Blokir akses CMS sampai admin set password baru sendiri.
+// Sukses -> matikan flag di DB -> reload (useAdmin baca ulang -> flag false -> CMS terbuka).
+function ForceChangePassword({ email, onLogout }: { email: string; onLogout: () => void }) {
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const strongEnough = pw.length >= 12 && /[a-z]/.test(pw) && /[A-Z]/.test(pw) && /[0-9]/.test(pw);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setErr("");
+    if (!strongEnough) {
+      setErr("Password minimal 12 karakter, campur huruf besar, kecil, dan angka.");
+      return;
+    }
+    if (pw !== pw2) {
+      setErr("Konfirmasi password tidak sama.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await adminApi.setMyPassword(pw);
+      await adminApi.clearMustChangePassword();
+      window.location.reload();
+    } catch (e2: any) {
+      setErr(e2?.message || "Gagal ganti password. Coba lagi.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg,#f7f5f0)] px-4">
+      <div className="app-card w-full max-w-sm p-6">
+        <h1 className="text-lg font-extrabold text-fg">Ganti password dulu</h1>
+        <p className="mt-1 text-sm text-fg/55">
+          Akun <span className="font-semibold text-fg/75">{email}</span> pakai password sementara.
+          Demi keamanan, set password baru yang cuma kamu tahu sebelum masuk CMS.
+        </p>
+        <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+          <div className="relative">
+            <input
+              className="field w-full pr-16"
+              type={showPw ? "text" : "password"}
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              placeholder="Password baru (min 12, ada huruf besar/kecil/angka)"
+              autoComplete="new-password"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPw((s) => !s)}
+              className="absolute inset-y-0 right-2 my-auto h-7 rounded-md px-2 text-xs font-semibold text-fg/60 hover:bg-fg/10"
+            >
+              {showPw ? "Sembunyi" : "Lihat"}
+            </button>
+          </div>
+          <input
+            className="field w-full"
+            type={showPw ? "text" : "password"}
+            value={pw2}
+            onChange={(e) => setPw2(e.target.value)}
+            placeholder="Ulangi password baru"
+            autoComplete="new-password"
+            required
+          />
+          {err && (
+            <p className="rounded-lg bg-brand-red/10 px-3 py-2 text-[13px] font-medium text-brand-red" role="alert">
+              {err}
+            </p>
+          )}
+          <button type="submit" className="btn-primary w-full" disabled={busy || !strongEnough || pw !== pw2}>
+            {busy ? "Menyimpan…" : "Simpan & masuk"}
+          </button>
+        </form>
+        <button
+          type="button"
+          onClick={onLogout}
+          className="mt-3 block w-full text-center text-xs text-fg/40 hover:text-fg/60"
+        >
+          Keluar
+        </button>
+      </div>
     </div>
   );
 }

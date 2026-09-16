@@ -8,16 +8,19 @@ interface AdminState {
   isAdmin: boolean;
   role: AdminRole | null;
   loading: boolean;
+  mustChangePassword: boolean;
 }
 
 export function useAdmin(): AdminState {
   const { user, isAuthenticated } = useAuth();
   const [role, setRole] = useState<AdminRole | null>(null);
+  const [mustChange, setMustChange] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
       setRole(null);
+      setMustChange(false);
       setLoading(false);
       return;
     }
@@ -27,19 +30,25 @@ export function useAdmin(): AdminState {
       try {
         const { data, error } = await supabase
           .from("recipe_admin_role")
-          .select("role")
+          .select("role, must_change_password")
           .eq("user_id", user.id)
           .maybeSingle();
 
         if (alive) {
           if (error || !data) {
             setRole(null);
+            setMustChange(false);
           } else {
             setRole(data.role as AdminRole);
+            // Fail-safe: cuma blokir kalau flag JELAS true; error/absen -> jangan kunci admin.
+            setMustChange(data.must_change_password === true);
           }
         }
       } catch {
-        if (alive) setRole(null);
+        if (alive) {
+          setRole(null);
+          setMustChange(false);
+        }
       } finally {
         if (alive) setLoading(false);
       }
@@ -48,7 +57,7 @@ export function useAdmin(): AdminState {
     return () => { alive = false; };
   }, [user, isAuthenticated]);
 
-  return { isAdmin: role !== null, role, loading };
+  return { isAdmin: role !== null, role, loading, mustChangePassword: mustChange };
 }
 
 export interface Submission {
@@ -219,6 +228,18 @@ export const adminApi = {
     const { error } = await supabase.rpc("remove_recipe_admin", {
       p_target_user_id: targetUserId,
     });
+    if (error) throw new Error(error.message);
+  },
+
+  // Ganti password akun sendiri (dipakai gerbang "wajib ganti password saat login pertama").
+  async setMyPassword(newPassword: string): Promise<void> {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw new Error(error.message);
+  },
+
+  // Matikan flag must_change_password untuk akun sendiri (RPC SECURITY DEFINER).
+  async clearMustChangePassword(): Promise<void> {
+    const { error } = await supabase.rpc("clear_recipe_admin_must_change");
     if (error) throw new Error(error.message);
   },
 };
