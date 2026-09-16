@@ -100,6 +100,13 @@ export interface AuditEntry {
   created_at: string;
 }
 
+export interface AdminMember {
+  user_id: string;
+  email: string;
+  role: AdminRole;
+  created_at: string;
+}
+
 export const adminApi = {
   async getSubmissions(status?: string): Promise<Submission[]> {
     let q = supabase
@@ -182,5 +189,36 @@ export const adminApi = {
       .limit(limit);
     if (error) throw new Error(error.message);
     return (data ?? []) as AuditEntry[];
+  },
+
+  async listAdmins(): Promise<AdminMember[]> {
+    const { data, error } = await supabase.rpc("list_recipe_admins");
+    if (error) throw new Error(error.message);
+    return (data ?? []) as AdminMember[];
+  },
+
+  async createAdminAccount(email: string, password: string, role: AdminRole): Promise<string> {
+    const { data, error } = await supabase.rpc("create_recipe_admin_account", {
+      p_email: email,
+      p_password: password,
+      p_role: role,
+    });
+    if (error) throw new Error(error.message);
+    return data as string;
+  },
+
+  async updateAdminRole(targetUserId: string, newRole: AdminRole): Promise<void> {
+    const { error } = await supabase.rpc("update_recipe_admin_role", {
+      p_target_user_id: targetUserId,
+      p_new_role: newRole,
+    });
+    if (error) throw new Error(error.message);
+  },
+
+  async removeAdmin(targetUserId: string): Promise<void> {
+    const { error } = await supabase.rpc("remove_recipe_admin", {
+      p_target_user_id: targetUserId,
+    });
+    if (error) throw new Error(error.message);
   },
 };

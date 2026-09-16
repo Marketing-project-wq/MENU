@@ -130,31 +130,289 @@ BEGIN
   END IF;
 END $$;
 
--- 5. Buat akun admin di Supabase Dashboard
+-- 5. RPC: list semua admin (join recipe_admin_role + auth.users)
+--    Dipanggil dari CMS oleh superadmin untuk lihat daftar admin.
+-- -------------------------------------------------------
+CREATE OR REPLACE FUNCTION list_recipe_admins()
+RETURNS TABLE (
+  user_id uuid,
+  email   text,
+  role    text,
+  created_at timestamptz
+)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT
+    r.user_id,
+    u.email,
+    r.role,
+    r.created_at
+  FROM recipe_admin_role r
+  JOIN auth.users u ON u.id = r.user_id
+  ORDER BY r.created_at ASC;
+$$;
+
+-- Hanya superadmin boleh panggil
+REVOKE EXECUTE ON FUNCTION list_recipe_admins() FROM public;
+REVOKE EXECUTE ON FUNCTION list_recipe_admins() FROM anon;
+REVOKE EXECUTE ON FUNCTION list_recipe_admins() FROM authenticated;
+-- Grant ke authenticated, tapi cek role di dalam function sudah cukup
+-- karena SECURITY DEFINER. Kita tambahkan guard:
+CREATE OR REPLACE FUNCTION list_recipe_admins()
+RETURNS TABLE (
+  user_id uuid,
+  email   text,
+  role    text,
+  created_at timestamptz
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM recipe_admin_role
+    WHERE recipe_admin_role.user_id = auth.uid() AND recipe_admin_role.role = 'superadmin'
+  ) THEN
+    RAISE EXCEPTION 'Forbidden: superadmin only';
+  END IF;
+
+  RETURN QUERY
+    SELECT
+      r.user_id,
+      u.email,
+      r.role,
+      r.created_at
+    FROM recipe_admin_role r
+    JOIN auth.users u ON u.id = r.user_id
+    ORDER BY r.created_at ASC;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION list_recipe_admins() TO authenticated;
+
+-- 6. RPC: buat akun admin baru (create user + assign role)
+--    SECURITY DEFINER supaya bisa INSERT ke auth.users.
+--    Hanya superadmin yang boleh panggil.
+-- -------------------------------------------------------
+CREATE OR REPLACE FUNCTION create_recipe_admin_account(
+  p_email    text,
+  p_password text,
+  p_role     text DEFAULT 'admin'
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id uuid;
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM recipe_admin_role
+    WHERE recipe_admin_role.user_id = auth.uid() AND recipe_admin_role.role = 'superadmin'
+  ) THEN
+    RAISE EXCEPTION 'Forbidden: superadmin only';
+  END IF;
+
+  IF p_role NOT IN ('admin', 'superadmin') THEN
+    RAISE EXCEPTION 'Invalid role: must be admin or superadmin';
+  END IF;
+
+  -- Cek apakah email sudah terdaftar
+  SELECT id INTO v_user_id FROM auth.users WHERE email = lower(p_email);
+
+  IF v_user_id IS NULL THEN
+    -- Buat user baru di auth.users
+    v_user_id := extensions.uuid_generate_v4();
+    INSERT INTO auth.users (
+      id,
+      instance_id,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      aud,
+      role,
+      created_at,
+      updated_at
+    ) VALUES (
+      v_user_id,
+      '00000000-0000-0000-0000-000000000000',
+      lower(p_email),
+      crypt(p_password, gen_salt('bf')),
+      now(),
+      '{"provider":"email","providers":["email"]}'::jsonb,
+      '{}'::jsonb,
+      'authenticated',
+      'authenticated',
+      now(),
+      now()
+    );
+
+    INSERT INTO auth.identities (
+      id,
+      user_id,
+      provider_id,
+      provider,
+      identity_data,
+      last_sign_in_at,
+      created_at,
+      updated_at
+    ) VALUES (
+      v_user_id,
+      v_user_id,
+      lower(p_email),
+      'email',
+      jsonb_build_object('sub', v_user_id::text, 'email', lower(p_email)),
+      now(),
+      now(),
+      now()
+    );
+  END IF;
+
+  -- Assign role (upsert)
+  INSERT INTO recipe_admin_role (user_id, role, created_by)
+  VALUES (v_user_id, p_role, auth.uid())
+  ON CONFLICT (user_id) DO UPDATE SET role = EXCLUDED.role;
+
+  -- Audit log
+  INSERT INTO recipe_admin_audit_log (admin_id, action, target_type, target_id, detail)
+  VALUES (
+    auth.uid(),
+    'create_admin',
+    'admin',
+    v_user_id::text,
+    jsonb_build_object('email', lower(p_email), 'role', p_role)
+  );
+
+  RETURN v_user_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION create_recipe_admin_account(text, text, text) TO authenticated;
+
+-- 7. RPC: ubah role admin (admin <-> superadmin)
+-- -------------------------------------------------------
+CREATE OR REPLACE FUNCTION update_recipe_admin_role(
+  p_target_user_id uuid,
+  p_new_role       text
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM recipe_admin_role
+    WHERE recipe_admin_role.user_id = auth.uid() AND recipe_admin_role.role = 'superadmin'
+  ) THEN
+    RAISE EXCEPTION 'Forbidden: superadmin only';
+  END IF;
+
+  IF p_new_role NOT IN ('admin', 'superadmin') THEN
+    RAISE EXCEPTION 'Invalid role: must be admin or superadmin';
+  END IF;
+
+  UPDATE recipe_admin_role
+  SET role = p_new_role
+  WHERE recipe_admin_role.user_id = p_target_user_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'User not found in admin role table';
+  END IF;
+
+  INSERT INTO recipe_admin_audit_log (admin_id, action, target_type, target_id, detail)
+  VALUES (
+    auth.uid(),
+    'update_role',
+    'admin',
+    p_target_user_id::text,
+    jsonb_build_object('new_role', p_new_role)
+  );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION update_recipe_admin_role(uuid, text) TO authenticated;
+
+-- 8. RPC: hapus akses admin (remove dari recipe_admin_role, user tetap ada)
+-- -------------------------------------------------------
+CREATE OR REPLACE FUNCTION remove_recipe_admin(
+  p_target_user_id uuid
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_email text;
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM recipe_admin_role
+    WHERE recipe_admin_role.user_id = auth.uid() AND recipe_admin_role.role = 'superadmin'
+  ) THEN
+    RAISE EXCEPTION 'Forbidden: superadmin only';
+  END IF;
+
+  -- Jangan bisa hapus diri sendiri
+  IF p_target_user_id = auth.uid() THEN
+    RAISE EXCEPTION 'Cannot remove yourself';
+  END IF;
+
+  SELECT u.email INTO v_email FROM auth.users u WHERE u.id = p_target_user_id;
+
+  DELETE FROM recipe_admin_role
+  WHERE recipe_admin_role.user_id = p_target_user_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'User not found in admin role table';
+  END IF;
+
+  INSERT INTO recipe_admin_audit_log (admin_id, action, target_type, target_id, detail)
+  VALUES (
+    auth.uid(),
+    'remove_admin',
+    'admin',
+    p_target_user_id::text,
+    jsonb_build_object('email', v_email)
+  );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION remove_recipe_admin(uuid) TO authenticated;
+
+-- 9. Buat akun admin di Supabase Dashboard
 --    Buka Supabase Dashboard → Authentication → Users → "Add user" → "Create new user"
 --    Centang "Auto Confirm User" supaya langsung aktif.
 --
 --    Akun-akun yang perlu dibuat (password dikirim terpisah, JANGAN simpan di repo):
 --      nicolezoe83@gmail.com
---      tifany@20fit.id
 --      zidni@20fit.id
+--      tifany@20fit.id
+--      admin@20fit.id
 --
 --    (luthfi@20fit.id sudah ada — tidak perlu dibuat ulang)
+--
+--    ALTERNATIF: setelah tabel + RPC di atas sudah jalan, superadmin bisa buat akun
+--    langsung dari CMS (tab "Kelola Admin") — tidak perlu manual di dashboard lagi.
 -- -------------------------------------------------------
 
--- 6. Seed: tambahkan role admin
---    Jalankan SETELAH semua akun di atas sudah dibuat dan tabel di atas sudah jalan.
+-- 10. Seed: tambahkan role superadmin untuk semua akun admin awal
+--     Jalankan SETELAH semua akun di atas sudah dibuat dan tabel di atas sudah jalan.
 -- -------------------------------------------------------
 
--- 6a. Cari UUID semua akun admin:
+-- 10a. Cari UUID semua akun admin:
 --   SELECT id, email FROM auth.users
---   WHERE email IN ('luthfi@20fit.id', 'zidni@20fit.id', 'nicolezoe83@gmail.com', 'tifany@20fit.id');
+--   WHERE email IN ('luthfi@20fit.id', 'zidni@20fit.id', 'nicolezoe83@gmail.com', 'tifany@20fit.id', 'admin@20fit.id');
 
--- 6b. Insert superadmin (luthfi@20fit.id):
---   INSERT INTO recipe_admin_role (user_id, role)
---   VALUES ('<UUID_LUTHFI>', 'superadmin');
-
--- 6c. Insert admin (sisanya):
---   INSERT INTO recipe_admin_role (user_id, role) VALUES ('<UUID_ZIDNI>', 'admin');
---   INSERT INTO recipe_admin_role (user_id, role) VALUES ('<UUID_NICOLE>', 'admin');
---   INSERT INTO recipe_admin_role (user_id, role) VALUES ('<UUID_TIFANY>', 'admin');
+-- 10b. Insert semua sebagai superadmin:
+--   INSERT INTO recipe_admin_role (user_id, role) VALUES ('<UUID_LUTHFI>', 'superadmin');
+--   INSERT INTO recipe_admin_role (user_id, role) VALUES ('<UUID_ZIDNI>', 'superadmin');
+--   INSERT INTO recipe_admin_role (user_id, role) VALUES ('<UUID_NICOLE>', 'superadmin');
+--   INSERT INTO recipe_admin_role (user_id, role) VALUES ('<UUID_TIFANY>', 'superadmin');
+--   INSERT INTO recipe_admin_role (user_id, role) VALUES ('<UUID_ADMIN>', 'superadmin');
