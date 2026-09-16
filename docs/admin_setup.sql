@@ -130,17 +130,31 @@ BEGIN
   END IF;
 END $$;
 
--- 5. Seed: tambahkan akun admin
---    Jalankan query ini SATU PER SATU setelah semua tabel di atas berhasil dibuat.
+-- 5. Buat akun admin di Supabase Dashboard
+--    Buka Supabase Dashboard → Authentication → Users → "Add user" → "Create new user"
+--    Centang "Auto Confirm User" supaya langsung aktif.
+--
+--    Akun-akun yang perlu dibuat:
+--      nicolezoe83@gmail.com  — password: Admin123
+--      tifany@20fit.id        — password: Admin12345
+--      zidni@20fit.id         — password: Admin123456
+--
+--    (luthfi@20fit.id sudah ada — tidak perlu dibuat ulang)
 -- -------------------------------------------------------
 
--- 5a. Cari UUID kedua akun:
---   SELECT id, email FROM auth.users WHERE email IN ('luthfi@20fit.id', 'zidni@20fit.id');
+-- 6. Seed: tambahkan role admin
+--    Jalankan SETELAH semua akun di atas sudah dibuat dan tabel di atas sudah jalan.
+-- -------------------------------------------------------
 
--- 5b. Insert superadmin (luthfi@20fit.id):
+-- 6a. Cari UUID semua akun admin:
+--   SELECT id, email FROM auth.users
+--   WHERE email IN ('luthfi@20fit.id', 'zidni@20fit.id', 'nicolezoe83@gmail.com', 'tifany@20fit.id');
+
+-- 6b. Insert superadmin (luthfi@20fit.id):
 --   INSERT INTO recipe_admin_role (user_id, role)
 --   VALUES ('<UUID_LUTHFI>', 'superadmin');
 
--- 5c. Insert admin (zidni@20fit.id):
---   INSERT INTO recipe_admin_role (user_id, role)
---   VALUES ('<UUID_ZIDNI>', 'admin');
+-- 6c. Insert admin (sisanya):
+--   INSERT INTO recipe_admin_role (user_id, role) VALUES ('<UUID_ZIDNI>', 'admin');
+--   INSERT INTO recipe_admin_role (user_id, role) VALUES ('<UUID_NICOLE>', 'admin');
+--   INSERT INTO recipe_admin_role (user_id, role) VALUES ('<UUID_TIFANY>', 'admin');
