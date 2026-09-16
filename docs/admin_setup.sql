@@ -130,11 +130,17 @@ BEGIN
   END IF;
 END $$;
 
--- 5. Seed: tambahkan akun pertama sebagai superadmin
---    GANTI user_id dengan UUID akun luthfi@20fit.id dari auth.users.
+-- 5. Seed: tambahkan akun admin
+--    Jalankan query ini SATU PER SATU setelah semua tabel di atas berhasil dibuat.
 -- -------------------------------------------------------
--- Cari UUID:
---   SELECT id, email FROM auth.users WHERE email = 'luthfi@20fit.id';
--- Lalu insert:
+
+-- 5a. Cari UUID kedua akun:
+--   SELECT id, email FROM auth.users WHERE email IN ('luthfi@20fit.id', 'zidni@20fit.id');
+
+-- 5b. Insert superadmin (luthfi@20fit.id):
 --   INSERT INTO recipe_admin_role (user_id, role)
---   VALUES ('<UUID_DARI_QUERY_DI_ATAS>', 'superadmin');
+--   VALUES ('<UUID_LUTHFI>', 'superadmin');
+
+-- 5c. Insert admin (zidni@20fit.id):
+--   INSERT INTO recipe_admin_role (user_id, role)
+--   VALUES ('<UUID_ZIDNI>', 'admin');
