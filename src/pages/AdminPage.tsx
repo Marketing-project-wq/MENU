@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../lib/auth";
 import { useAdmin, adminApi, type Submission, type ArticleRow, type AuditEntry } from "../lib/admin";
 import { useLang } from "../lib/store";
+import { supabase } from "../lib/supabase";
 import { Spinner } from "../components/Spinner";
 import { Icon } from "../components/Icon";
 import { Link } from "../router";
@@ -32,9 +33,103 @@ function AdminHeader({ email, onLogout }: { email?: string; onLogout: () => void
   );
 }
 
+function AdminLoginForm() {
+  const { t } = useLang();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setErr("");
+    const em = email.trim();
+    if (!em || !password) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: em, password });
+      if (error) {
+        const m = (error.message || "").toLowerCase();
+        if (m.includes("invalid login")) setErr("Email atau password salah.");
+        else setErr("Gagal masuk. Coba lagi.");
+      }
+    } catch {
+      setErr("Terjadi kesalahan. Coba lagi.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg,#f7f5f0)]">
+      <div className="app-card mx-4 w-full max-w-sm p-8">
+        <div className="text-center">
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-brand-red/10 text-brand-red">
+            <Icon name="sparkles" size={28} />
+          </div>
+          <h1 className="text-xl font-extrabold text-fg">Admin CMS</h1>
+          <p className="mt-1 text-sm text-fg/55">Masuk dengan akun admin</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-fg/60">Email</label>
+            <input
+              type="email"
+              inputMode="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+              className="field w-full"
+              placeholder="admin@20fit.id"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-fg/60">Password</label>
+            <div className="relative">
+              <input
+                type={showPw ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+                className="field w-full pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((s) => !s)}
+                className="absolute inset-y-0 right-2 my-auto grid h-7 w-7 place-items-center rounded-md text-fg/40 hover:bg-fg/10 hover:text-fg/60"
+                aria-label={showPw ? t("authHidePw") : t("authShowPw")}
+              >
+                <Icon name={showPw ? "eyeOff" : "eye"} size={18} />
+              </button>
+            </div>
+          </div>
+
+          {err && (
+            <p className="rounded-lg bg-brand-red/10 px-3 py-2 text-[13px] font-medium text-brand-red">
+              {err}
+            </p>
+          )}
+
+          <button type="submit" disabled={busy} className="btn-primary w-full py-2.5">
+            {busy ? "Memproses…" : "Masuk"}
+          </button>
+        </form>
+
+        <Link to="/" className="mt-4 block text-center text-xs text-fg/40 hover:text-fg/60">
+          Kembali ke situs
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export function AdminPage() {
   const { t } = useLang();
-  const { user, isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const { isAdmin, role, loading: adminLoading } = useAdmin();
 
   if (authLoading || adminLoading) {
@@ -49,23 +144,7 @@ export function AdminPage() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg,#f7f5f0)]">
-        <div className="app-card mx-4 max-w-sm p-8 text-center">
-          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-brand-red/10 text-brand-red">
-            <Icon name="sparkles" size={28} />
-          </div>
-          <h1 className="text-xl font-extrabold text-fg">Admin CMS</h1>
-          <p className="mt-2 text-sm text-fg/55">Masuk dulu untuk mengakses halaman admin.</p>
-          <button type="button" onClick={() => login("in")} className="btn-primary mt-5 px-6 py-2.5">
-            {t("login")}
-          </button>
-          <Link to="/" className="mt-3 block text-xs text-fg/40 hover:text-fg/60">
-            Kembali ke situs
-          </Link>
-        </div>
-      </div>
-    );
+    return <AdminLoginForm />;
   }
 
   if (!isAdmin) {
