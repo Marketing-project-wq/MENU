@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../lib/auth";
-import { useAdmin, adminApi, type Submission, type ArticleRow, type AuditEntry } from "../lib/admin";
+import { useAdmin, adminApi, type Submission, type ArticleRow, type AuditEntry, type AdminMember, type AdminRole } from "../lib/admin";
 import { useLang } from "../lib/store";
+import { supabase } from "../lib/supabase";
 import { Spinner } from "../components/Spinner";
 import { Icon } from "../components/Icon";
 import { Link } from "../router";
 
-type Tab = "submissions" | "articles" | "audit";
+type Tab = "submissions" | "articles" | "audit" | "admins";
 
 function AdminHeader({ email, onLogout }: { email?: string; onLogout: () => void }) {
   return (
@@ -32,9 +33,103 @@ function AdminHeader({ email, onLogout }: { email?: string; onLogout: () => void
   );
 }
 
+function AdminLoginForm() {
+  const { t } = useLang();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setErr("");
+    const em = email.trim();
+    if (!em || !password) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: em, password });
+      if (error) {
+        const m = (error.message || "").toLowerCase();
+        if (m.includes("invalid login")) setErr("Email atau password salah.");
+        else setErr("Gagal masuk. Coba lagi.");
+      }
+    } catch {
+      setErr("Terjadi kesalahan. Coba lagi.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg,#f7f5f0)]">
+      <div className="app-card mx-4 w-full max-w-sm p-8">
+        <div className="text-center">
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-brand-red/10 text-brand-red">
+            <Icon name="sparkles" size={28} />
+          </div>
+          <h1 className="text-xl font-extrabold text-fg">Admin CMS</h1>
+          <p className="mt-1 text-sm text-fg/55">Masuk dengan akun admin</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-fg/60">Email</label>
+            <input
+              type="email"
+              inputMode="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+              className="field w-full"
+              placeholder="admin@20fit.id"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-fg/60">Password</label>
+            <div className="relative">
+              <input
+                type={showPw ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+                className="field w-full pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((s) => !s)}
+                className="absolute inset-y-0 right-2 my-auto grid h-7 w-7 place-items-center rounded-md text-fg/40 hover:bg-fg/10 hover:text-fg/60"
+                aria-label={showPw ? t("authHidePw") : t("authShowPw")}
+              >
+                <Icon name={showPw ? "eyeOff" : "eye"} size={18} />
+              </button>
+            </div>
+          </div>
+
+          {err && (
+            <p className="rounded-lg bg-brand-red/10 px-3 py-2 text-[13px] font-medium text-brand-red">
+              {err}
+            </p>
+          )}
+
+          <button type="submit" disabled={busy} className="btn-primary w-full py-2.5">
+            {busy ? "Memproses…" : "Masuk"}
+          </button>
+        </form>
+
+        <Link to="/" className="mt-4 block text-center text-xs text-fg/40 hover:text-fg/60">
+          Kembali ke situs
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export function AdminPage() {
   const { t } = useLang();
-  const { user, isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const { isAdmin, role, loading: adminLoading } = useAdmin();
 
   if (authLoading || adminLoading) {
@@ -49,23 +144,7 @@ export function AdminPage() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg,#f7f5f0)]">
-        <div className="app-card mx-4 max-w-sm p-8 text-center">
-          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-brand-red/10 text-brand-red">
-            <Icon name="sparkles" size={28} />
-          </div>
-          <h1 className="text-xl font-extrabold text-fg">Admin CMS</h1>
-          <p className="mt-2 text-sm text-fg/55">Masuk dulu untuk mengakses halaman admin.</p>
-          <button type="button" onClick={() => login("in")} className="btn-primary mt-5 px-6 py-2.5">
-            {t("login")}
-          </button>
-          <Link to="/" className="mt-3 block text-xs text-fg/40 hover:text-fg/60">
-            Kembali ke situs
-          </Link>
-        </div>
-      </div>
-    );
+    return <AdminLoginForm />;
   }
 
   if (!isAdmin) {
@@ -110,6 +189,7 @@ function AdminDashboard({
     { key: "submissions", label: "Resep" },
     { key: "articles", label: "Artikel" },
     { key: "audit", label: "Audit Log" },
+    ...(role === "superadmin" ? [{ key: "admins" as Tab, label: "Kelola Admin" }] : []),
   ];
 
   return (
@@ -143,6 +223,7 @@ function AdminDashboard({
       {tab === "submissions" && <SubmissionsTab userId={userId} />}
       {tab === "articles" && <ArticlesTab userId={userId} />}
       {tab === "audit" && <AuditTab />}
+      {tab === "admins" && role === "superadmin" && <AdminManagementTab currentUserId={userId} />}
     </div>
   );
 }
@@ -468,6 +549,219 @@ function ArticlesTab({ userId }: { userId: string }) {
               >
                 {a.published ? "Published" : "Draft"}
               </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Tab: Kelola Admin (superadmin only)
+// =============================================================================
+function AdminManagementTab({ currentUserId }: { currentUserId: string }) {
+  const [admins, setAdmins] = useState<AdminMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newRole, setNewRole] = useState<AdminRole>("admin");
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createMsg, setCreateMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  async function load() {
+    setLoading(true);
+    setError("");
+    try {
+      setAdmins(await adminApi.listAdmins());
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  async function handleCreate(e: FormEvent) {
+    e.preventDefault();
+    setCreateMsg(null);
+    const em = newEmail.trim();
+    if (!em || !newPassword) return;
+    if (newPassword.length < 6) {
+      setCreateMsg({ ok: false, text: "Password minimal 6 karakter." });
+      return;
+    }
+    setCreating(true);
+    try {
+      await adminApi.createAdminAccount(em, newPassword, newRole);
+      setCreateMsg({ ok: true, text: `Akun ${em} berhasil dibuat sebagai ${newRole}.` });
+      setNewEmail("");
+      setNewPassword("");
+      setNewRole("admin");
+      await load();
+    } catch (err: any) {
+      setCreateMsg({ ok: false, text: err.message });
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function handleRoleChange(userId: string, current: AdminRole) {
+    const next = current === "superadmin" ? "admin" : "superadmin";
+    if (!confirm(`Ubah role menjadi ${next}?`)) return;
+    setBusyId(userId);
+    try {
+      await adminApi.updateAdminRole(userId, next);
+      setAdmins((prev) => prev.map((a) => (a.user_id === userId ? { ...a, role: next } : a)));
+    } catch (err: any) {
+      alert("Gagal ubah role: " + err.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleRemove(userId: string, email: string) {
+    if (!confirm(`Hapus akses admin untuk ${email}? User tetap ada, hanya role admin yang dihapus.`)) return;
+    setBusyId(userId);
+    try {
+      await adminApi.removeAdmin(userId);
+      setAdmins((prev) => prev.filter((a) => a.user_id !== userId));
+    } catch (err: any) {
+      alert("Gagal hapus: " + err.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <div>
+      {/* Form buat admin baru */}
+      <div className="app-card mb-6 p-5">
+        <h3 className="text-sm font-bold text-fg">Buat Akun Admin Baru</h3>
+        <p className="mb-4 text-xs text-fg/45">Buat akun sekaligus assign role admin — user langsung bisa login.</p>
+
+        <form onSubmit={handleCreate} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto]">
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-fg/60">Email</label>
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              className="field w-full"
+              placeholder="email@contoh.com"
+              required
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-fg/60">Password</label>
+            <div className="relative">
+              <input
+                type={showNewPw ? "text" : "password"}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="field w-full pr-10"
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPw((s) => !s)}
+                className="absolute inset-y-0 right-2 my-auto grid h-7 w-7 place-items-center rounded-md text-fg/40 hover:bg-fg/10 hover:text-fg/60"
+              >
+                <Icon name={showNewPw ? "eyeOff" : "eye"} size={18} />
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-fg/60">Role</label>
+            <select
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value as AdminRole)}
+              className="field w-full"
+            >
+              <option value="admin">Admin</option>
+              <option value="superadmin">Superadmin</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button type="submit" disabled={creating} className="btn-primary whitespace-nowrap px-5 py-2">
+              {creating ? "Membuat…" : "Buat"}
+            </button>
+          </div>
+        </form>
+
+        {createMsg && (
+          <p className={`mt-3 rounded-lg px-3 py-2 text-[13px] font-medium ${
+            createMsg.ok
+              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+              : "bg-brand-red/10 text-brand-red"
+          }`}>
+            {createMsg.text}
+          </p>
+        )}
+      </div>
+
+      {/* Daftar admin */}
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-sm font-bold text-fg">Daftar Admin ({admins.length})</h3>
+        <button type="button" onClick={load} className="text-xs text-fg/40 hover:text-fg/60">Refresh</button>
+      </div>
+
+      {loading ? (
+        <Spinner label="Memuat daftar admin…" />
+      ) : error ? (
+        <div className="app-card p-6 text-center text-sm text-red-500">{error}</div>
+      ) : admins.length === 0 ? (
+        <div className="app-card p-6 text-center text-sm text-fg/50">Belum ada admin.</div>
+      ) : (
+        <div className="space-y-2">
+          {admins.map((a) => (
+            <div key={a.user_id} className="app-card flex items-center gap-3 p-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="truncate text-sm font-bold text-fg">{a.email}</span>
+                  <span className={`flex-none rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                    a.role === "superadmin"
+                      ? "bg-purple-100 text-purple-700"
+                      : "bg-blue-100 text-blue-700"
+                  }`}>
+                    {a.role}
+                  </span>
+                  {a.user_id === currentUserId && (
+                    <span className="text-[10px] font-semibold text-fg/35">(kamu)</span>
+                  )}
+                </div>
+                <p className="text-xs text-fg/40">
+                  Sejak {new Date(a.created_at).toLocaleDateString("id-ID")}
+                </p>
+              </div>
+
+              {a.user_id !== currentUserId && (
+                <div className="flex flex-none gap-1.5">
+                  <button
+                    type="button"
+                    disabled={busyId === a.user_id}
+                    onClick={() => handleRoleChange(a.user_id, a.role)}
+                    className="rounded-lg bg-fg/5 px-3 py-1.5 text-xs font-semibold text-fg/60 hover:bg-fg/10 disabled:opacity-50"
+                  >
+                    {a.role === "superadmin" ? "→ Admin" : "→ Superadmin"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busyId === a.user_id}
+                    onClick={() => handleRemove(a.user_id, a.email)}
+                    className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-500/20 disabled:opacity-50"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
