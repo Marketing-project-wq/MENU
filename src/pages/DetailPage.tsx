@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "../router";
 import { useRecipes, useLang } from "../lib/store";
 import { buildVMs } from "../lib/normalize";
+import { scaleIngredientGroups } from "../lib/scaleIngredients";
 import { SourceBadge } from "../components/SourceBadge";
 import { Spinner } from "../components/Spinner";
 import { FoodImage } from "../components/FoodImage";
@@ -72,6 +73,8 @@ export function DetailPage({ slug }: { slug: string }) {
     sodium: recipe.macros.sodium != null ? Math.round(recipe.macros.sodium * ratio) : undefined,
   };
   const scaleMultiplierNumber = parseFloat(ratio.toFixed(2));
+  // Skala JUMLAH bahan juga (best-effort dari teks bebas). ratio==1 -> kembalikan apa adanya.
+  const scaledIngredientGroups = scaleIngredientGroups(recipe.ingredientGroups, ratio);
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-6 print-area">
@@ -258,7 +261,7 @@ export function DetailPage({ slug }: { slug: string }) {
               {isScaled && (
                 <p className="mb-3 mt-2 text-xs text-fg/50">{t("ingredientsScaleNote")}</p>
               )}
-              <IngredientGroups groups={recipe.ingredientGroups} />
+              <IngredientGroups groups={scaledIngredientGroups} />
             </section>
 
             <section className="glass-solid rounded-2xl p-4">
