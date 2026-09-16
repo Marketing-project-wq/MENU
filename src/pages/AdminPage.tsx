@@ -63,7 +63,7 @@ function AdminLoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg,#f7f5f0)]">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#f7f5f0] dark:bg-[#0e0f0b]">
       <div className="app-card mx-4 w-full max-w-sm p-8">
         <div className="text-center">
           <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-brand-red/10 text-brand-red">
@@ -135,7 +135,7 @@ export function AdminPage() {
 
   if (authLoading || adminLoading) {
     return (
-      <div className="min-h-screen bg-[var(--bg,#f7f5f0)]">
+      <div className="min-h-screen bg-[#f7f5f0] dark:bg-[#0e0f0b]">
         <AdminHeader onLogout={logout} />
         <div className="mx-auto max-w-5xl px-4 py-12">
           <Spinner label={t("loading")} />
@@ -150,7 +150,7 @@ export function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg,#f7f5f0)]">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#f7f5f0] dark:bg-[#0e0f0b]">
         <div className="app-card mx-4 max-w-sm p-8 text-center">
           <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-red-100 text-red-500">
             <Icon name="close" size={28} />
@@ -173,7 +173,7 @@ export function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg,#f7f5f0)]">
+    <div className="min-h-screen bg-[#f7f5f0] dark:bg-[#0e0f0b]">
       <AdminHeader email={user?.email} onLogout={logout} />
       <AdminDashboard role={role!} userId={user!.id} userEmail={user?.email ?? ""} />
     </div>
@@ -214,7 +214,7 @@ function ForceChangePassword({ email, onLogout }: { email: string; onLogout: () 
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg,#f7f5f0)] px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#f7f5f0] dark:bg-[#0e0f0b] px-4">
       <div className="app-card w-full max-w-sm p-6">
         <h1 className="text-lg font-extrabold text-fg">Ganti password dulu</h1>
         <p className="mt-1 text-sm text-fg/55">
@@ -836,7 +836,7 @@ function ArticleForm({
   const h4 = "mb-2 text-xs font-bold uppercase tracking-wide text-fg/45";
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-[var(--bg,#f7f5f0)]">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#f7f5f0] dark:bg-[#0e0f0b]">
       {/* Top bar ala WordPress: kembali + Simpan Draft + Publish */}
       <header className="sticky top-0 z-10 border-b border-fg/10 bg-card/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
