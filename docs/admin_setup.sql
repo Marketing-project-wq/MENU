@@ -24,14 +24,47 @@ CREATE POLICY "admin_can_read_own_role"
   ON recipe_admin_role FOR SELECT
   USING (auth.uid() = user_id);
 
-CREATE POLICY "superadmin_can_manage_roles"
-  ON recipe_admin_role FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM recipe_admin_role
-      WHERE user_id = auth.uid() AND role = 'superadmin'
-    )
-  );
+-- CATATAN (2026-09-16): policy "superadmin_can_manage_roles" SENGAJA DIHAPUS.
+-- Versi lama men-query recipe_admin_role DARI DALAM policy recipe_admin_role itu
+-- sendiri -> Postgres menolak dengan "infinite recursion detected in policy for
+-- relation recipe_admin_role" (SQLSTATE 42P17). Efeknya SEMUA pembacaan tabel ini
+-- lewat RLS gagal (termasuk self-read admin_can_read_own_role), sehingga /admin
+-- selalu "Akses Ditolak" walau datanya benar superadmin.
+--
+-- Policy ini TIDAK diperlukan: manajemen admin (tambah/ubah/hapus role) dilakukan
+-- lewat RPC SECURITY DEFINER di bawah (list/create/update/remove_recipe_admin) yang
+-- bypass RLS + cek superadmin di dalam fungsi. Untuk gerbang /admin cukup self-read
+-- (admin_can_read_own_role) saja.
+--
+-- Kalau suatu saat perlu manajemen LANGSUNG ke tabel via RLS, JANGAN query tabel
+-- yang sama di dalam policy-nya. Pakai helper SECURITY DEFINER, mis:
+--   CREATE FUNCTION public.is_recipe_superadmin() RETURNS boolean
+--     LANGUAGE sql SECURITY DEFINER SET search_path = public STABLE AS $$
+--     SELECT EXISTS (SELECT 1 FROM recipe_admin_role
+--                    WHERE user_id = auth.uid() AND role = 'superadmin') $$;
+--   CREATE POLICY ... USING (public.is_recipe_superadmin());
+-- Fungsi SECURITY DEFINER memutus rantai rekursi RLS.
+
+-- 1b. Kolom "wajib ganti password saat login pertama" + RPC clear flag
+-- -------------------------------------------------------
+-- Dipakai gerbang ForceChangePassword di /admin: akun yang dibuat/di-reset dengan
+-- password SEMENTARA ditandai must_change_password=true, dan WAJIB set password baru
+-- sebelum bisa masuk CMS. useAdmin() membaca kolom ini (self-read via policy di atas).
+ALTER TABLE recipe_admin_role
+  ADD COLUMN IF NOT EXISTS must_change_password boolean NOT NULL DEFAULT false;
+
+-- RPC: admin mematikan flag-nya sendiri setelah berhasil set password baru.
+-- SECURITY DEFINER + hanya untuk auth.uid() sendiri (tak bisa clear punya orang lain).
+CREATE OR REPLACE FUNCTION clear_recipe_admin_must_change()
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  UPDATE recipe_admin_role
+  SET must_change_password = false
+  WHERE user_id = auth.uid();
+END; $$;
+REVOKE EXECUTE ON FUNCTION clear_recipe_admin_must_change() FROM public, anon;
+GRANT EXECUTE ON FUNCTION clear_recipe_admin_must_change() TO authenticated;
 
 -- 2. Tabel audit log — catat setiap aksi admin
 -- -------------------------------------------------------
