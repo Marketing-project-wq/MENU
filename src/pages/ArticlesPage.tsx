@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import { getReadMinutesMap } from "../lib/readtime";
 import { ArticleCard } from "../components/ArticleCard";
 import { Spinner } from "../components/Spinner";
+import { useSeo } from "../lib/useSeo";
 import type { ArticleSummary } from "../lib/types";
 
 /** Daftar artikel rekomendasi tempat makan (in-house, bukan WordPress). */
@@ -36,6 +37,8 @@ export function ArticlesPage() {
     () => (articles || []).filter((a) => !cat || a.category === cat),
     [articles, cat]
   );
+
+  useSeo({ title: t("articlesTitle"), description: t("articlesSub"), canonicalPath: "/artikel", type: "website" });
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">

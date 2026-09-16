@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabase";
 import { Spinner } from "../components/Spinner";
 import { Icon } from "../components/Icon";
 import { Link } from "../router";
+import { renderMarkdown } from "../lib/markdown";
 
 type Tab = "submissions" | "articles" | "audit" | "admins";
 
@@ -612,6 +613,8 @@ function ArticlesTab({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showCreate, setShowCreate] = useState(false);
+  const [editing, setEditing] = useState<ArticleRow | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -637,10 +640,33 @@ function ArticlesTab({ userId }: { userId: string }) {
     }
   }
 
-  function handleCreated(row: ArticleRow) {
-    setItems((prev) => [row, ...prev]);
+  function handleSaved(row: ArticleRow, mode: "create" | "edit") {
+    setItems((prev) => (mode === "create" ? [row, ...prev] : prev.map((a) => (a.id === row.id ? row : a))));
     setShowCreate(false);
+    setEditing(null);
   }
+
+  function startEdit(a: ArticleRow) {
+    setShowCreate(false);
+    setEditing(a);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function handleDelete(a: ArticleRow) {
+    if (!confirm(`Hapus artikel "${a.title_id || a.title_en}"? Permanen, tidak bisa dibatalkan.`)) return;
+    setBusyId(a.id);
+    try {
+      await adminApi.deleteArticle(a.id, userId);
+      setItems((prev) => prev.filter((x) => x.id !== a.id));
+      if (editing?.id === a.id) setEditing(null);
+    } catch (e: any) {
+      alert("Gagal hapus: " + e.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  const formOpen = showCreate || editing !== null;
 
   return (
     <div>
@@ -650,14 +676,24 @@ function ArticlesTab({ userId }: { userId: string }) {
           <button type="button" onClick={load} className="text-xs text-fg/40 hover:text-fg/60">
             Refresh
           </button>
-          <button type="button" onClick={() => setShowCreate((s) => !s)} className="btn-primary px-3 py-1.5 text-xs">
+          <button
+            type="button"
+            onClick={() => { setEditing(null); setShowCreate((s) => !s); }}
+            className="btn-primary px-3 py-1.5 text-xs"
+          >
             {showCreate ? "Tutup" : "+ Tulis Artikel"}
           </button>
         </div>
       </div>
 
-      {showCreate && (
-        <ArticleCreateForm userId={userId} onCreated={handleCreated} onCancel={() => setShowCreate(false)} />
+      {formOpen && (
+        <ArticleForm
+          key={editing?.id ?? "new"}
+          userId={userId}
+          existing={editing}
+          onSaved={handleSaved}
+          onCancel={() => { setShowCreate(false); setEditing(null); }}
+        />
       )}
 
       {loading ? (
@@ -669,7 +705,10 @@ function ArticlesTab({ userId }: { userId: string }) {
       ) : (
         <div className="space-y-2">
           {items.map((a) => (
-            <div key={a.id} className="app-card flex items-center gap-3 p-3">
+            <div
+              key={a.id}
+              className={`app-card flex items-center gap-3 p-3 ${editing?.id === a.id ? "ring-2 ring-brand-red/40" : ""}`}
+            >
               {a.cover_url && (
                 <img src={a.cover_url} alt="" className="h-12 w-12 flex-none rounded-lg object-cover" />
               )}
@@ -680,17 +719,34 @@ function ArticlesTab({ userId }: { userId: string }) {
                   {new Date(a.created_at).toLocaleDateString("id-ID")}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => togglePublish(a.id, a.status)}
-                className={`flex-none rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                  a.status === "published"
-                    ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
-                    : "bg-fg/10 text-fg/50 hover:bg-fg/15"
-                }`}
-              >
-                {a.status === "published" ? "Published" : "Draft"}
-              </button>
+              <div className="flex flex-none items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => startEdit(a)}
+                  className="rounded-lg bg-fg/5 px-3 py-1.5 text-xs font-semibold text-fg/60 hover:bg-fg/10"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => togglePublish(a.id, a.status)}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                    a.status === "published"
+                      ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                      : "bg-fg/10 text-fg/50 hover:bg-fg/15"
+                  }`}
+                >
+                  {a.status === "published" ? "Published" : "Draft"}
+                </button>
+                <button
+                  type="button"
+                  disabled={busyId === a.id}
+                  onClick={() => handleDelete(a)}
+                  className="rounded-lg bg-red-500/10 px-2.5 py-1.5 text-xs font-bold text-red-600 hover:bg-red-500/20 disabled:opacity-50"
+                >
+                  Hapus
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -699,19 +755,42 @@ function ArticlesTab({ userId }: { userId: string }) {
   );
 }
 
-// Form "Tulis Artikel" — bilingual (ID + EN). Slug otomatis dari judul ID (bisa diedit).
-function ArticleCreateForm({
+// Form artikel — bilingual (ID + EN), dipakai untuk TULIS BARU dan EDIT.
+// Slug otomatis dari judul ID saat buat baru; saat edit slug awal dari artikel (bisa diubah).
+function ArticleForm({
   userId,
-  onCreated,
+  existing,
+  onSaved,
   onCancel,
 }: {
   userId: string;
-  onCreated: (row: ArticleRow) => void;
+  existing: ArticleRow | null;
+  onSaved: (row: ArticleRow, mode: "create" | "edit") => void;
   onCancel: () => void;
 }) {
-  const [f, setF] = useState<ArticleCreateInput>(EMPTY_ARTICLE);
-  const [slugTouched, setSlugTouched] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const isEdit = existing !== null;
+  const [f, setF] = useState<ArticleCreateInput>(() =>
+    existing
+      ? {
+          slug: existing.slug,
+          title_id: existing.title_id,
+          title_en: existing.title_en,
+          excerpt_id: existing.excerpt_id ?? "",
+          excerpt_en: existing.excerpt_en ?? "",
+          body_md_id: existing.body_md_id ?? "",
+          body_md_en: existing.body_md_en ?? "",
+          category_id: existing.category_id ?? "",
+          category_en: existing.category_en ?? "",
+          cover_url: existing.cover_url ?? "",
+          author_name: existing.author_name ?? "",
+          status: existing.status,
+        }
+      : EMPTY_ARTICLE
+  );
+  const [lang, setLang] = useState<"id" | "en">("id");
+  const [view, setView] = useState<"write" | "preview">("write");
+  const [slugTouched, setSlugTouched] = useState(isEdit);
+  const [saving, setSaving] = useState<"" | "draft" | "publish">("");
   const [err, setErr] = useState("");
 
   function set<K extends keyof ArticleCreateInput>(key: K, val: ArticleCreateInput[K]) {
@@ -719,20 +798,27 @@ function ArticleCreateForm({
   }
 
   const effectiveSlug = slugTouched ? f.slug : slugify(f.title_id);
-  const lbl = "mb-1 block text-xs font-semibold text-fg/60";
+  const isID = lang === "id";
+  const titleKey: "title_id" | "title_en" = isID ? "title_id" : "title_en";
+  const bodyKey: "body_md_id" | "body_md_en" = isID ? "body_md_id" : "body_md_en";
+  const excerptKey: "excerpt_id" | "excerpt_en" = isID ? "excerpt_id" : "excerpt_en";
 
-  async function submit(e: FormEvent) {
-    e.preventDefault();
+  async function save(status: "draft" | "published") {
     setErr("");
     const slug = effectiveSlug.trim();
-    if (!f.title_id.trim() || !f.title_en.trim()) { setErr("Judul ID dan EN wajib diisi."); return; }
-    if (!slug) { setErr("Slug wajib diisi (otomatis dari judul ID)."); return; }
-    if (!f.body_md_id.trim() || !f.body_md_en.trim()) { setErr("Isi artikel ID dan EN wajib diisi."); return; }
-
-    setSaving(true);
+    if (!f.title_id.trim() || !f.title_en.trim()) { setErr("Judul Indonesia & English wajib diisi."); return; }
+    if (!slug) { setErr("Slug wajib diisi."); return; }
+    if (status === "published" && (!f.body_md_id.trim() || !f.body_md_en.trim())) {
+      setErr("Isi artikel Indonesia & English wajib diisi sebelum publish.");
+      return;
+    }
+    setSaving(status === "published" ? "publish" : "draft");
     try {
-      const row = await adminApi.createArticle({ ...f, slug }, userId);
-      onCreated(row);
+      const payload: ArticleCreateInput = { ...f, slug, status };
+      const row = existing
+        ? await adminApi.updateArticle(existing.id, payload, userId, existing.published_at)
+        : await adminApi.createArticle(payload, userId);
+      onSaved(row, existing ? "edit" : "create");
     } catch (e2: any) {
       const m = (e2?.message || "").toLowerCase();
       if (m.includes("duplicate") || m.includes("unique") || m.includes("already exists")) {
@@ -740,112 +826,204 @@ function ArticleCreateForm({
       } else {
         setErr(e2?.message || "Gagal menyimpan artikel.");
       }
-      setSaving(false);
+      setSaving("");
     }
   }
 
+  const busy = saving !== "";
+  const previewHtml = renderMarkdown(f[bodyKey] || "");
+  const cardCls = "app-card p-4";
+  const h4 = "mb-2 text-xs font-bold uppercase tracking-wide text-fg/45";
+
   return (
-    <form onSubmit={submit} className="app-card mb-5 space-y-4 p-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-fg">Tulis Artikel Baru</h3>
-        <span className="text-[11px] text-fg/40">Isi versi Indonesia &amp; English</span>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className={lbl}>Judul (ID) *</label>
-          <input className="field w-full" value={f.title_id} onChange={(e) => set("title_id", e.target.value)} required />
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[var(--bg,#f7f5f0)]">
+      {/* Top bar ala WordPress: kembali + Simpan Draft + Publish */}
+      <header className="sticky top-0 z-10 border-b border-fg/10 bg-card/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-fg/60 hover:text-fg"
+          >
+            <Icon name="arrowRight" size={15} className="rotate-180" />
+            Kembali
+          </button>
+          <span className="hidden text-sm font-bold text-fg sm:block">{isEdit ? "Edit Artikel" : "Tulis Artikel"}</span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => save("draft")}
+              disabled={busy}
+              className="rounded-lg bg-fg/5 px-4 py-2 text-sm font-semibold text-fg/70 hover:bg-fg/10 disabled:opacity-50"
+            >
+              {saving === "draft" ? "Menyimpan…" : "Simpan Draft"}
+            </button>
+            <button type="button" onClick={() => save("published")} disabled={busy} className="btn-primary px-5 py-2">
+              {saving === "publish" ? "Mem-publish…" : "Publish"}
+            </button>
+          </div>
         </div>
-        <div>
-          <label className={lbl}>Title (EN) *</label>
-          <input className="field w-full" value={f.title_en} onChange={(e) => set("title_en", e.target.value)} required />
-        </div>
-      </div>
+      </header>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className={lbl}>Slug (URL) *</label>
+      <div className="mx-auto max-w-6xl gap-6 px-4 py-6 lg:flex">
+        {/* Kolom tulis */}
+        <main className="min-w-0 flex-1">
+          <div className="mb-3 inline-flex rounded-lg bg-fg/5 p-1 text-sm font-semibold">
+            {(["id", "en"] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                className={`rounded-md px-3 py-1.5 ${lang === l ? "bg-card text-fg shadow-sm" : "text-fg/50 hover:text-fg/70"}`}
+              >
+                {l === "id" ? "Indonesia" : "English"}
+              </button>
+            ))}
+          </div>
+
           <input
-            className="field w-full font-mono text-xs"
-            value={effectiveSlug}
-            onChange={(e) => { setSlugTouched(true); set("slug", slugify(e.target.value)); }}
-            placeholder="otomatis-dari-judul"
+            className="w-full border-0 bg-transparent p-0 text-2xl font-extrabold tracking-tight text-fg outline-none placeholder:text-fg/25 sm:text-3xl"
+            placeholder={isID ? "Judul artikel…" : "Article title…"}
+            value={f[titleKey]}
+            onChange={(e) => set(titleKey, e.target.value)}
           />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className={lbl}>Kategori (ID)</label>
-            <input className="field w-full" value={f.category_id} onChange={(e) => set("category_id", e.target.value)} placeholder="Tips Gizi" />
+
+          <div className="mt-2 flex items-center gap-2 text-xs text-fg/45">
+            <span className="font-semibold">Slug:</span>
+            <input
+              className="min-w-0 flex-1 rounded border border-fg/10 bg-card px-2 py-1 font-mono text-[11px] text-fg/70"
+              value={effectiveSlug}
+              onChange={(e) => { setSlugTouched(true); set("slug", slugify(e.target.value)); }}
+              placeholder="otomatis-dari-judul"
+            />
           </div>
-          <div>
-            <label className={lbl}>Category (EN)</label>
-            <input className="field w-full" value={f.category_en} onChange={(e) => set("category_en", e.target.value)} placeholder="Nutrition" />
+
+          <div className="mt-4 flex items-center gap-1 border-b border-fg/10">
+            {(["write", "preview"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setView(v)}
+                className={`-mb-px border-b-2 px-3 py-2 text-sm font-semibold ${
+                  view === v ? "border-brand-red text-fg" : "border-transparent text-fg/45 hover:text-fg/70"
+                }`}
+              >
+                {v === "write" ? "Tulis" : "Preview"}
+              </button>
+            ))}
+            <span className="ml-auto text-[11px] text-fg/35">Markdown didukung</span>
           </div>
-        </div>
-      </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className={lbl}>Ringkasan (ID)</label>
-          <textarea className="field w-full" rows={2} value={f.excerpt_id} onChange={(e) => set("excerpt_id", e.target.value)} />
-        </div>
-        <div>
-          <label className={lbl}>Excerpt (EN)</label>
-          <textarea className="field w-full" rows={2} value={f.excerpt_en} onChange={(e) => set("excerpt_en", e.target.value)} />
-        </div>
-      </div>
+          {view === "write" ? (
+            <textarea
+              className="mt-3 w-full rounded-lg border border-fg/10 bg-card p-4 font-mono text-sm text-fg outline-none focus:border-brand-red/40"
+              rows={18}
+              value={f[bodyKey]}
+              onChange={(e) => set(bodyKey, e.target.value)}
+              placeholder={isID ? "## Sub-judul\n\nTulis isi artikel pakai Markdown…" : "## Section\n\nWrite the article in Markdown…"}
+            />
+          ) : (
+            <div className="mt-3 min-h-[16rem] rounded-lg border border-fg/10 bg-card p-4">
+              {f[bodyKey].trim() ? (
+                <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+              ) : (
+                <p className="text-sm text-fg/40">Belum ada isi untuk dipreview.</p>
+              )}
+            </div>
+          )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className={lbl}>Isi Artikel — Markdown (ID) *</label>
-          <textarea className="field w-full font-mono text-xs" rows={10} value={f.body_md_id} onChange={(e) => set("body_md_id", e.target.value)} placeholder={"## Sub-judul\n\nTulis pakai Markdown…"} required />
-        </div>
-        <div>
-          <label className={lbl}>Article Body — Markdown (EN) *</label>
-          <textarea className="field w-full font-mono text-xs" rows={10} value={f.body_md_en} onChange={(e) => set("body_md_en", e.target.value)} placeholder={"## Section\n\nWrite in Markdown…"} required />
-        </div>
-      </div>
+          <label className="mt-4 block text-xs font-semibold text-fg/60">
+            Ringkasan {isID ? "(ID)" : "(EN)"} — dipakai untuk meta description SEO
+          </label>
+          <textarea
+            className="field mt-1 w-full"
+            rows={2}
+            value={f[excerptKey] ?? ""}
+            onChange={(e) => set(excerptKey, e.target.value)}
+            placeholder={isID ? "Ringkasan singkat 1–2 kalimat…" : "Short 1–2 sentence summary…"}
+          />
+        </main>
 
-      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-        <div>
-          <label className={lbl}>Cover URL</label>
-          <input className="field w-full" value={f.cover_url} onChange={(e) => set("cover_url", e.target.value)} placeholder="https://…" />
-        </div>
-        <div>
-          <label className={lbl}>Penulis</label>
-          <input className="field w-full" value={f.author_name} onChange={(e) => set("author_name", e.target.value)} placeholder="Tim 20FIT" />
-        </div>
-        <div>
-          <label className={lbl}>Status</label>
-          <select className="field w-full" value={f.status} onChange={(e) => set("status", e.target.value as "draft" | "published")}>
-            <option value="draft">Draft</option>
-            <option value="published">Publish sekarang</option>
-          </select>
-        </div>
-      </div>
+        {/* Sidebar kanan ala WordPress */}
+        <aside className="mt-6 w-full space-y-4 lg:mt-0 lg:w-72 lg:flex-none">
+          <div className={cardCls}>
+            <h4 className={h4}>Publikasi</h4>
+            <label className="mb-1 block text-xs font-semibold text-fg/50">Status</label>
+            <select
+              className="field w-full"
+              value={f.status}
+              onChange={(e) => set("status", e.target.value as "draft" | "published")}
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => save("draft")}
+                disabled={busy}
+                className="flex-1 rounded-lg bg-fg/5 px-3 py-2 text-xs font-semibold text-fg/70 hover:bg-fg/10 disabled:opacity-50"
+              >
+                {saving === "draft" ? "…" : "Simpan Draft"}
+              </button>
+              <button type="button" onClick={() => save("published")} disabled={busy} className="btn-primary flex-1 px-3 py-2 text-xs">
+                {saving === "publish" ? "…" : "Publish"}
+              </button>
+            </div>
+          </div>
 
-      {f.cover_url && (
-        <img
-          src={f.cover_url}
-          alt=""
-          className="h-28 w-full rounded-lg object-cover"
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-        />
-      )}
+          <div className={cardCls}>
+            <h4 className={h4}>Gambar Sampul</h4>
+            <input className="field w-full" value={f.cover_url} onChange={(e) => set("cover_url", e.target.value)} placeholder="https://…" />
+            {f.cover_url && (
+              <img
+                src={f.cover_url}
+                alt=""
+                className="mt-2 h-28 w-full rounded-lg object-cover"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              />
+            )}
+          </div>
+
+          <div className={cardCls}>
+            <h4 className={h4}>Kategori</h4>
+            <input className="field mb-2 w-full" value={f.category_id} onChange={(e) => set("category_id", e.target.value)} placeholder="Kategori (ID) — Tips Gizi" />
+            <input className="field w-full" value={f.category_en} onChange={(e) => set("category_en", e.target.value)} placeholder="Category (EN) — Nutrition" />
+          </div>
+
+          <div className={cardCls}>
+            <h4 className={h4}>Penulis</h4>
+            <input className="field w-full" value={f.author_name} onChange={(e) => set("author_name", e.target.value)} placeholder="Tim 20FIT" />
+          </div>
+
+          <div className={cardCls}>
+            <h4 className={h4}>Pratinjau Google (SEO)</h4>
+            <div className="rounded-lg border border-fg/10 bg-fg/[0.02] p-3">
+              <div className="truncate text-[13px] text-[#1a0dab] dark:text-[#8ab4f8]">
+                {(f.title_id || "Judul artikel").trim()} — 20FIT
+              </div>
+              <div className="truncate text-[11px] text-emerald-700 dark:text-emerald-500">
+                recipe.20fit.id › artikel › {effectiveSlug || "slug"}
+              </div>
+              <div className="mt-0.5 text-[11px] text-fg/55">
+                {f.excerpt_id?.trim() || "Isi Ringkasan (ID) untuk mengatur deskripsi di hasil pencarian Google."}
+              </div>
+            </div>
+            <p className="mt-2 text-[11px] text-fg/40">
+              Judul &amp; Ringkasan (ID) dipakai untuk meta SEO. Preview link WhatsApp/Facebook butuh SSR (belum).
+            </p>
+          </div>
+        </aside>
+      </div>
 
       {err && (
-        <p className="rounded-lg bg-brand-red/10 px-3 py-2 text-[13px] font-medium text-brand-red" role="alert">{err}</p>
+        <div className="sticky bottom-0 border-t border-fg/10 bg-card/95 px-4 py-3 backdrop-blur">
+          <p className="mx-auto max-w-6xl rounded-lg bg-brand-red/10 px-3 py-2 text-[13px] font-medium text-brand-red" role="alert">
+            {err}
+          </p>
+        </div>
       )}
-
-      <div className="flex gap-2">
-        <button type="submit" disabled={saving} className="btn-primary px-5 py-2">
-          {saving ? "Menyimpan…" : "Simpan Artikel"}
-        </button>
-        <button type="button" onClick={onCancel} className="rounded-lg bg-fg/5 px-4 py-2 text-sm font-semibold text-fg/50 hover:bg-fg/10">
-          Batal
-        </button>
-      </div>
-    </form>
+    </div>
   );
 }
 

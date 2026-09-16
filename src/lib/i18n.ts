@@ -154,6 +154,12 @@ const STR: Dict = {
   backToArticles: { id: "Semua artikel", en: "All articles" },
   seeAll: { id: "Lihat semua", en: "See all" },
   readTime: { id: "menit baca", en: "min read" },
+  articleCtaTitle: { id: "Mulai hidup sehat bareng 20FIT", en: "Start living healthy with 20FIT" },
+  articleCtaText: {
+    id: "Booking sesi, konsultasi gizi, dan program 20FIT langsung di my.20fit.id.",
+    en: "Book sessions, nutrition consults, and 20FIT programs at my.20fit.id.",
+  },
+  articleCtaButton: { id: "Kunjungi 20FIT", en: "Visit 20FIT" },
   // Home (Tahap 5)
   homeNav: { id: "Beranda", en: "Home" },
   homeHeroTitle: { id: "Mau makan apa hari ini?", en: "What are you going to eat today?" },

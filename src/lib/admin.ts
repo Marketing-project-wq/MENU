@@ -261,6 +261,69 @@ export const adminApi = {
     return data as ArticleRow;
   },
 
+  // Edit artikel yang sudah ada. published_at dipertahankan kalau sudah pernah terbit
+  // (biar tanggal tayang tak berubah tiap edit); di-set now hanya saat draft -> published.
+  async updateArticle(
+    id: string,
+    input: ArticleCreateInput,
+    adminId: string,
+    existingPublishedAt: string | null
+  ): Promise<ArticleRow> {
+    const now = new Date().toISOString();
+    const publishedAt = input.status === "published" ? existingPublishedAt ?? now : null;
+    const row = {
+      slug: input.slug,
+      title_id: input.title_id,
+      title_en: input.title_en,
+      excerpt_id: input.excerpt_id || null,
+      excerpt_en: input.excerpt_en || null,
+      body_md_id: input.body_md_id,
+      body_md_en: input.body_md_en,
+      category_id: input.category_id || null,
+      category_en: input.category_en || null,
+      cover_url: input.cover_url || null,
+      author_name: input.author_name || null,
+      status: input.status,
+      published_at: publishedAt,
+      updated_at: now,
+      // Jaga kolom legacy tetap sinkron dengan versi ID.
+      title: input.title_id,
+      excerpt: input.excerpt_id || null,
+      body_md: input.body_md_id,
+      category: input.category_id || null,
+    };
+
+    const { data, error } = await supabase
+      .from("my20fit_recipe_article")
+      .update(row)
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+
+    await supabase.from("recipe_admin_audit_log").insert({
+      admin_id: adminId,
+      action: "update_article",
+      target_type: "article",
+      target_id: id,
+      detail: { slug: input.slug, status: input.status },
+    });
+
+    return data as ArticleRow;
+  },
+
+  async deleteArticle(id: string, adminId: string): Promise<void> {
+    const { error } = await supabase.from("my20fit_recipe_article").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+
+    await supabase.from("recipe_admin_audit_log").insert({
+      admin_id: adminId,
+      action: "delete_article",
+      target_type: "article",
+      target_id: id,
+    });
+  },
+
   async getAuditLog(limit = 50): Promise<AuditEntry[]> {
     const { data, error } = await supabase
       .from("recipe_admin_audit_log")

@@ -1,15 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "../router";
+import { Link, articleHref } from "../router";
 import { useLang, useRecipes } from "../lib/store";
 import { api } from "../lib/api";
 import { renderMarkdown } from "../lib/markdown";
 import { normalizeMember, normalizeOfficial } from "../lib/normalize";
 import { CoverImage } from "../components/CoverImage";
 import { RecipeCard } from "../components/RecipeCard";
+import { ArticleCTA } from "../components/ArticleCTA";
 import { Spinner } from "../components/Spinner";
 import { Icon, categoryIconName } from "../components/Icon";
 import { cleanTitle } from "../lib/text";
+import { useSeo } from "../lib/useSeo";
+import { LOGO_LIGHT } from "../lib/constants";
 import type { ArticleFull, ArticleRecipeRef, RecipeVM } from "../lib/types";
+
+// Ringkasan teks polos dari Markdown untuk meta description (buang gambar/link/simbol MD).
+function plainExcerpt(md: string | null, max = 155): string {
+  if (!md) return "";
+  const txt = md
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/[#*_>`~|]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return txt.length > max ? txt.slice(0, max - 1).trimEnd() + "…" : txt;
+}
 
 type State = "loading" | "notfound" | { article: ArticleFull; recipes: ArticleRecipeRef[] };
 
@@ -63,6 +78,46 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
     });
     return () => imgs.forEach((img) => img.removeEventListener("error", onErr));
   }, [state]);
+
+  // SEO per-artikel (judul, meta description, canonical, OG, JSON-LD Article). Hook dipanggil
+  // TANPA syarat sebelum early-return (aturan hooks). Googlebot render JS -> ini kebaca Google.
+  const article = typeof state === "object" ? state.article : null;
+  const seoTitle = article ? cleanTitle(article.title) : t("articlesTitle");
+  const seoDesc = article ? article.excerpt?.trim() || plainExcerpt(article.body_md) : "";
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  useSeo(
+    article
+      ? {
+          title: seoTitle,
+          description: seoDesc || undefined,
+          canonicalPath: articleHref(article.slug),
+          image: article.cover_url || undefined,
+          type: "article",
+          publishedTime: article.published_at,
+          author: article.author_name,
+          section: article.category,
+          jsonLd: {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: seoTitle,
+            description: seoDesc || undefined,
+            image: article.cover_url ? [article.cover_url] : undefined,
+            datePublished: article.published_at || undefined,
+            dateModified: article.published_at || undefined,
+            author: article.author_name
+              ? { "@type": "Person", name: article.author_name }
+              : { "@type": "Organization", name: "20FIT" },
+            publisher: {
+              "@type": "Organization",
+              name: "20FIT",
+              logo: { "@type": "ImageObject", url: LOGO_LIGHT },
+            },
+            mainEntityOfPage: origin + articleHref(article.slug),
+            articleSection: article.category || undefined,
+          },
+        }
+      : { title: t("articlesTitle"), type: "website", noIndex: state === "notfound" }
+  );
 
   if (state === "loading") return <Spinner label={t("loading")} />;
   if (state === "notfound") {
@@ -139,6 +194,9 @@ export function ArticleDetailPage({ slug }: { slug: string }) {
               </div>
             </section>
           )}
+
+          {/* CTA ke web di SETIAP artikel (my.20fit.id + UTM). */}
+          <ArticleCTA />
         </div>
       </div>
     </article>
