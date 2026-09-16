@@ -656,7 +656,7 @@ function ArticlesTab({ userId }: { userId: string }) {
     if (!confirm(`Hapus artikel "${a.title_id || a.title_en}"? Permanen, tidak bisa dibatalkan.`)) return;
     setBusyId(a.id);
     try {
-      await adminApi.deleteArticle(a.id, userId);
+      await adminApi.deleteArticle(a.id, userId, a.title_id || a.title_en);
       setItems((prev) => prev.filter((x) => x.id !== a.id));
       if (editing?.id === a.id) setEditing(null);
     } catch (e: any) {
@@ -1293,47 +1293,110 @@ function AdminManagementTab({ currentUserId }: { currentUserId: string }) {
 // =============================================================================
 // Tab: Audit Log
 // =============================================================================
+// Label aksi audit dalam Bahasa Indonesia (+ warna). Kunci = kolom `action` di DB.
+const AUDIT_ACTIONS: Record<string, { label: string; cls: string }> = {
+  approve: { label: "menyetujui resep", cls: "bg-emerald-100 text-emerald-700" },
+  reject: { label: "menolak resep", cls: "bg-red-100 text-red-700" },
+  publish: { label: "menerbitkan artikel", cls: "bg-blue-100 text-blue-700" },
+  unpublish: { label: "menyembunyikan artikel", cls: "bg-amber-100 text-amber-700" },
+  create_article: { label: "menulis artikel", cls: "bg-emerald-100 text-emerald-700" },
+  update_article: { label: "mengedit artikel", cls: "bg-fg/10 text-fg/70" },
+  delete_article: { label: "menghapus artikel", cls: "bg-red-100 text-red-700" },
+  create_admin: { label: "membuat akun admin", cls: "bg-purple-100 text-purple-700" },
+  update_role: { label: "mengubah role admin", cls: "bg-purple-100 text-purple-700" },
+  remove_admin: { label: "mencabut akses admin", cls: "bg-red-100 text-red-700" },
+};
+
 function AuditTab() {
   const [items, setItems] = useState<AuditEntry[]>([]);
+  const [emailById, setEmailById] = useState<Record<string, string>>({});
+  const [nameById, setNameById] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    (async () => {
-      try {
-        setItems(await adminApi.getAuditLog());
-      } catch (e: any) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  async function load() {
+    setLoading(true);
+    setError("");
+    try {
+      // Ambil log + data untuk menerjemahkan UUID -> nama (best-effort; kalau gagal, tetap tampil).
+      const [log, articles, submissions] = await Promise.all([
+        adminApi.getAuditLog(100),
+        adminApi.getArticles().catch(() => [] as Awaited<ReturnType<typeof adminApi.getArticles>>),
+        adminApi.getSubmissions().catch(() => [] as Awaited<ReturnType<typeof adminApi.getSubmissions>>),
+      ]);
+      setItems(log);
 
-  const actionColors: Record<string, string> = {
-    approve: "text-emerald-600",
-    reject: "text-red-600",
-    publish: "text-blue-600",
-    unpublish: "text-amber-600",
-    edit: "text-fg/60",
-  };
+      const names: Record<string, string> = {};
+      articles.forEach((a) => { names[a.id] = a.title_id || a.title_en; });
+      submissions.forEach((s) => { names[s.id] = s.name; });
+      setNameById(names);
+
+      // Email admin cuma bisa diambil superadmin (RPC). Kalau bukan, lewati (fallback "Admin").
+      try {
+        const admins = await adminApi.listAdmins();
+        const em: Record<string, string> = {};
+        admins.forEach((a) => { em[a.user_id] = a.email; });
+        setEmailById(em);
+      } catch { /* non-superadmin: skip email */ }
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  function who(id: string): string {
+    return emailById[id] || "Admin";
+  }
+  function what(action: string): string {
+    return AUDIT_ACTIONS[action]?.label ?? action.replace(/_/g, " ");
+  }
+  function targetLabel(e: AuditEntry): string {
+    const nm = nameById[e.target_id];
+    if (nm) return `“${nm}”`;
+    if (e.detail?.title) return `“${e.detail.title}”`;
+    if (e.detail?.slug) return `“${e.detail.slug}”`;
+    if (e.detail?.email) return e.detail.email;
+    if (e.target_type === "admin") return "akun admin";
+    return `#${String(e.target_id).slice(0, 8)}`;
+  }
 
   if (loading) return <Spinner label="Memuat audit log…" />;
   if (error) return <div className="app-card p-6 text-center text-sm text-red-500">{error}</div>;
-  if (items.length === 0)
-    return <div className="app-card p-6 text-center text-sm text-fg/50">Belum ada aktivitas tercatat.</div>;
 
   return (
-    <div className="space-y-1">
-      {items.map((e) => (
-        <div key={e.id} className="flex items-baseline gap-2 rounded-lg px-3 py-2 text-xs hover:bg-fg/[0.03]">
-          <span className="flex-none text-fg/35">{new Date(e.created_at).toLocaleString("id-ID")}</span>
-          <span className={`font-bold uppercase ${actionColors[e.action] ?? "text-fg/50"}`}>{e.action}</span>
-          <span className="text-fg/50">{e.target_type}</span>
-          <span className="truncate font-mono text-fg/35">{e.target_id}</span>
-          {e.detail?.reason && <span className="truncate text-fg/45">— {e.detail.reason}</span>}
+    <div>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <p className="text-xs text-fg/45">
+          Catatan otomatis: siapa melakukan apa &amp; kapan (untuk akuntabilitas antar-admin).
+        </p>
+        <button type="button" onClick={load} className="flex-none text-xs text-fg/40 hover:text-fg/60">Refresh</button>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="app-card p-6 text-center text-sm text-fg/50">Belum ada aktivitas tercatat.</div>
+      ) : (
+        <div className="space-y-2">
+          {items.map((e) => {
+            const meta = AUDIT_ACTIONS[e.action];
+            return (
+              <div key={e.id} className="app-card p-3">
+                <p className="text-sm leading-relaxed text-fg/80">
+                  <span className="font-semibold text-fg">{who(e.admin_id)}</span>{" "}
+                  <span className={`rounded px-1.5 py-0.5 text-[11px] font-bold ${meta?.cls ?? "bg-fg/10 text-fg/50"}`}>
+                    {what(e.action)}
+                  </span>{" "}
+                  <span className="text-fg/70">{targetLabel(e)}</span>
+                </p>
+                {e.detail?.reason && <p className="mt-1 text-xs text-fg/45">Alasan: {e.detail.reason}</p>}
+                <p className="mt-1 text-[11px] text-fg/35">{new Date(e.created_at).toLocaleString("id-ID")}</p>
+              </div>
+            );
+          })}
         </div>
-      ))}
+      )}
     </div>
   );
 }

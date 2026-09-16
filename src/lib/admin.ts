@@ -312,15 +312,17 @@ export const adminApi = {
     return data as ArticleRow;
   },
 
-  async deleteArticle(id: string, adminId: string): Promise<void> {
+  async deleteArticle(id: string, adminId: string, label?: string): Promise<void> {
     const { error } = await supabase.from("my20fit_recipe_article").delete().eq("id", id);
     if (error) throw new Error(error.message);
 
+    // Simpan judul di detail: artikelnya sudah hilang, jadi audit log tetap bisa sebut namanya.
     await supabase.from("recipe_admin_audit_log").insert({
       admin_id: adminId,
       action: "delete_article",
       target_type: "article",
       target_id: id,
+      detail: label ? { title: label } : {},
     });
   },
 
