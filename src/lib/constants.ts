@@ -4,7 +4,13 @@
 
 export const SUPABASE = {
   URL: "https://cpvzwqptzcxnwzfzgrmt.supabase.co",
-  ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+  // anon key = PUBLIK (publishable, dilindungi RLS) — memang dikirim ke browser tiap user.
+  // Utamakan env VITE_SUPABASE_ANON_KEY; fallback ke anon key publik project bersama ini supaya
+  // login/daftar TETAP jalan walau env belum di-set di Railway (URL project pun sudah hardcode
+  // di atas — satu project 20FIT untuk semua app). BUKAN service key (yang itu server-only).
+  ANON_KEY:
+    (import.meta.env.VITE_SUPABASE_ANON_KEY as string) ||
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdnp3cXB0emN4bnd6Znpncm10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MzE0MzksImV4cCI6MjA5MTIwNzQzOX0.DIP-tTFxa3GHMhT6b1Tq-Zz0a24P-vbU9ixEtITbqpI",
   // Sama dengan pola calories.20fit.id (Supabase default storage key untuk project ini).
   STORAGE_KEY: "sb-cpvzwqptzcxnwzfzgrmt-auth-token",
 };
