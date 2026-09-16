@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type ChangeEvent } from "react";
 import { useAuth } from "../lib/auth";
 import { useAdmin, adminApi, type Submission, type ArticleRow, type ArticleCreateInput, type AuditEntry, type AdminMember, type AdminRole } from "../lib/admin";
 import { useLang } from "../lib/store";
@@ -792,6 +792,8 @@ function ArticleForm({
   const [slugTouched, setSlugTouched] = useState(isEdit);
   const [saving, setSaving] = useState<"" | "draft" | "publish">("");
   const [err, setErr] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [coverErr, setCoverErr] = useState("");
 
   function set<K extends keyof ArticleCreateInput>(key: K, val: ArticleCreateInput[K]) {
     setF((prev) => ({ ...prev, [key]: val }));
@@ -827,6 +829,32 @@ function ArticleForm({
         setErr(e2?.message || "Gagal menyimpan artikel.");
       }
       setSaving("");
+    }
+  }
+
+  async function handleCoverFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverErr("");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setCoverErr("Format harus JPG, PNG, atau WEBP.");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setCoverErr("Ukuran maksimal 5MB.");
+      e.target.value = "";
+      return;
+    }
+    setUploading(true);
+    try {
+      const url = await adminApi.uploadCover(file);
+      set("cover_url", url);
+    } catch (e2: any) {
+      setCoverErr(e2?.message || "Gagal upload gambar.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
     }
   }
 
@@ -974,15 +1002,37 @@ function ArticleForm({
 
           <div className={cardCls}>
             <h4 className={h4}>Gambar Sampul</h4>
+            <label
+              className={`flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-fg/25 bg-fg/5 px-3 py-2.5 text-xs font-semibold text-fg/70 hover:bg-fg/10 ${
+                uploading ? "cursor-wait opacity-60" : ""
+              }`}
+            >
+              {uploading ? "Mengunggah…" : "Upload gambar dari komputer"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                disabled={uploading}
+                onChange={handleCoverFile}
+              />
+            </label>
+            <div className="my-2 flex items-center gap-2 text-[10px] uppercase tracking-wide text-fg/30">
+              <span className="h-px flex-1 bg-fg/10" />
+              atau tempel URL
+              <span className="h-px flex-1 bg-fg/10" />
+            </div>
             <input className="field w-full" value={f.cover_url} onChange={(e) => set("cover_url", e.target.value)} placeholder="https://…" />
+            {coverErr && <p className="mt-1 text-[11px] font-medium text-brand-red">{coverErr}</p>}
             {f.cover_url && (
               <img
+                key={f.cover_url}
                 src={f.cover_url}
                 alt=""
                 className="mt-2 h-28 w-full rounded-lg object-cover"
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
               />
             )}
+            <p className="mt-1.5 text-[10px] text-fg/35">JPG / PNG / WEBP, maks 5MB.</p>
           </div>
 
           <div className={cardCls}>

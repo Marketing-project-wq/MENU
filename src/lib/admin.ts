@@ -324,6 +324,27 @@ export const adminApi = {
     });
   },
 
+  // Upload gambar sampul ke Storage bucket "article-covers" (public) -> URL publik yang PASTI
+  // tampil (bucket kita sendiri, tanpa hotlink/CORS). Bucket public + policy insert authenticated
+  // sudah ada, jadi admin bisa upload dari browser tanpa perubahan DB.
+  async uploadCover(file: File): Promise<string> {
+    const rawExt = (file.name.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const ext = rawExt || (file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg");
+    const rand =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const path = `${rand}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from("article-covers")
+      .upload(path, file, { contentType: file.type || "image/jpeg", upsert: false });
+    if (error) throw new Error(error.message);
+
+    const { data } = supabase.storage.from("article-covers").getPublicUrl(path);
+    return data.publicUrl;
+  },
+
   async getAuditLog(limit = 50): Promise<AuditEntry[]> {
     const { data, error } = await supabase
       .from("recipe_admin_audit_log")
