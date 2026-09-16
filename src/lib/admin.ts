@@ -84,19 +84,40 @@ export interface Submission {
   user_id: string | null;
 }
 
+// Sesuai kolom NYATA tabel my20fit_recipe_article (bilingual + kolom legacy single-lang).
 export interface ArticleRow {
-  id: number;
+  id: string; // uuid
   slug: string;
   title_id: string;
   title_en: string;
-  summary_id: string | null;
-  summary_en: string | null;
-  category: string | null;
+  excerpt_id: string | null;
+  excerpt_en: string | null;
+  body_md_id: string | null;
+  body_md_en: string | null;
+  category_id: string | null;
+  category_en: string | null;
   cover_url: string | null;
-  author: string | null;
-  published: boolean;
+  author_name: string | null;
+  status: "draft" | "published";
+  published_at: string | null;
   created_at: string;
   updated_at: string | null;
+}
+
+// Input form "Tulis Artikel" (ID + EN). Kolom legacy diisi otomatis dari versi ID.
+export interface ArticleCreateInput {
+  slug: string;
+  title_id: string;
+  title_en: string;
+  excerpt_id?: string;
+  excerpt_en?: string;
+  body_md_id: string;
+  body_md_en: string;
+  category_id?: string;
+  category_en?: string;
+  cover_url?: string;
+  author_name?: string;
+  status: "draft" | "published";
 }
 
 export interface AuditEntry {
@@ -175,10 +196,16 @@ export const adminApi = {
     return (data ?? []) as ArticleRow[];
   },
 
-  async updateArticlePublished(id: number, published: boolean, adminId: string): Promise<void> {
+  // Publish/unpublish: kolom asli 'status' (draft|published), bukan boolean 'published'.
+  async updateArticlePublished(id: string, published: boolean, adminId: string): Promise<void> {
+    const now = new Date().toISOString();
     const { error } = await supabase
       .from("my20fit_recipe_article")
-      .update({ published })
+      .update({
+        status: published ? "published" : "draft",
+        published_at: published ? now : null,
+        updated_at: now,
+      })
       .eq("id", id);
     if (error) throw new Error(error.message);
 
@@ -186,8 +213,52 @@ export const adminApi = {
       admin_id: adminId,
       action: published ? "publish" : "unpublish",
       target_type: "article",
-      target_id: String(id),
+      target_id: id,
     });
+  },
+
+  // Tulis artikel baru. Insert langsung ke tabel (RLS "recipe_admin_manage_articles"
+  // sudah mengizinkan admin). Kolom legacy single-lang diisi dari versi ID biar artikel
+  // tetap render di path lama maupun bilingual.
+  async createArticle(input: ArticleCreateInput, adminId: string): Promise<ArticleRow> {
+    const now = new Date().toISOString();
+    const row = {
+      slug: input.slug,
+      title_id: input.title_id,
+      title_en: input.title_en,
+      excerpt_id: input.excerpt_id || null,
+      excerpt_en: input.excerpt_en || null,
+      body_md_id: input.body_md_id,
+      body_md_en: input.body_md_en,
+      category_id: input.category_id || null,
+      category_en: input.category_en || null,
+      cover_url: input.cover_url || null,
+      author_name: input.author_name || null,
+      status: input.status,
+      published_at: input.status === "published" ? now : null,
+      // Mirror ke kolom legacy (single-lang) — semua 67 artikel lama punya keduanya.
+      title: input.title_id,
+      excerpt: input.excerpt_id || null,
+      body_md: input.body_md_id,
+      category: input.category_id || null,
+    };
+
+    const { data, error } = await supabase
+      .from("my20fit_recipe_article")
+      .insert(row)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+
+    await supabase.from("recipe_admin_audit_log").insert({
+      admin_id: adminId,
+      action: "create_article",
+      target_type: "article",
+      target_id: String((data as { id: string }).id),
+      detail: { slug: input.slug, status: input.status },
+    });
+
+    return data as ArticleRow;
   },
 
   async getAuditLog(limit = 50): Promise<AuditEntry[]> {
