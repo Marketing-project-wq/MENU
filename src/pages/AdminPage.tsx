@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../lib/auth";
-import { useAdmin, adminApi, type Submission, type ArticleRow, type AuditEntry, type AdminMember, type AdminRole } from "../lib/admin";
+import { useAdmin, adminApi, type Submission, type ArticleRow, type ArticleCreateInput, type AuditEntry, type AdminMember, type AdminRole } from "../lib/admin";
 import { useLang } from "../lib/store";
 import { supabase } from "../lib/supabase";
 import { Spinner } from "../components/Spinner";
@@ -280,45 +280,50 @@ function AdminDashboard({
 }) {
   const [tab, setTab] = useState<Tab>("submissions");
 
-  const tabs: { key: Tab; label: string }[] = [
+  const navItems: { key: Tab; label: string }[] = [
     { key: "submissions", label: "Resep" },
     { key: "articles", label: "Artikel" },
     { key: "audit", label: "Audit Log" },
     ...(role === "superadmin" ? [{ key: "admins" as Tab, label: "Kelola Admin" }] : []),
   ];
 
+  const activeLabel = navItems.find((n) => n.key === tab)?.label ?? "";
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="mb-6 flex items-baseline justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-fg">Admin CMS</h1>
-          <p className="mt-0.5 text-xs text-fg/45">
-            {userEmail} &middot; {role}
-          </p>
+    <div className="mx-auto max-w-6xl px-4 py-6 lg:flex lg:gap-6">
+      {/* Sidebar: baris pill di mobile, kolom kiri di desktop */}
+      <aside className="lg:w-56 lg:flex-none">
+        <div className="mb-4 hidden lg:block">
+          <h1 className="text-lg font-extrabold tracking-tight text-fg">Admin CMS</h1>
+          <p className="mt-0.5 truncate text-xs text-fg/45">{userEmail}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-fg/35">{role}</p>
         </div>
-      </div>
+        <nav className="flex gap-1 overflow-x-auto rounded-xl bg-fg/5 p-1 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:rounded-none lg:bg-transparent lg:p-0">
+          {navItems.map((n) => (
+            <button
+              key={n.key}
+              type="button"
+              onClick={() => setTab(n.key)}
+              className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition lg:w-full lg:text-left ${
+                tab === n.key
+                  ? "bg-card text-fg shadow-sm lg:bg-brand-red/10 lg:text-brand-red lg:shadow-none"
+                  : "text-fg/50 hover:text-fg/70 lg:hover:bg-fg/5"
+              }`}
+            >
+              {n.label}
+            </button>
+          ))}
+        </nav>
+      </aside>
 
-      <div className="mb-5 flex gap-1 rounded-xl bg-fg/5 p-1">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setTab(t.key)}
-            className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
-              tab === t.key
-                ? "bg-card text-fg shadow-sm"
-                : "text-fg/50 hover:text-fg/70"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {tab === "submissions" && <SubmissionsTab userId={userId} />}
-      {tab === "articles" && <ArticlesTab userId={userId} />}
-      {tab === "audit" && <AuditTab />}
-      {tab === "admins" && role === "superadmin" && <AdminManagementTab currentUserId={userId} />}
+      {/* Konten */}
+      <main className="mt-5 min-w-0 flex-1 lg:mt-0">
+        <h2 className="mb-4 text-xl font-extrabold tracking-tight text-fg lg:text-2xl">{activeLabel}</h2>
+        {tab === "submissions" && <SubmissionsTab userId={userId} />}
+        {tab === "articles" && <ArticlesTab userId={userId} />}
+        {tab === "audit" && <AuditTab />}
+        {tab === "admins" && role === "superadmin" && <AdminManagementTab currentUserId={userId} />}
+      </main>
     </div>
   );
 }
@@ -576,10 +581,37 @@ function SubmissionsTab({ userId }: { userId: string }) {
 // =============================================================================
 // Tab: Artikel
 // =============================================================================
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .trim()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+const EMPTY_ARTICLE: ArticleCreateInput = {
+  slug: "",
+  title_id: "",
+  title_en: "",
+  excerpt_id: "",
+  excerpt_en: "",
+  body_md_id: "",
+  body_md_en: "",
+  category_id: "",
+  category_en: "",
+  cover_url: "",
+  author_name: "",
+  status: "draft",
+};
+
 function ArticlesTab({ userId }: { userId: string }) {
   const [items, setItems] = useState<ArticleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -595,30 +627,45 @@ function ArticlesTab({ userId }: { userId: string }) {
 
   useEffect(() => { load(); }, []);
 
-  async function togglePublish(id: number, current: boolean) {
+  async function togglePublish(id: string, current: "draft" | "published") {
+    const publish = current !== "published";
     try {
-      await adminApi.updateArticlePublished(id, !current, userId);
-      setItems((prev) => prev.map((a) => (a.id === id ? { ...a, published: !current } : a)));
+      await adminApi.updateArticlePublished(id, publish, userId);
+      setItems((prev) => prev.map((a) => (a.id === id ? { ...a, status: publish ? "published" : "draft" } : a)));
     } catch (e: any) {
       alert("Gagal: " + e.message);
     }
   }
 
+  function handleCreated(row: ArticleRow) {
+    setItems((prev) => [row, ...prev]);
+    setShowCreate(false);
+  }
+
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <p className="text-xs text-fg/40">{items.length} artikel</p>
-        <button type="button" onClick={load} className="text-xs text-fg/40 hover:text-fg/60">
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <button type="button" onClick={load} className="text-xs text-fg/40 hover:text-fg/60">
+            Refresh
+          </button>
+          <button type="button" onClick={() => setShowCreate((s) => !s)} className="btn-primary px-3 py-1.5 text-xs">
+            {showCreate ? "Tutup" : "+ Tulis Artikel"}
+          </button>
+        </div>
       </div>
+
+      {showCreate && (
+        <ArticleCreateForm userId={userId} onCreated={handleCreated} onCancel={() => setShowCreate(false)} />
+      )}
 
       {loading ? (
         <Spinner label="Memuat artikel…" />
       ) : error ? (
         <div className="app-card p-6 text-center text-sm text-red-500">{error}</div>
       ) : items.length === 0 ? (
-        <div className="app-card p-6 text-center text-sm text-fg/50">Tidak ada artikel.</div>
+        <div className="app-card p-6 text-center text-sm text-fg/50">Belum ada artikel. Klik &ldquo;+ Tulis Artikel&rdquo;.</div>
       ) : (
         <div className="space-y-2">
           {items.map((a) => (
@@ -629,26 +676,176 @@ function ArticlesTab({ userId }: { userId: string }) {
               <div className="min-w-0 flex-1">
                 <h3 className="truncate text-sm font-bold text-fg">{a.title_id || a.title_en}</h3>
                 <p className="text-xs text-fg/45">
-                  {a.category ?? "—"} &middot; {a.author ?? "—"} &middot;{" "}
+                  {a.category_id || a.category_en || "—"} &middot; {a.author_name ?? "—"} &middot;{" "}
                   {new Date(a.created_at).toLocaleDateString("id-ID")}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => togglePublish(a.id, a.published)}
+                onClick={() => togglePublish(a.id, a.status)}
                 className={`flex-none rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                  a.published
+                  a.status === "published"
                     ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
                     : "bg-fg/10 text-fg/50 hover:bg-fg/15"
                 }`}
               >
-                {a.published ? "Published" : "Draft"}
+                {a.status === "published" ? "Published" : "Draft"}
               </button>
             </div>
           ))}
         </div>
       )}
     </div>
+  );
+}
+
+// Form "Tulis Artikel" — bilingual (ID + EN). Slug otomatis dari judul ID (bisa diedit).
+function ArticleCreateForm({
+  userId,
+  onCreated,
+  onCancel,
+}: {
+  userId: string;
+  onCreated: (row: ArticleRow) => void;
+  onCancel: () => void;
+}) {
+  const [f, setF] = useState<ArticleCreateInput>(EMPTY_ARTICLE);
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  function set<K extends keyof ArticleCreateInput>(key: K, val: ArticleCreateInput[K]) {
+    setF((prev) => ({ ...prev, [key]: val }));
+  }
+
+  const effectiveSlug = slugTouched ? f.slug : slugify(f.title_id);
+  const lbl = "mb-1 block text-xs font-semibold text-fg/60";
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setErr("");
+    const slug = effectiveSlug.trim();
+    if (!f.title_id.trim() || !f.title_en.trim()) { setErr("Judul ID dan EN wajib diisi."); return; }
+    if (!slug) { setErr("Slug wajib diisi (otomatis dari judul ID)."); return; }
+    if (!f.body_md_id.trim() || !f.body_md_en.trim()) { setErr("Isi artikel ID dan EN wajib diisi."); return; }
+
+    setSaving(true);
+    try {
+      const row = await adminApi.createArticle({ ...f, slug }, userId);
+      onCreated(row);
+    } catch (e2: any) {
+      const m = (e2?.message || "").toLowerCase();
+      if (m.includes("duplicate") || m.includes("unique") || m.includes("already exists")) {
+        setErr(`Slug "${slug}" sudah dipakai. Ganti slug-nya.`);
+      } else {
+        setErr(e2?.message || "Gagal menyimpan artikel.");
+      }
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="app-card mb-5 space-y-4 p-5">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold text-fg">Tulis Artikel Baru</h3>
+        <span className="text-[11px] text-fg/40">Isi versi Indonesia &amp; English</span>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className={lbl}>Judul (ID) *</label>
+          <input className="field w-full" value={f.title_id} onChange={(e) => set("title_id", e.target.value)} required />
+        </div>
+        <div>
+          <label className={lbl}>Title (EN) *</label>
+          <input className="field w-full" value={f.title_en} onChange={(e) => set("title_en", e.target.value)} required />
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className={lbl}>Slug (URL) *</label>
+          <input
+            className="field w-full font-mono text-xs"
+            value={effectiveSlug}
+            onChange={(e) => { setSlugTouched(true); set("slug", slugify(e.target.value)); }}
+            placeholder="otomatis-dari-judul"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className={lbl}>Kategori (ID)</label>
+            <input className="field w-full" value={f.category_id} onChange={(e) => set("category_id", e.target.value)} placeholder="Tips Gizi" />
+          </div>
+          <div>
+            <label className={lbl}>Category (EN)</label>
+            <input className="field w-full" value={f.category_en} onChange={(e) => set("category_en", e.target.value)} placeholder="Nutrition" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className={lbl}>Ringkasan (ID)</label>
+          <textarea className="field w-full" rows={2} value={f.excerpt_id} onChange={(e) => set("excerpt_id", e.target.value)} />
+        </div>
+        <div>
+          <label className={lbl}>Excerpt (EN)</label>
+          <textarea className="field w-full" rows={2} value={f.excerpt_en} onChange={(e) => set("excerpt_en", e.target.value)} />
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className={lbl}>Isi Artikel — Markdown (ID) *</label>
+          <textarea className="field w-full font-mono text-xs" rows={10} value={f.body_md_id} onChange={(e) => set("body_md_id", e.target.value)} placeholder={"## Sub-judul\n\nTulis pakai Markdown…"} required />
+        </div>
+        <div>
+          <label className={lbl}>Article Body — Markdown (EN) *</label>
+          <textarea className="field w-full font-mono text-xs" rows={10} value={f.body_md_en} onChange={(e) => set("body_md_en", e.target.value)} placeholder={"## Section\n\nWrite in Markdown…"} required />
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+        <div>
+          <label className={lbl}>Cover URL</label>
+          <input className="field w-full" value={f.cover_url} onChange={(e) => set("cover_url", e.target.value)} placeholder="https://…" />
+        </div>
+        <div>
+          <label className={lbl}>Penulis</label>
+          <input className="field w-full" value={f.author_name} onChange={(e) => set("author_name", e.target.value)} placeholder="Tim 20FIT" />
+        </div>
+        <div>
+          <label className={lbl}>Status</label>
+          <select className="field w-full" value={f.status} onChange={(e) => set("status", e.target.value as "draft" | "published")}>
+            <option value="draft">Draft</option>
+            <option value="published">Publish sekarang</option>
+          </select>
+        </div>
+      </div>
+
+      {f.cover_url && (
+        <img
+          src={f.cover_url}
+          alt=""
+          className="h-28 w-full rounded-lg object-cover"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
+      )}
+
+      {err && (
+        <p className="rounded-lg bg-brand-red/10 px-3 py-2 text-[13px] font-medium text-brand-red" role="alert">{err}</p>
+      )}
+
+      <div className="flex gap-2">
+        <button type="submit" disabled={saving} className="btn-primary px-5 py-2">
+          {saving ? "Menyimpan…" : "Simpan Artikel"}
+        </button>
+        <button type="button" onClick={onCancel} className="rounded-lg bg-fg/5 px-4 py-2 text-sm font-semibold text-fg/50 hover:bg-fg/10">
+          Batal
+        </button>
+      </div>
+    </form>
   );
 }
 
