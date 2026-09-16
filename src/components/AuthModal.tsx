@@ -196,7 +196,7 @@ export function AuthModal({
               </label>
               <div className="relative">
                 <input
-                  className="field w-full pr-16"
+                  className="field w-full pr-10"
                   type={showPw ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -207,9 +207,10 @@ export function AuthModal({
                 <button
                   type="button"
                   onClick={() => setShowPw((s) => !s)}
-                  className="absolute inset-y-0 right-2 my-auto h-7 rounded-md px-2 text-xs font-semibold text-fg/60 hover:bg-fg/10"
+                  className="absolute inset-y-0 right-2 my-auto grid h-7 w-7 place-items-center rounded-md text-fg/40 hover:bg-fg/10 hover:text-fg/60"
+                  aria-label={showPw ? t("authHidePw") : t("authShowPw")}
                 >
-                  {showPw ? t("authHidePw") : t("authShowPw")}
+                  <Icon name={showPw ? "eyeOff" : "eye"} size={18} />
                 </button>
               </div>
             </div>

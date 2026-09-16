@@ -47,7 +47,9 @@ export type IconName =
   | "whatsapp"
   | "telegram"
   | "facebook"
-  | "xSocial";
+  | "xSocial"
+  | "eye"
+  | "eyeOff";
 
 // Isi tiap ikon (elemen anak <svg>). Digambar sesederhana mungkin supaya tetap terbaca di 16-20px.
 const PATHS: Record<IconName, ReactNode> = {
@@ -258,6 +260,20 @@ const PATHS: Record<IconName, ReactNode> = {
     <>
       <path d="M5 5l14 14" />
       <path d="M19 5 5 19" />
+    </>
+  ),
+  eye: (
+    <>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  eyeOff: (
+    <>
+      <path d="M17.9 17.9C16.2 19.2 14.2 20 12 20c-6.5 0-10-7-10-7a17.6 17.6 0 0 1 4.1-5.1" />
+      <path d="M14.1 14.1A3 3 0 0 1 9.9 9.9" />
+      <path d="M9.9 4.2A8.5 8.5 0 0 1 12 4c6.5 0 10 7 10 7a17.6 17.6 0 0 1-2 2.8" />
+      <path d="M3 3l18 18" />
     </>
   ),
 };
