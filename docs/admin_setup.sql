@@ -134,10 +134,10 @@ END $$;
 --    Buka Supabase Dashboard → Authentication → Users → "Add user" → "Create new user"
 --    Centang "Auto Confirm User" supaya langsung aktif.
 --
---    Akun-akun yang perlu dibuat:
---      nicolezoe83@gmail.com  — password: Admin123
---      tifany@20fit.id        — password: Admin12345
---      zidni@20fit.id         — password: Admin123456
+--    Akun-akun yang perlu dibuat (password dikirim terpisah, JANGAN simpan di repo):
+--      nicolezoe83@gmail.com
+--      tifany@20fit.id
+--      zidni@20fit.id
 --
 --    (luthfi@20fit.id sudah ada — tidak perlu dibuat ulang)
 -- -------------------------------------------------------
