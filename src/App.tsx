@@ -39,13 +39,30 @@ function Routes() {
       return <SavedPage />;
     case "eatnow":
       return <EatNowPage />;
-    case "admin":
-      return <AdminPage />;
     case "browse":
       return <BrowsePage />;
     default:
       return <HomePage />;
   }
+}
+
+function AppShell() {
+  const { path } = useRouter();
+  const isAdmin = path === "/admin" || path === "/admin/";
+
+  if (isAdmin) {
+    return <AdminPage />;
+  }
+
+  return (
+    <div className="min-h-full bg-app-gradient">
+      <Header />
+      <main>
+        <Routes />
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
 export default function App() {
@@ -56,13 +73,7 @@ export default function App() {
         <RecipesProvider>
           <SocialProvider>
             <RouterProvider>
-              <div className="min-h-full bg-app-gradient">
-                <Header />
-                <main>
-                  <Routes />
-                </main>
-                <Footer />
-              </div>
+              <AppShell />
             </RouterProvider>
           </SocialProvider>
         </RecipesProvider>

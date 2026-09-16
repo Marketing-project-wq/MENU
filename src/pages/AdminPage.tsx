@@ -4,31 +4,65 @@ import { useAdmin, adminApi, type Submission, type ArticleRow, type AuditEntry }
 import { useLang } from "../lib/store";
 import { Spinner } from "../components/Spinner";
 import { Icon } from "../components/Icon";
+import { Link } from "../router";
 
 type Tab = "submissions" | "articles" | "audit";
 
+function AdminHeader({ email, onLogout }: { email?: string; onLogout: () => void }) {
+  return (
+    <header className="sticky top-0 z-30 border-b border-fg/10 bg-card/95 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-extrabold tracking-tight text-fg">
+            <span className="text-brand-red">20FIT</span> Admin
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          {email && <span className="hidden text-xs text-fg/45 sm:block">{email}</span>}
+          <Link to="/" className="inline-flex items-center gap-1 text-xs font-semibold text-fg/50 hover:text-fg/70">
+            <Icon name="arrowRight" size={13} className="rotate-180" />
+            Ke situs
+          </Link>
+          <button type="button" onClick={onLogout} className="rounded-lg bg-fg/5 px-3 py-1.5 text-xs font-semibold text-fg/50 hover:bg-fg/10">
+            Keluar
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
 export function AdminPage() {
   const { t } = useLang();
-  const { user, isAuthenticated, isLoading: authLoading, login } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
   const { isAdmin, role, loading: adminLoading } = useAdmin();
 
   if (authLoading || adminLoading) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-12">
-        <Spinner label={t("loading")} />
+      <div className="min-h-screen bg-[var(--bg,#f7f5f0)]">
+        <AdminHeader onLogout={logout} />
+        <div className="mx-auto max-w-5xl px-4 py-12">
+          <Spinner label={t("loading")} />
+        </div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="mx-auto max-w-md px-4 py-16 text-center">
-        <div className="app-card p-8">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg,#f7f5f0)]">
+        <div className="app-card mx-4 max-w-sm p-8 text-center">
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-brand-red/10 text-brand-red">
+            <Icon name="sparkles" size={28} />
+          </div>
           <h1 className="text-xl font-extrabold text-fg">Admin CMS</h1>
           <p className="mt-2 text-sm text-fg/55">Masuk dulu untuk mengakses halaman admin.</p>
-          <button type="button" onClick={() => login("in")} className="btn-primary mt-4 px-6 py-2">
+          <button type="button" onClick={() => login("in")} className="btn-primary mt-5 px-6 py-2.5">
             {t("login")}
           </button>
+          <Link to="/" className="mt-3 block text-xs text-fg/40 hover:text-fg/60">
+            Kembali ke situs
+          </Link>
         </div>
       </div>
     );
@@ -36,18 +70,29 @@ export function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="mx-auto max-w-md px-4 py-16 text-center">
-        <div className="app-card p-8">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--bg,#f7f5f0)]">
+        <div className="app-card mx-4 max-w-sm p-8 text-center">
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-red-100 text-red-500">
+            <Icon name="close" size={28} />
+          </div>
           <h1 className="text-xl font-extrabold text-fg">Akses Ditolak</h1>
           <p className="mt-2 text-sm text-fg/55">
             Akunmu ({user?.email}) tidak punya akses admin. Hubungi superadmin jika ini keliru.
           </p>
+          <Link to="/" className="mt-4 block text-xs text-fg/40 hover:text-fg/60">
+            Kembali ke situs
+          </Link>
         </div>
       </div>
     );
   }
 
-  return <AdminDashboard role={role!} userId={user!.id} userEmail={user?.email ?? ""} />;
+  return (
+    <div className="min-h-screen bg-[var(--bg,#f7f5f0)]">
+      <AdminHeader email={user?.email} onLogout={logout} />
+      <AdminDashboard role={role!} userId={user!.id} userEmail={user?.email ?? ""} />
+    </div>
+  );
 }
 
 function AdminDashboard({
