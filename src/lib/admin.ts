@@ -137,6 +137,26 @@ export interface AdminMember {
   created_at: string;
 }
 
+export interface AdminStats {
+  totals: {
+    articles: number;
+    articles_published: number;
+    contributions: number;
+    contributions_pending: number;
+    likes: number;
+    saves: number;
+    eatnow_clicks: number;
+    menu_views: number;
+    active_users: number;
+  };
+  top_viewed: { name: string; cat: string | null; n: number }[];
+  top_eatnow: { menu_id: string; source: string | null; n: number }[];
+  top_liked: { menu_id: string; source: string | null; n: number }[];
+  submissions_by_diet: { name: string; n: number }[];
+  top_contributors: { name: string; n: number }[];
+  active_users: { name: string; email: string | null; pings: number; last_active_at: string | null }[];
+}
+
 export const adminApi = {
   async getSubmissions(status?: string): Promise<Submission[]> {
     let q = supabase
@@ -345,6 +365,13 @@ export const adminApi = {
 
     const { data } = supabase.storage.from("article-covers").getPublicUrl(path);
     return data.publicUrl;
+  },
+
+  // Statistik CMS (agregat) lewat RPC SECURITY DEFINER khusus admin. Read-only.
+  async getStats(): Promise<AdminStats> {
+    const { data, error } = await supabase.rpc("recipe_admin_stats");
+    if (error) throw new Error(error.message);
+    return data as AdminStats;
   },
 
   async getAuditLog(limit = 50): Promise<AuditEntry[]> {

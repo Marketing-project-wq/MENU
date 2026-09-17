@@ -1,14 +1,14 @@
-import { useEffect, useState, type FormEvent, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type ChangeEvent } from "react";
 import { useAuth } from "../lib/auth";
-import { useAdmin, adminApi, type Submission, type ArticleRow, type ArticleCreateInput, type AuditEntry, type AdminMember, type AdminRole } from "../lib/admin";
-import { useLang } from "../lib/store";
+import { useAdmin, adminApi, type Submission, type ArticleRow, type ArticleCreateInput, type AuditEntry, type AdminMember, type AdminRole, type AdminStats } from "../lib/admin";
+import { useLang, useRecipes } from "../lib/store";
 import { supabase } from "../lib/supabase";
 import { Spinner } from "../components/Spinner";
 import { Icon } from "../components/Icon";
 import { Link } from "../router";
 import { renderMarkdown } from "../lib/markdown";
 
-type Tab = "submissions" | "articles" | "audit" | "admins";
+type Tab = "stats" | "submissions" | "articles" | "audit" | "admins";
 
 function AdminHeader({ email, onLogout }: { email?: string; onLogout: () => void }) {
   return (
@@ -279,9 +279,10 @@ function AdminDashboard({
   userId: string;
   userEmail: string;
 }) {
-  const [tab, setTab] = useState<Tab>("submissions");
+  const [tab, setTab] = useState<Tab>("stats");
 
   const navItems: { key: Tab; label: string }[] = [
+    { key: "stats", label: "Statistik" },
     { key: "submissions", label: "Resep" },
     { key: "articles", label: "Artikel" },
     { key: "audit", label: "Audit Log" },
@@ -320,6 +321,7 @@ function AdminDashboard({
       {/* Konten */}
       <main className="mt-5 min-w-0 flex-1 lg:mt-0">
         <h2 className="mb-4 text-xl font-extrabold tracking-tight text-fg lg:text-2xl">{activeLabel}</h2>
+        {tab === "stats" && <StatsTab />}
         {tab === "submissions" && <SubmissionsTab userId={userId} />}
         {tab === "articles" && <ArticlesTab userId={userId} />}
         {tab === "audit" && <AuditTab />}
@@ -1397,6 +1399,177 @@ function AuditTab() {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Tab: Statistik (dashboard)
+// =============================================================================
+const DIET_LABELS: Record<string, string> = {
+  normal: "Normal", vegetarian: "Vegetarian", vegan: "Vegan", pescatarian: "Pescatarian",
+  keto: "Keto", halal: "Halal", "high-protein": "Tinggi Protein", "low-carb": "Rendah Karbo",
+};
+
+function StatTile({ label, value, hint }: { label: string; value: number | string; hint?: string }) {
+  return (
+    <div className="app-card p-4">
+      <p className="text-2xl font-extrabold tracking-tight text-fg">{value}</p>
+      <p className="mt-0.5 text-xs font-semibold text-fg/50">{label}</p>
+      {hint && <p className="text-[11px] text-fg/35">{hint}</p>}
+    </div>
+  );
+}
+
+function RankedList({
+  title,
+  rows,
+  empty,
+}: {
+  title: string;
+  rows: { name: string; n: number; sub?: string }[];
+  empty: string;
+}) {
+  const max = rows.reduce((m, r) => Math.max(m, r.n), 0) || 1;
+  return (
+    <div className="app-card p-4">
+      <h3 className="mb-3 text-sm font-bold text-fg">{title}</h3>
+      {rows.length === 0 ? (
+        <p className="py-6 text-center text-xs text-fg/40">{empty}</p>
+      ) : (
+        <ol className="space-y-2.5">
+          {rows.map((r, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <span className="w-4 flex-none text-right text-xs font-bold text-fg/35">{i + 1}</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="truncate text-sm text-fg/80">{r.name}</span>
+                  <span className="flex-none text-xs font-bold text-fg/60">{r.n}</span>
+                </div>
+                {r.sub && <p className="truncate text-[11px] text-fg/40">{r.sub}</p>}
+                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-fg/5">
+                  <div className="h-full rounded-full bg-brand-red/50" style={{ width: `${Math.round((r.n / max) * 100)}%` }} />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
+function StatsTab() {
+  const { lang } = useLang();
+  const { official, members } = useRecipes();
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  async function load() {
+    setLoading(true);
+    setError("");
+    try {
+      setStats(await adminApi.getStats());
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+  useEffect(() => { load(); }, []);
+
+  // Resolve menu_id -> nama pakai katalog yang sudah dimuat (official + member).
+  const nameByMenuId = useMemo(() => {
+    const m = new Map<string, string>();
+    (official as any[]).forEach((r) => m.set(r.id, r?.nm?.[lang] || r?.nm?.id || r?.nm?.en || r.id));
+    (members as any[]).forEach((x) => m.set(x.id, x.name));
+    return m;
+  }, [official, members, lang]);
+  const menuName = (id: string) => nameByMenuId.get(id) || id;
+
+  if (loading) return <Spinner label="Memuat statistik…" />;
+  if (error) return <div className="app-card p-6 text-center text-sm text-red-500">{error}</div>;
+  if (!stats) return null;
+
+  const t = stats.totals;
+
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <StatTile label="Artikel terbit" value={t.articles_published} hint={`${t.articles} total`} />
+        <StatTile label="Menu dilihat" value={t.menu_views} />
+        <StatTile label="Klik Eat Now" value={t.eatnow_clicks} />
+        <StatTile label="Disukai (like)" value={t.likes} />
+        <StatTile label="Disimpan" value={t.saves} />
+        <StatTile label="Kontribusi resep" value={t.contributions} hint={`${t.contributions_pending} nunggu review`} />
+        <StatTile label="User aktif (app)" value={t.active_users} />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <RankedList
+          title="Menu paling dilihat"
+          empty="Belum ada menu yang dibuka."
+          rows={stats.top_viewed.map((r) => ({ name: r.name, n: r.n, sub: r.cat ?? undefined }))}
+        />
+        <RankedList
+          title="Paling sering dipilih (Eat Now)"
+          empty="Belum ada klik Eat Now."
+          rows={stats.top_eatnow.map((r) => ({ name: menuName(r.menu_id), n: r.n, sub: r.source ?? undefined }))}
+        />
+        <RankedList
+          title="Menu paling disukai"
+          empty="Belum ada yang nge-like."
+          rows={stats.top_liked.map((r) => ({ name: menuName(r.menu_id), n: r.n, sub: r.source ?? undefined }))}
+        />
+        <RankedList
+          title="Jenis resep yang di-submit orang"
+          empty="Belum ada kontribusi resep."
+          rows={stats.submissions_by_diet.map((r) => ({ name: DIET_LABELS[r.name] || r.name, n: r.n }))}
+        />
+        <RankedList
+          title="Kontributor teratas"
+          empty="Belum ada kontributor."
+          rows={stats.top_contributors.map((r) => ({ name: r.name, n: r.n }))}
+        />
+
+        <div className="app-card p-4">
+          <h3 className="mb-3 text-sm font-bold text-fg">User paling aktif</h3>
+          {stats.active_users.length === 0 ? (
+            <p className="py-6 text-center text-xs text-fg/40">Belum ada data aktivitas.</p>
+          ) : (
+            <ol className="space-y-1.5">
+              {stats.active_users.map((u, i) => (
+                <li key={i} className="flex items-center gap-2 text-sm">
+                  <span className="w-4 flex-none text-right text-xs font-bold text-fg/35">{i + 1}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-fg/80">{u.name}</p>
+                    {u.email && <p className="truncate text-[11px] text-fg/40">{u.email}</p>}
+                  </div>
+                  <div className="flex-none text-right">
+                    <p className="text-xs font-bold text-fg/60">{u.pings}×</p>
+                    {u.last_active_at && (
+                      <p className="text-[10px] text-fg/35">{new Date(u.last_active_at).toLocaleDateString("id-ID")}</p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      </div>
+
+      <div className="app-card border-dashed p-4">
+        <p className="text-xs text-fg/55">
+          <strong className="text-fg/70">Menu paling dicari</strong> belum bisa ditampilkan — query pencarian belum
+          dicatat di mana pun. Kalau mau, aku bisa tambah pencatatan pencarian supaya metrik ini mulai terisi.
+        </p>
+        <p className="mt-1.5 text-[11px] text-fg/35">
+          Angka bertambah otomatis seiring pemakaian. &ldquo;User aktif&rdquo; = aktivitas app 20FIT (proxy login;
+          riwayat login mentah tidak disimpan).{" "}
+          <button type="button" onClick={load} className="font-semibold text-brand-red hover:underline">Refresh</button>
+        </p>
+      </div>
     </div>
   );
 }
