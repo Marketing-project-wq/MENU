@@ -15,6 +15,7 @@ import { HomePage } from "./pages/HomePage";
 import { ArticlesPage } from "./pages/ArticlesPage";
 import { ArticleDetailPage } from "./pages/ArticleDetailPage";
 import { AdminPage } from "./pages/AdminPage";
+import { InstallPrompt } from "./components/InstallPrompt";
 
 function Routes() {
   const { path } = useRouter();
@@ -61,6 +62,7 @@ function AppShell() {
         <Routes />
       </main>
       <Footer />
+      <InstallPrompt />
     </div>
   );
 }
