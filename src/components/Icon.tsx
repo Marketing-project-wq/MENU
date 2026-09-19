@@ -29,6 +29,8 @@ export type IconName =
   | "sun"
   | "moon"
   | "note"
+  | "home"
+  | "bookmark"
   | "leaf"
   | "sprout"
   | "apple"
@@ -148,6 +150,14 @@ const PATHS: Record<IconName, ReactNode> = {
       <path d="M9 12.5h6M9 16h6" />
     </>
   ),
+  home: (
+    <>
+      <path d="M4 11 12 4.5 20 11" />
+      <path d="M6 9.4V20h12V9.4" />
+      <path d="M10 20v-5h4v5" />
+    </>
+  ),
+  bookmark: <path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" />,
   // — kategori artikel & tipe makanan —
   leaf: (
     <>

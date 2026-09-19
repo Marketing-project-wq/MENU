@@ -122,7 +122,7 @@ export function InstallPrompt() {
   return (
     <div
       aria-label={title}
-      className="no-print fixed inset-x-3 bottom-3 z-40 mx-auto max-w-md rounded-2xl border border-white/10 bg-brand-dark p-4 text-white shadow-2xl sm:inset-x-0"
+      className="no-print fixed inset-x-3 bottom-appnav z-40 mx-auto max-w-md rounded-2xl border border-white/10 bg-brand-dark p-4 text-white shadow-2xl sm:inset-x-0"
     >
       <div className="flex items-start gap-3">
         <img

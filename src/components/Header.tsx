@@ -118,14 +118,11 @@ export function Header() {
         </div>
       </div>
 
-      {/* Nav mobile */}
-      <nav className="flex flex-wrap items-center gap-1 border-t border-white/10 px-4 py-2 sm:hidden">
-        {navItem("/", t("homeNav"))}
-        {navItem("/resep", t("browse"))}
-        {navItem("/artikel", t("articlesNav"))}
-        {navItem("/eat-now", t("eatNowPageTitle"))}
+      {/* Nav mobile SEKUNDER — tujuan utama (Beranda/Resep/Eat Now/Tersimpan/Artikel) sudah pindah
+          ke BottomNav (bilah bawah ala app). Di sini sisakan aksi sekunder saja supaya tetap
+          terjangkau & header tetap bersih. */}
+      <nav className="flex items-center gap-1 border-t border-white/10 px-4 py-1.5 sm:hidden">
         {navItem("/submit", t("submit"))}
-        {navItem("/tersimpan", t("saved"))}
         {isAuthenticated && navItem("/submission-saya", t("mySubmissions"))}
       </nav>
     </header>
