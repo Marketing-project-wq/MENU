@@ -144,6 +144,27 @@ body {
   }
 }
 
+@layer utilities {
+  /* Ruang untuk bilah navigasi bawah (BottomNav, mobile) + safe-area (notch/home-indicator).
+     Hilang di >=640px (sm) karena di sana BottomNav disembunyikan & nav pindah ke Header. */
+  .pb-appnav {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+  /* Posisi elemen mengambang (mis. banner ajakan install) supaya duduk DI ATAS BottomNav
+     di mobile; di desktop kembali seperti bottom-3 biasa. */
+  .bottom-appnav {
+    bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  }
+  @media (min-width: 640px) {
+    .pb-appnav {
+      padding-bottom: 0;
+    }
+    .bottom-appnav {
+      bottom: 0.75rem;
+    }
+  }
+}
+
 /* ---- Cetak resep: sembunyikan chrome UI, tampil bahan + langkah rapi di kertas. ---- */
 @media print {
   .no-print {

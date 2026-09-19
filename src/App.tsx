@@ -16,6 +16,7 @@ import { ArticlesPage } from "./pages/ArticlesPage";
 import { ArticleDetailPage } from "./pages/ArticleDetailPage";
 import { AdminPage } from "./pages/AdminPage";
 import { InstallPrompt } from "./components/InstallPrompt";
+import { BottomNav } from "./components/BottomNav";
 
 function Routes() {
   const { path } = useRouter();
@@ -56,12 +57,13 @@ function AppShell() {
   }
 
   return (
-    <div className="min-h-full bg-app-gradient">
+    <div className="min-h-full bg-app-gradient pb-appnav">
       <Header />
       <main>
         <Routes />
       </main>
       <Footer />
+      <BottomNav />
       <InstallPrompt />
     </div>
   );
