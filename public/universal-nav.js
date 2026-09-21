@@ -48,7 +48,9 @@
     "talent.20fit.id": "talent",
   };
 
-  var currentApp = HOST_MAP[location.hostname] || null;
+  // Deteksi app aktif dari hostname. `window.__UNINAV_APP__` = override manual
+  // (buat preview/testing, mis. set "recipe" untuk simulasi halaman recipe).
+  var currentApp = window.__UNINAV_APP__ || HOST_MAP[location.hostname] || null;
   var currentLabel = (function () {
     for (var i = 0; i < MENU_ITEMS.length; i++) if (MENU_ITEMS[i].id === currentApp) return MENU_ITEMS[i].label;
     return "";
