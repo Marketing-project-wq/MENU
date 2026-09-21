@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { withSsoHandoff } from "../lib/supabase";
 
 /* App-switcher 20FIT — tombol "waffle" (grid 9 titik) di dalam header (bukan bar hitam terpisah).
  * Klik -> mega menu 3 kolom berisi produk 20FIT lain. Halaman aktif ditandai "Kamu di sini".
- * Klik item lain = pindah subdomain (full-page redirect). Tutup via klik-luar / Escape. */
+ * Klik item lain = pindah subdomain (full-page redirect) SAMBIL bawa sesi lewat fragment #
+ * (SSO), jadi nggak perlu login ulang. Tutup via klik-luar / Escape. */
 
 interface AppItem {
   id: string;
@@ -131,8 +133,13 @@ export function AppSwitcher() {
                   role="menuitem"
                   aria-current={active ? "page" : undefined}
                   onClick={(e) => {
-                    if (active) e.preventDefault();
+                    // Biarkan buka-tab-baru (Cmd/Ctrl/Shift/klik-tengah) jalan normal via href.
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+                    e.preventDefault();
                     setOpen(false);
+                    if (active) return; // sudah di halaman ini
+                    // Bawa sesi (kalau ada) ke produk 20FIT lain lewat fragment, lalu pindah.
+                    void withSsoHandoff(app.url).then((href) => window.location.assign(href));
                   }}
                   className={
                     "flex flex-col items-center gap-0.5 rounded-xl border-2 px-2 py-3 text-center transition-colors " +

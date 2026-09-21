@@ -33,3 +33,35 @@ export async function getSessionTokens(): Promise<{ access_token: string; refres
     ? { access_token: s.access_token, refresh_token: s.refresh_token }
     : null;
 }
+
+/**
+ * Bangun URL ke produk 20FIT lain dengan SESI ikut dibawa lewat FRAGMENT (#) — persis
+ * konvensi yang dibaca `AuthProvider` di auth.tsx (dan pola calories.20fit.id): begitu
+ * mendarat di produk tujuan, fragment dibaca -> setSession -> langsung di-strip, jadi user
+ * nggak perlu login ulang saat pindah lewat app-switcher.
+ *
+ * Kenapa fragment, bukan `?token=`: fragment TIDAK pernah dikirim ke server, tidak masuk
+ * access-log/Referer, dan tidak ke-capture GA (query ke-capture). Aturan aman:
+ *  - hanya host *.20fit.id — JANGAN pernah oper sesi ke domain luar;
+ *  - subdomain yang sama, atau belum login -> balikin URL apa adanya (produk publik seperti
+ *    recipe tetap bisa dibuka tanpa login — silent SSO, bukan paksa login).
+ */
+export async function withSsoHandoff(targetUrl: string): Promise<string> {
+  try {
+    const host = new URL(targetUrl).hostname;
+    const is20fit = host === "20fit.id" || host.endsWith(".20fit.id");
+    if (!is20fit || host === location.hostname) return targetUrl;
+
+    const tokens = await getSessionTokens();
+    if (!tokens) return targetUrl;
+
+    const frag = new URLSearchParams({
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+    }).toString();
+    return `${targetUrl.split("#")[0]}#${frag}`;
+  } catch {
+    // Apa pun yang gagal -> navigasi biasa; jangan pernah blokir pindah halaman.
+    return targetUrl;
+  }
+}
