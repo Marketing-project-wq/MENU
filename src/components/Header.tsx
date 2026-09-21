@@ -42,7 +42,7 @@ export function Header() {
   };
 
   return (
-    <header className={"no-print sticky top-0 z-20 glass-header" + (scrolled ? " is-scrolled" : "")}>
+    <header className={"no-print sticky top-0 z-20 glass-header pt-safe-top" + (scrolled ? " is-scrolled" : "")}>
       <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
           <img src={LOGO_DARK} alt="20FIT" className="h-10 w-auto" />

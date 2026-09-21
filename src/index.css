@@ -42,6 +42,10 @@
   --glass-light-border-alpha: 0.12;
 }
 
+html {
+  /* Rasa "app": hilangkan kilatan biru bawaan browser saat elemen di-tap. */
+  -webkit-tap-highlight-color: transparent;
+}
 html,
 body,
 #root {
@@ -55,6 +59,8 @@ body {
   font-family: "Barlow Condensed", system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s ease, color 0.2s ease;
+  /* Kurangi rubber-band/pull-to-refresh yang bikin kerasa "web di dalam browser". */
+  overscroll-behavior-y: contain;
 }
 
 /* ---- Lapisan latar untuk kaca (glass butuh sesuatu di belakangnya, bukan putih polos) ----
@@ -145,6 +151,11 @@ body {
 }
 
 @layer utilities {
+  /* Padding atas = tinggi status bar (notch) saat standalone/viewport-fit=cover; 0 di
+     browser biasa tanpa notch. Dipakai header supaya app-bar tak ketutup status bar. */
+  .pt-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
   /* Ruang untuk bilah navigasi bawah (BottomNav, mobile) + safe-area (notch/home-indicator).
      Hilang di >=640px (sm) karena di sana BottomNav disembunyikan & nav pindah ke Header. */
   .pb-appnav {
@@ -162,6 +173,23 @@ body {
     .bottom-appnav {
       bottom: 0.75rem;
     }
+  }
+}
+
+/* ---- Rasa "app": umpan-balik tekan (tactile). Tombol utama mengecil sedikit saat disentuh,
+   seperti tombol app native. currentColor/transition ringan; dihormati reduced-motion. ---- */
+.btn-primary,
+.btn-ghost {
+  transition: color 0.15s ease, background-color 0.15s ease, transform 0.09s ease;
+}
+.btn-primary:active,
+.btn-ghost:active {
+  transform: scale(0.97);
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary:active,
+  .btn-ghost:active {
+    transform: none;
   }
 }
 

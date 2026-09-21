@@ -34,11 +34,16 @@ export function BottomNav() {
             <Link
               key={tab.to}
               to={tab.to}
+              aria-current={active ? "page" : undefined}
               className={
-                "flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-semibold leading-none transition-colors " +
+                "relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-semibold leading-none transition-colors " +
                 (active ? "text-brand-red" : "text-white/55 hover:text-white")
               }
             >
+              {/* Indikator tab aktif ala app: garis merah kecil di atas. */}
+              {active && (
+                <span className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-brand-red" aria-hidden="true" />
+              )}
               <Icon name={tab.icon} size={22} strokeWidth={active ? 2.1 : 1.75} />
               <span>{tab.label}</span>
             </Link>

@@ -12,7 +12,7 @@ export function ArticleCard({ a, readMinutes }: { a: ArticleSummary; readMinutes
   return (
     <Link
       to={`/artikel/${encodeURIComponent(a.slug)}`}
-      className="app-card group block overflow-hidden transition-transform hover:-translate-y-0.5 hover:shadow-md"
+      className="app-card group block overflow-hidden transition-transform hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]"
     >
       <div className="relative h-36 bg-fg/5">
         <CoverImage
