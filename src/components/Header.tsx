@@ -3,6 +3,7 @@ import { Link, useRouter } from "../router";
 import { useAuth } from "../lib/auth";
 import { useLang, useTheme } from "../lib/store";
 import { Icon } from "./Icon";
+import { AppSwitcher } from "./AppSwitcher";
 import { LOGO_DARK } from "../lib/constants";
 
 /**
@@ -60,6 +61,9 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          {/* App-switcher 20FIT (waffle) -- pindah ke produk 20FIT lain, di dalam header ini. */}
+          <AppSwitcher />
+
           {/* Toggle tema terang / gelap */}
           <button
             className="grid h-8 w-8 place-items-center rounded-full border border-white/20 text-sm text-white hover:bg-white/10"
