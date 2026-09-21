@@ -4,6 +4,7 @@ import { useAuth } from "../lib/auth";
 import { useLang, useTheme } from "../lib/store";
 import { Icon } from "./Icon";
 import { AppSwitcher } from "./AppSwitcher";
+import { ProfileMenu } from "./ProfileMenu";
 import { LOGO_DARK } from "../lib/constants";
 
 /**
@@ -19,6 +20,8 @@ export function Header() {
   const { isAuthenticated, user, login, logout } = useAuth();
   const { path } = useRouter();
   const [scrolled, setScrolled] = useState(false);
+  // Satu popover header aktif dalam satu waktu: app-switcher ATAU profil (jangan dua-duanya).
+  const [menu, setMenu] = useState<"apps" | "profile" | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -62,7 +65,7 @@ export function Header() {
 
         <div className="ml-auto flex items-center gap-2">
           {/* App-switcher 20FIT (waffle) -- pindah ke produk 20FIT lain, di dalam header ini. */}
-          <AppSwitcher />
+          <AppSwitcher open={menu === "apps"} onOpenChange={(o) => setMenu(o ? "apps" : null)} />
 
           {/* Toggle tema terang / gelap */}
           <button
@@ -103,17 +106,15 @@ export function Header() {
           </div>
 
           {isAuthenticated ? (
-            <div className="flex items-center gap-2">
-              <span className="hidden max-w-[140px] truncate text-xs text-white/60 md:inline">
-                {user?.email}
-              </span>
-              <button
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-                onClick={() => logout()}
-              >
-                {t("logout")}
-              </button>
-            </div>
+            <ProfileMenu
+              open={menu === "profile"}
+              onOpenChange={(o) => setMenu(o ? "profile" : null)}
+              user={user}
+              onLogout={() => {
+                setMenu(null);
+                void logout();
+              }}
+            />
           ) : (
             <button className="btn-primary" onClick={() => login("in")}>
               {t("login")}

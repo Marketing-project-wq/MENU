@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { withSsoHandoff } from "../lib/supabase";
 
 /* App-switcher 20FIT — tombol "waffle" (grid 9 titik) di dalam header (bukan bar hitam terpisah).
@@ -72,18 +72,23 @@ function AppIcon({ name, color }: { name: string; color: string }) {
   );
 }
 
-export function AppSwitcher() {
-  const [open, setOpen] = useState(false);
+export function AppSwitcher({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const current = typeof window !== "undefined" ? HOST_MAP[window.location.hostname] || null : null;
 
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) onOpenChange(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") onOpenChange(false);
     };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
@@ -91,13 +96,13 @@ export function AppSwitcher() {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, [open, onOpenChange]);
 
   return (
     <div className="relative" ref={ref}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => onOpenChange(!open)}
         aria-label="Aplikasi 20FIT lainnya"
         aria-haspopup="true"
         aria-expanded={open}
@@ -136,7 +141,7 @@ export function AppSwitcher() {
                     // Biarkan buka-tab-baru (Cmd/Ctrl/Shift/klik-tengah) jalan normal via href.
                     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
                     e.preventDefault();
-                    setOpen(false);
+                    onOpenChange(false);
                     if (active) return; // sudah di halaman ini
                     // Bawa sesi (kalau ada) ke produk 20FIT lain lewat fragment, lalu pindah.
                     void withSsoHandoff(app.url).then((href) => window.location.assign(href));
