@@ -189,3 +189,8 @@ body {
     animation-duration: 0.001ms !important;
   }
 }
+
+/* Strip nav horizontal (mobile) yang bisa di-scroll tanpa scrollbar terlihat --
+   dipakai Header agar nav TIDAK wrap ke baris kedua, tetap satu baris. */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
