@@ -13,6 +13,10 @@ import { LOGO_DARK } from "../lib/constants";
  * digulir (header sticky). Kaca terang + teks gelap gampang hilang di atas foto terang; latar
  * gelap + teks putih tetap terbaca apa pun yang lewat di belakang. Lihat .glass-header di
  * index.css. `is-scrolled` menambah kepadatan (hardening) begitu halaman mulai digulir.
+ *
+ * MOBILE = SATU BAR saja: logo + [waffle produk][hamburger][profil/Masuk]. Nav halaman, tema,
+ * dan bahasa dipindah ke DALAM drawer hamburger supaya bar-nya rapi & nggak penuh (dulu ada 2
+ * bar bertumpuk). DESKTOP tetap: nav + semua kontrol tampil inline (hamburger disembunyikan).
  */
 export function Header() {
   const { t, lang, setLang } = useLang();
@@ -20,8 +24,8 @@ export function Header() {
   const { isAuthenticated, user, login, logout } = useAuth();
   const { path } = useRouter();
   const [scrolled, setScrolled] = useState(false);
-  // Satu popover header aktif dalam satu waktu: app-switcher ATAU profil (jangan dua-duanya).
-  const [menu, setMenu] = useState<"apps" | "profile" | null>(null);
+  // Satu popover header aktif dalam satu waktu: app-switcher / profil / nav-mobile (hamburger).
+  const [menu, setMenu] = useState<"apps" | "profile" | "nav" | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -30,6 +34,17 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Tutup drawer nav (mobile) via Escape -- klik-luar ditangani backdrop di bawah.
+  useEffect(() => {
+    if (menu !== "nav") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenu(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [menu]);
+
+  // Nav desktop: "pill" kecil inline.
   const navItem = (to: string, label: string) => {
     const active = to === "/" ? path === "/" : path.startsWith(to);
     return (
@@ -38,6 +53,23 @@ export function Header() {
         className={
           "shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors " +
           (active ? "bg-brand-red text-white" : "text-white/70 hover:text-white")
+        }
+      >
+        {label}
+      </Link>
+    );
+  };
+
+  // Nav mobile: baris penuh di dalam drawer hamburger (tutup drawer begitu dipilih).
+  const mobileNavRow = (to: string, label: string) => {
+    const active = to === "/" ? path === "/" : path.startsWith(to);
+    return (
+      <Link
+        to={to}
+        onClick={() => setMenu(null)}
+        className={
+          "block rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors " +
+          (active ? "bg-brand-red text-white" : "text-white/80 hover:bg-white/10")
         }
       >
         {label}
@@ -67,9 +99,23 @@ export function Header() {
           {/* App-switcher 20FIT (waffle) -- pindah ke produk 20FIT lain, di dalam header ini. */}
           <AppSwitcher open={menu === "apps"} onOpenChange={(o) => setMenu(o ? "apps" : null)} />
 
-          {/* Toggle tema terang / gelap */}
+          {/* Hamburger (mobile only) -- buka drawer berisi nav halaman + tema + bahasa. */}
           <button
-            className="grid h-8 w-8 place-items-center rounded-full border border-white/20 text-sm text-white hover:bg-white/10"
+            type="button"
+            className="grid h-8 w-8 place-items-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 sm:hidden"
+            onClick={() => setMenu(menu === "nav" ? null : "nav")}
+            aria-label="Menu"
+            aria-haspopup="true"
+            aria-expanded={menu === "nav"}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
+
+          {/* Toggle tema terang / gelap (desktop; di mobile pindah ke drawer hamburger) */}
+          <button
+            className="hidden h-8 w-8 place-items-center rounded-full border border-white/20 text-sm text-white hover:bg-white/10 sm:grid"
             onClick={toggle}
             aria-label="Ganti tema"
             title={theme === "dark" ? "Mode terang" : "Mode gelap"}
@@ -77,9 +123,9 @@ export function Header() {
             <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
           </button>
 
-          {/* Toggle bahasa [ID | EN] */}
+          {/* Toggle bahasa [ID | EN] (desktop; di mobile pindah ke drawer hamburger) */}
           <div
-            className="flex items-center rounded-full border border-white/20 p-0.5 text-xs font-bold"
+            className="hidden items-center rounded-full border border-white/20 p-0.5 text-xs font-bold sm:flex"
             role="group"
             aria-label="Bahasa / Language"
           >
@@ -123,16 +169,71 @@ export function Header() {
         </div>
       </div>
 
-      {/* Nav mobile: SATU baris yang bisa di-scroll horizontal -- JANGAN wrap ke baris kedua. */}
-      <nav className="flex flex-nowrap items-center gap-1 overflow-x-auto no-scrollbar border-t border-white/10 px-4 py-2 sm:hidden">
-        {navItem("/", t("homeNav"))}
-        {navItem("/resep", t("browse"))}
-        {navItem("/artikel", t("articlesNav"))}
-        {navItem("/eat-now", t("eatNowPageTitle"))}
-        {navItem("/submit", t("submit"))}
-        {navItem("/tersimpan", t("saved"))}
-        {isAuthenticated && navItem("/submission-saya", t("mySubmissions"))}
-      </nav>
+      {/* Drawer nav mobile (hamburger): nav halaman + tema + bahasa. Ganti bar kedua yang dulu. */}
+      {menu === "nav" && (
+        <div className="sm:hidden">
+          {/* Backdrop klik-luar */}
+          <div
+            className="fixed inset-0 z-40 bg-black/40"
+            onClick={() => setMenu(null)}
+            aria-hidden="true"
+          />
+          <nav className="absolute inset-x-0 top-full z-50 border-t border-white/10 bg-[#141414] p-3 shadow-2xl">
+            <div className="mx-auto max-w-6xl">
+              {mobileNavRow("/", t("homeNav"))}
+              {mobileNavRow("/resep", t("browse"))}
+              {mobileNavRow("/artikel", t("articlesNav"))}
+              {mobileNavRow("/eat-now", t("eatNowPageTitle"))}
+              {mobileNavRow("/submit", t("submit"))}
+              {mobileNavRow("/tersimpan", t("saved"))}
+              {isAuthenticated && mobileNavRow("/submission-saya", t("mySubmissions"))}
+
+              <div className="my-2 border-t border-white/10" />
+
+              {/* Tema */}
+              <button
+                type="button"
+                onClick={toggle}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10"
+              >
+                <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
+                {theme === "dark" ? "Mode terang" : "Mode gelap"}
+              </button>
+
+              {/* Bahasa */}
+              <div className="flex items-center justify-between rounded-lg px-3 py-2">
+                <span className="text-sm font-semibold text-white/80">Bahasa</span>
+                <div
+                  className="flex items-center rounded-full border border-white/20 p-0.5 text-xs font-bold"
+                  role="group"
+                  aria-label="Bahasa / Language"
+                >
+                  <button
+                    className={
+                      "rounded-full px-2.5 py-1 transition-colors " +
+                      (lang === "id" ? "bg-brand-red text-white" : "text-white/60 hover:text-white")
+                    }
+                    onClick={() => setLang("id")}
+                    aria-pressed={lang === "id"}
+                  >
+                    ID
+                  </button>
+                  <button
+                    className={
+                      "rounded-full px-2.5 py-1 transition-colors " +
+                      (lang === "en" ? "bg-brand-red text-white" : "text-white/60 hover:text-white")
+                    }
+                    onClick={() => setLang("en")}
+                    aria-pressed={lang === "en"}
+                  >
+                    EN
+                  </button>
+                </div>
+              </div>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
