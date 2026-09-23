@@ -18,6 +18,11 @@ interface AppItem {
 // (tiap file membungkus 2 PNG: mask luminance + lapisan warna). Di-generate jadi PNG kecil 128px
 // transparan di public/icons/<id>.png lewat `node scripts/build-icons.mjs` (nama file = app.id).
 // "bodyscan" digambar (glyph scan-frame) karena tak ada artwork 3D-nya. Dipakai via <img>.
+
+// Cache-buster: file di public/ TIDAK di-hash Vite, jadi URL-nya tetap sama tiap deploy dan
+// browser bisa menyajikan versi LAMA dari cache (mis. ikon versi latar-hitam yang sudah diganti).
+// NAIKKAN angka ini tiap kali isi ikon berubah supaya semua browser ambil versi baru (bukan cache).
+const ICON_VER = "2";
 const APPS: AppItem[] = [
   { id: "home", label: "Home", description: "Direktori Olahraga", url: "https://20fit.id" },
   { id: "my20fit", label: "My 20FIT", description: "Member Portal", url: "https://my.20fit.id" },
@@ -147,7 +152,7 @@ export function AppSwitcher({
                       }
                     >
                       <img
-                        src={`/icons/${app.id}.png`}
+                        src={`/icons/${app.id}.png?v=${ICON_VER}`}
                         alt=""
                         width={56}
                         height={56}
