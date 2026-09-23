@@ -2,30 +2,39 @@ import { useEffect, useRef } from "react";
 import { withSsoHandoff } from "../lib/supabase";
 
 /* App-switcher 20FIT — tombol "waffle" (grid 9 titik) di dalam header (bukan bar hitam terpisah).
- * Klik -> mega menu 3 kolom berisi produk 20FIT lain. Halaman aktif ditandai "Kamu di sini".
- * Klik item lain = pindah subdomain (full-page redirect) SAMBIL bawa sesi lewat fragment #
+ * Klik -> menu produk 20FIT lain, dikelompokkan seperti switcher my.20fit.id
+ * (Semua Produk / Kesehatan / Aktivitas / Acara / Booking). Halaman aktif ditandai "Kamu di sini".
+ * Klik item lain = pindah subdomain/halaman (full-page redirect) SAMBIL bawa sesi lewat fragment #
  * (SSO), jadi nggak perlu login ulang. Tutup via klik-luar / Escape. */
 
 interface AppItem {
   id: string;
   label: string;
   description: string;
-  icon: string;
   url: string;
-  color: string;
 }
 
+// Ikon produk = artwork 3D 20FIT ASLI (merah), latar TRANSPARAN. Sumbernya "*.svg" di root repo
+// (tiap file membungkus 2 PNG: mask luminance + lapisan warna). Di-generate jadi PNG kecil 128px
+// transparan di public/icons/<id>.png lewat `node scripts/build-icons.mjs` (nama file = app.id).
+// "bodyscan" digambar (glyph scan-frame) karena tak ada artwork 3D-nya. Dipakai via <img>.
 const APPS: AppItem[] = [
-  { id: "home", label: "Home", description: "Direktori Olahraga", icon: "home", url: "https://20fit.id", color: "#111827" },
-  { id: "my20fit", label: "My 20FIT", description: "Member Portal", icon: "user", url: "https://my.20fit.id", color: "#6366F1" },
-  { id: "recipe", label: "Recipe", description: "Menu & Resep Sehat", icon: "recipe", url: "https://recipe.20fit.id", color: "#16A34A" },
-  { id: "calorie", label: "Calorie Tracker", description: "Hitung Kalori Harian", icon: "flame", url: "https://calorietracker.20fit.id", color: "#F97316" },
-  { id: "mcu", label: "MCU Scanner", description: "Baca Hasil Medical Check", icon: "pulse", url: "https://medicalscanner.20fit.id", color: "#0EA5E9" },
-  { id: "media", label: "Media", description: "Blog & Artikel", icon: "media", url: "https://media.20fit.id", color: "#8B5CF6" },
-  { id: "workout", label: "Workout", description: "Streaming Latihan", icon: "workout", url: "https://workout.20fit.id", color: "#EF4444" },
-  { id: "photo", label: "Photo", description: "Foto Event", icon: "camera", url: "https://photo.20fit.id", color: "#EC4899" },
-  { id: "ticket", label: "Ticket", description: "Tiket & Booking", icon: "ticket", url: "https://ticket.20fit.id", color: "#14B8A6" },
-  { id: "talent", label: "Talent", description: "Talent & Event Organizer", icon: "users", url: "https://talent.20fit.id", color: "#3B82F6" },
+  { id: "home", label: "Home", description: "Direktori Olahraga", url: "https://20fit.id" },
+  { id: "my20fit", label: "My 20FIT", description: "Member Portal", url: "https://my.20fit.id" },
+  { id: "recipe", label: "Recipe", description: "Menu & Resep Sehat", url: "https://recipe.20fit.id" },
+  { id: "calorie", label: "Calorie Tracker", description: "Hitung Kalori Harian", url: "https://calorietracker.20fit.id" },
+  { id: "mcu", label: "MCU Scanner", description: "Baca Hasil Medical Check", url: "https://medicalscanner.20fit.id" },
+  { id: "bodyscan", label: "Body Scan", description: "Analisa Komposisi Tubuh", url: "https://my.20fit.id/dashboard.html" },
+  { id: "workout", label: "Workout", description: "Streaming Latihan", url: "https://workout.20fit.id" },
+  { id: "progress", label: "Progress", description: "Progres & Statistik", url: "https://my.20fit.id/progress.html" },
+  { id: "media", label: "Media", description: "Blog & Artikel", url: "https://media.20fit.id" },
+  { id: "photo", label: "Photo", description: "Foto Event", url: "https://photo.20fit.id" },
+  { id: "ticket", label: "Ticket", description: "Tiket & Booking", url: "https://ticket.20fit.id" },
+  { id: "talent", label: "Talent", description: "Talent & Event Organizer", url: "https://talent.20fit.id" },
+  { id: "book-class", label: "Book Class", description: "Arena · Gym", url: "https://my.20fit.id/classes.html" },
+  { id: "book-coach", label: "Book Coach", description: "Arena · Gym", url: "https://my.20fit.id/book-coach.html" },
+  { id: "book-doctor", label: "Book Doctor", description: "Konsultasi · Klinik", url: "https://my.20fit.id/book-doctor.html" },
+  { id: "book-recovery", label: "Book Recovery", description: "Fisio · Massage", url: "https://my.20fit.id/classes.html?venue=clinic" },
 ];
 
 const HOST_MAP: Record<string, string> = {
@@ -34,27 +43,22 @@ const HOST_MAP: Record<string, string> = {
   "recipe.20fit.id": "recipe", "recepie.20fit.id": "recipe",
   "calorietracker.20fit.id": "calorie",
   "medicalscanner.20fit.id": "mcu",
-  "media.20fit.id": "media",
   "workout.20fit.id": "workout",
+  "media.20fit.id": "media",
   "photo.20fit.id": "photo",
   "ticket.20fit.id": "ticket",
   "talent.20fit.id": "talent",
 };
 
-// Ikon produk = artwork 3D 20FIT ASLI. Sumbernya SVG raster besar (base64 PNG 2048px,
-// ~1–2.7MB) yang di-upload ke repo; di-generate jadi PNG kecil 128px di public/icons/<id>.png
-// lewat `node scripts/build-icons.mjs` (nama file output = app.id). Dipakai via <img> supaya
-// ringan (10 ikon ~107KB total, bukan ~15MB kalau SVG raster-nya dipakai langsung).
-
-// Kelompokkan seperti switcher my.20fit.id (Semua Produk / Kesehatan / Aktivitas / Acara).
-// Pakai HANYA produk yang sudah ada di sini (URL pasti) — tanpa item my.20fit.id-internal
-// (Body Scan/Progress/Book*) yang URL-nya belum jelas.
+// Kelompokkan seperti switcher my.20fit.id. Item Booking + Body Scan + Progress mengarah ke
+// halaman di dalam my.20fit.id (tetap SSO). Judul "" = seksi pertama "Semua Produk".
 const APPS_BY_ID: Record<string, AppItem> = Object.fromEntries(APPS.map((a) => [a.id, a]));
 const SECTIONS: { title: string; ids: string[] }[] = [
   { title: "", ids: ["home", "my20fit", "recipe"] },
-  { title: "Kesehatan", ids: ["calorie", "mcu"] },
-  { title: "Aktivitas", ids: ["workout", "media"] },
+  { title: "Kesehatan", ids: ["calorie", "mcu", "bodyscan"] },
+  { title: "Aktivitas", ids: ["workout", "progress", "media"] },
   { title: "Acara", ids: ["photo", "ticket", "talent"] },
+  { title: "Booking", ids: ["book-class", "book-coach", "book-doctor", "book-recovery"] },
 ];
 
 export function AppSwitcher({
