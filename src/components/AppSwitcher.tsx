@@ -41,36 +41,10 @@ const HOST_MAP: Record<string, string> = {
   "talent.20fit.id": "talent",
 };
 
-// Line-icon konsisten (satu gaya), diwarnai per app.
-const ICON_PATHS: Record<string, string> = {
-  home: '<path d="M3 10.6 12 4l9 6.6"/><path d="M5.5 9.4V20h13V9.4"/><path d="M10 20v-5h4v5"/>',
-  user: '<circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.1-5.6 7-5.6s7 2 7 5.6"/>',
-  recipe: '<path d="M6 3v6a2 2 0 0 0 4 0V3"/><path d="M8 11v10"/><path d="M16.5 3c-1.6 1.2-2.6 3.3-2.6 6 0 2 1.2 2.9 2.6 2.9V21"/>',
-  flame: '<path d="M12 3c.8 3 4 4.4 4 8a4 4 0 1 1-8 0c0-1.6.7-2.7 1.5-3.5C10 8 10.7 6 12 3Z"/>',
-  pulse: '<path d="M3.5 13.5h3l1.6-4.5 3 9 2.2-6 1.3 2.3H21"/><path d="M20.5 9.2A3.7 3.7 0 0 0 14 6.8 3.7 3.7 0 0 0 7.5 8.4"/>',
-  media: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M7 9h7M7 12h7M7 15h4.5"/><rect x="15.5" y="12" width="2.6" height="3.2" rx="0.5"/>',
-  workout: '<path d="M6.5 8v8M4 9.5v5M17.5 8v8M20 9.5v5"/><path d="M6.5 12h11"/>',
-  camera: '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.2 7l1.4-2.4h4.8L15.8 7"/><circle cx="12" cy="13.6" r="3.2"/>',
-  ticket: '<path d="M4 9V7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5V9a2 2 0 0 0 0 4v1.5A1.5 1.5 0 0 1 18.5 16h-13A1.5 1.5 0 0 1 4 14.5V13a2 2 0 0 0 0-4Z"/>',
-  users: '<circle cx="9.2" cy="8" r="3"/><path d="M3.4 20c0-3.1 2.7-5 5.8-5s5.8 1.9 5.8 5"/><path d="M16.5 5.4a3 3 0 0 1 0 5.5"/><path d="M17.8 15.2c2 .6 3.4 2.1 3.4 4.4"/>',
-};
-
-function AppIcon({ name, color }: { name: string; color: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="26"
-      height="26"
-      fill="none"
-      stroke={color}
-      strokeWidth={1.9}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      dangerouslySetInnerHTML={{ __html: ICON_PATHS[name] || "" }}
-    />
-  );
-}
+// Ikon produk = artwork 3D 20FIT ASLI. Sumbernya SVG raster besar (base64 PNG 2048px,
+// ~1–2.7MB) yang di-upload ke repo; di-generate jadi PNG kecil 128px di public/icons/<id>.png
+// lewat `node scripts/build-icons.mjs` (nama file output = app.id). Dipakai via <img> supaya
+// ringan (10 ikon ~107KB total, bukan ~15MB kalau SVG raster-nya dipakai langsung).
 
 export function AppSwitcher({
   open,
@@ -153,8 +127,17 @@ export function AppSwitcher({
                       : "border-transparent hover:bg-neutral-100")
                   }
                 >
-                  <span className="mb-0.5 flex h-8 w-8 items-center justify-center">
-                    <AppIcon name={app.icon} color={app.color} />
+                  <span className="mb-0.5 flex h-11 w-11 items-center justify-center">
+                    <img
+                      src={`/icons/${app.id}.png`}
+                      alt=""
+                      width={44}
+                      height={44}
+                      loading="lazy"
+                      decoding="async"
+                      draggable={false}
+                      className="h-11 w-11 object-contain"
+                    />
                   </span>
                   <span className="text-xs font-bold leading-tight">{app.label}</span>
                   <span className="text-[10px] leading-tight text-neutral-500">{app.description}</span>
