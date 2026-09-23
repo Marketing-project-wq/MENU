@@ -46,6 +46,17 @@ const HOST_MAP: Record<string, string> = {
 // lewat `node scripts/build-icons.mjs` (nama file output = app.id). Dipakai via <img> supaya
 // ringan (10 ikon ~107KB total, bukan ~15MB kalau SVG raster-nya dipakai langsung).
 
+// Kelompokkan seperti switcher my.20fit.id (Semua Produk / Kesehatan / Aktivitas / Acara).
+// Pakai HANYA produk yang sudah ada di sini (URL pasti) — tanpa item my.20fit.id-internal
+// (Body Scan/Progress/Book*) yang URL-nya belum jelas.
+const APPS_BY_ID: Record<string, AppItem> = Object.fromEntries(APPS.map((a) => [a.id, a]));
+const SECTIONS: { title: string; ids: string[] }[] = [
+  { title: "", ids: ["home", "my20fit", "recipe"] },
+  { title: "Kesehatan", ids: ["calorie", "mcu"] },
+  { title: "Aktivitas", ids: ["workout", "media"] },
+  { title: "Acara", ids: ["photo", "ticket", "talent"] },
+];
+
 export function AppSwitcher({
   open,
   onOpenChange,
@@ -97,55 +108,59 @@ export function AppSwitcher({
         <div
           role="menu"
           aria-label="Aplikasi 20FIT"
-          className="absolute right-0 z-50 mt-2 w-[min(430px,90vw)] rounded-2xl border border-black/10 bg-white p-3 text-neutral-900 shadow-2xl"
+          className="absolute right-0 z-50 mt-2 max-h-[80vh] w-[min(440px,92vw)] overflow-y-auto rounded-2xl border border-black/10 bg-white p-3 text-neutral-900 shadow-2xl"
         >
-          <div className="mb-1.5 px-1 text-[11px] font-bold uppercase tracking-wide text-neutral-400">
-            Aplikasi 20FIT
-          </div>
-          <div className="grid grid-cols-3 gap-1.5">
-            {APPS.map((app) => {
-              const active = app.id === current;
-              return (
-                <a
-                  key={app.id}
-                  href={active ? undefined : app.url}
-                  role="menuitem"
-                  aria-current={active ? "page" : undefined}
-                  onClick={(e) => {
-                    // Biarkan buka-tab-baru (Cmd/Ctrl/Shift/klik-tengah) jalan normal via href.
-                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-                    e.preventDefault();
-                    onOpenChange(false);
-                    if (active) return; // sudah di halaman ini
-                    // Bawa sesi (kalau ada) ke produk 20FIT lain lewat fragment, lalu pindah.
-                    void withSsoHandoff(app.url).then((href) => window.location.assign(href));
-                  }}
-                  className={
-                    "flex flex-col items-center gap-0.5 rounded-xl border-2 px-2 py-3 text-center transition-colors " +
-                    (active
-                      ? "cursor-default border-neutral-900 bg-neutral-100"
-                      : "border-transparent hover:bg-neutral-100")
-                  }
-                >
-                  <span className="mb-0.5 flex h-11 w-11 items-center justify-center">
-                    <img
-                      src={`/icons/${app.id}.png`}
-                      alt=""
-                      width={44}
-                      height={44}
-                      loading="lazy"
-                      decoding="async"
-                      draggable={false}
-                      className="h-11 w-11 object-contain"
-                    />
-                  </span>
-                  <span className="text-xs font-bold leading-tight">{app.label}</span>
-                  <span className="text-[10px] leading-tight text-neutral-500">{app.description}</span>
-                  {active && <span className="mt-0.5 text-[9px] font-bold text-green-600">● Kamu di sini</span>}
-                </a>
-              );
-            })}
-          </div>
+          {SECTIONS.map((sec) => (
+            <div key={sec.title || "all"} className="mb-2 last:mb-0">
+              <div className="mb-1 px-1 text-[10px] font-bold uppercase tracking-wide text-neutral-400">
+                {sec.title || "Semua Produk 20FIT"}
+              </div>
+              <div className="grid grid-cols-3 gap-1">
+                {sec.ids.map((id) => {
+                  const app = APPS_BY_ID[id];
+                  if (!app) return null;
+                  const active = app.id === current;
+                  return (
+                    <a
+                      key={app.id}
+                      href={active ? undefined : app.url}
+                      role="menuitem"
+                      aria-current={active ? "page" : undefined}
+                      onClick={(e) => {
+                        // Biarkan buka-tab-baru (Cmd/Ctrl/Shift/klik-tengah) jalan normal via href.
+                        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+                        e.preventDefault();
+                        onOpenChange(false);
+                        if (active) return; // sudah di halaman ini
+                        // Bawa sesi (kalau ada) ke produk 20FIT lain lewat fragment, lalu pindah.
+                        void withSsoHandoff(app.url).then((href) => window.location.assign(href));
+                      }}
+                      className={
+                        "flex flex-col items-center gap-1 rounded-xl border-2 px-1.5 py-2.5 text-center transition-colors " +
+                        (active
+                          ? "cursor-default border-neutral-900 bg-neutral-100"
+                          : "border-transparent hover:bg-neutral-100")
+                      }
+                    >
+                      <img
+                        src={`/icons/${app.id}.png`}
+                        alt=""
+                        width={56}
+                        height={56}
+                        loading="lazy"
+                        decoding="async"
+                        draggable={false}
+                        className="h-14 w-14 object-contain"
+                      />
+                      <span className="text-xs font-bold leading-tight">{app.label}</span>
+                      <span className="text-[10px] leading-tight text-neutral-500">{app.description}</span>
+                      {active && <span className="text-[9px] font-bold text-green-600">● Kamu di sini</span>}
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
