@@ -36,7 +36,7 @@ export function Header() {
       <Link
         to={to}
         className={
-          "rounded-full px-3 py-1.5 text-sm font-medium transition-colors " +
+          "shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors " +
           (active ? "bg-brand-red text-white" : "text-white/70 hover:text-white")
         }
       >
@@ -63,7 +63,7 @@ export function Header() {
           {isAuthenticated && navItem("/submission-saya", t("mySubmissions"))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           {/* App-switcher 20FIT (waffle) -- pindah ke produk 20FIT lain, di dalam header ini. */}
           <AppSwitcher open={menu === "apps"} onOpenChange={(o) => setMenu(o ? "apps" : null)} />
 
@@ -123,8 +123,8 @@ export function Header() {
         </div>
       </div>
 
-      {/* Nav mobile */}
-      <nav className="flex flex-wrap items-center gap-1 border-t border-white/10 px-4 py-2 sm:hidden">
+      {/* Nav mobile: SATU baris yang bisa di-scroll horizontal -- JANGAN wrap ke baris kedua. */}
+      <nav className="flex flex-nowrap items-center gap-1 overflow-x-auto no-scrollbar border-t border-white/10 px-4 py-2 sm:hidden">
         {navItem("/", t("homeNav"))}
         {navItem("/resep", t("browse"))}
         {navItem("/artikel", t("articlesNav"))}
