@@ -1,6 +1,23 @@
 import { useEffect, useState } from "react";
-import { supabase } from "./supabase";
+import { supabase, getAccessToken } from "./supabase";
 import { useAuth } from "./auth";
+import { API_BASE } from "./constants";
+
+// Hasil generate artikel dari AI (edge function recipe-article-ai). Semua opsional —
+// form mengisi field yang ada dan membiarkan sisanya.
+export interface AiArticleResult {
+  slug?: string;
+  title_id?: string;
+  title_en?: string;
+  excerpt_id?: string;
+  excerpt_en?: string;
+  body_md_id?: string;
+  body_md_en?: string;
+  category_id?: string;
+  category_en?: string;
+  image_query?: string;
+  tags?: string[];
+}
 
 export type AdminRole = "admin" | "superadmin";
 
@@ -365,6 +382,39 @@ export const adminApi = {
 
     const { data } = supabase.storage.from("article-covers").getPublicUrl(path);
     return data.publicUrl;
+  },
+
+  // Generate draft artikel dari AI (edge function recipe-article-ai). supabase-js otomatis
+  // mengirim JWT admin sebagai Authorization; edge function memverifikasi recipe_admin_role.
+  async generateArticleAI(input: { topic: string; notes?: string; category?: string }): Promise<AiArticleResult> {
+    const { data, error } = await supabase.functions.invoke("recipe-article-ai", {
+      body: { topic: input.topic, notes: input.notes || "", category: input.category || "" },
+    });
+    if (error) {
+      let msg = error.message || "Gagal generate artikel.";
+      // supabase-js membungkus body error non-2xx di error.context (Response).
+      try {
+        const ctx: any = (error as any).context;
+        if (ctx && typeof ctx.json === "function") {
+          const j = await ctx.json();
+          if (j && j.error) msg = j.error;
+        }
+      } catch { /* abaikan */ }
+      throw new Error(msg);
+    }
+    if (!data || !data.ok || !data.result) throw new Error((data && data.error) || "Hasil AI kosong.");
+    return data.result as AiArticleResult;
+  },
+
+  // Cari foto stok (Pexels) untuk cover lewat server my.20fit.id (yang pegang PEXELS_API_KEY).
+  async findStockPhotos(query: string): Promise<{ url: string | null; urls: string[] }> {
+    const tok = await getAccessToken();
+    const r = await fetch(`${API_BASE}/api/menu/stock-photo?q=${encodeURIComponent(query)}`, {
+      headers: tok ? { Authorization: `Bearer ${tok}` } : {},
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || `Gagal cari foto (${r.status})`);
+    return { url: j.url || null, urls: Array.isArray(j.urls) ? j.urls : [] };
   },
 
   // Statistik CMS (agregat) lewat RPC SECURITY DEFINER khusus admin. Read-only.
