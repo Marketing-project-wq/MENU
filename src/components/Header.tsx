@@ -75,7 +75,7 @@ export function Header() {
     "grid h-8 w-8 place-items-center rounded-full border border-fg/15 text-fg transition-colors hover:bg-fg/10";
 
   return (
-    <header className={"no-print sticky top-0 z-20 glass-header" + (scrolled ? " is-scrolled" : "")}>
+    <header className={"no-print sticky top-2 z-20 glass-header" + (scrolled ? " is-scrolled" : "")}>
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2.5">
         {/* ── KIRI: logo + tab halaman (desktop) ── */}
         <Link to="/" className="flex shrink-0 items-center">
@@ -97,14 +97,14 @@ export function Header() {
           {/* Produk lain (waffle) -- icon only */}
           <AppSwitcher open={menu === "apps"} onOpenChange={(o) => setMenu(o ? "apps" : null)} />
 
-          {/* Tema — desktop: icon + label; mobile: masuk ke More */}
+          {/* Tema — desktop: ICON SAJA (SVG sun/moon), tanpa teks/emoji. Mobile: masuk ke More */}
           <button
-            className="hidden items-center gap-1.5 rounded-lg border border-fg/15 px-2.5 py-1.5 text-xs font-medium text-fg/70 transition-colors hover:bg-fg/10 hover:text-fg sm:flex"
+            className="hidden h-8 w-8 place-items-center rounded-full border border-fg/15 text-fg transition-colors hover:bg-fg/10 sm:grid"
             onClick={toggle}
-            aria-label="Ganti tema"
+            aria-label={theme === "dark" ? "Mode terang" : "Mode gelap"}
+            title={theme === "dark" ? "Mode terang" : "Mode gelap"}
           >
-            <Icon name={theme === "dark" ? "sun" : "moon"} size={15} />
-            {theme === "dark" ? "Mode terang" : "Mode gelap"}
+            <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
           </button>
 
           {/* Bahasa [ID|EN] — desktop; aktif = netral (bukan merah). Mobile: masuk ke More */}
@@ -147,8 +147,12 @@ export function Header() {
               }}
             />
           ) : (
-            <button className="btn-primary px-3 py-1.5 text-sm" onClick={() => login("in")}>
-              {t("login")}
+            /* Belum login: teks "Daftar/Sign up" -> buka modal daftar (recipe tetap in-place). */
+            <button
+              className="rounded-lg px-2.5 py-1.5 text-sm font-bold text-fg transition-colors hover:text-brand-red"
+              onClick={() => login("up")}
+            >
+              {t("signUp")}
             </button>
           )}
 
