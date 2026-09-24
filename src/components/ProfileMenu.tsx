@@ -71,6 +71,7 @@ export function ProfileMenu({
   const email = user?.email || "";
   const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || "";
   const initial = (name || email || "?").trim().charAt(0).toUpperCase() || "?";
+  const firstName = name.split(" ")[0] || "Akun";
 
   // Link akun -> my.20fit.id sambil bawa sesi (fragment), lalu pindah halaman.
   const go = (url: string) => {
@@ -88,11 +89,14 @@ export function ProfileMenu({
         aria-expanded={open}
         title={email || "Akun 20FIT"}
         className={
-          "grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-brand-red text-xs font-bold text-white ring-1 ring-fg/15 transition hover:ring-fg/30 " +
-          (open ? "ring-fg/40" : "")
+          "flex items-center gap-1.5 rounded-full transition-colors hover:bg-fg/10 sm:border sm:border-fg/15 sm:py-0.5 sm:pl-0.5 sm:pr-2.5 " +
+          (open ? "sm:bg-fg/10" : "")
         }
       >
-        {avatarUrl ? <img src={avatarUrl} alt="" className="h-8 w-8 object-cover" /> : initial}
+        <span className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-red text-xs font-bold text-white">
+          {avatarUrl ? <img src={avatarUrl} alt="" className="h-7 w-7 object-cover" /> : initial}
+        </span>
+        <span className="hidden max-w-[7rem] truncate text-xs font-semibold text-fg sm:inline">{firstName}</span>
       </button>
 
       {open && (
