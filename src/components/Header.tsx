@@ -97,6 +97,20 @@ export function Header() {
           {/* Produk lain (waffle) -- icon only */}
           <AppSwitcher open={menu === "apps"} onOpenChange={(o) => setMenu(o ? "apps" : null)} />
 
+          {/* More (⋮) — mobile only, DI SAMPING waffle produk: berisi tab halaman + tema. */}
+          <button
+            type="button"
+            className={utilBtn + " sm:hidden"}
+            onClick={() => setMenu(menu === "more" ? null : "more")}
+            aria-label="Menu lainnya"
+            aria-haspopup="true"
+            aria-expanded={menu === "more"}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" />
+            </svg>
+          </button>
+
           {/* Tema — desktop: ICON SAJA (SVG sun/moon), tanpa teks/emoji. Mobile: masuk ke More */}
           <button
             className="hidden h-8 w-8 place-items-center rounded-full border border-fg/15 text-fg transition-colors hover:bg-fg/10 sm:grid"
@@ -107,9 +121,9 @@ export function Header() {
             <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
           </button>
 
-          {/* Bahasa [ID|EN] — desktop; aktif = netral (bukan merah). Mobile: masuk ke More */}
+          {/* Bahasa [ID|EN] — SELALU tampil (mobile + desktop). Aktif = netral (bukan merah). */}
           <div
-            className="hidden items-center rounded-lg border border-fg/15 p-0.5 text-[11px] font-bold sm:flex"
+            className="flex items-center rounded-lg border border-fg/15 p-0.5 text-[11px] font-bold"
             role="group"
             aria-label="Bahasa / Language"
           >
@@ -156,19 +170,6 @@ export function Header() {
             </button>
           )}
 
-          {/* More (⋮) — mobile only: berisi tab halaman + tema + bahasa */}
-          <button
-            type="button"
-            className={utilBtn + " sm:hidden"}
-            onClick={() => setMenu(menu === "more" ? null : "more")}
-            aria-label="Menu lainnya"
-            aria-haspopup="true"
-            aria-expanded={menu === "more"}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" />
-            </svg>
-          </button>
         </div>
       </div>
 
@@ -187,28 +188,7 @@ export function Header() {
 
             <div className="my-1.5 border-t border-fg/10" />
 
-            {/* Bahasa */}
-            <div className="flex items-center justify-between px-3 py-2">
-              <span className="text-[13px] font-semibold text-fg/80">Bahasa</span>
-              <div className="flex items-center rounded-lg border border-fg/15 p-0.5 text-[11px] font-bold">
-                <button
-                  className={"rounded-md px-2.5 py-1 transition-colors " + (lang === "id" ? "bg-fg text-bg" : "text-fg/50 hover:text-fg")}
-                  onClick={() => setLang("id")}
-                  aria-pressed={lang === "id"}
-                >
-                  ID
-                </button>
-                <button
-                  className={"rounded-md px-2.5 py-1 transition-colors " + (lang === "en" ? "bg-fg text-bg" : "text-fg/50 hover:text-fg")}
-                  onClick={() => setLang("en")}
-                  aria-pressed={lang === "en"}
-                >
-                  EN
-                </button>
-              </div>
-            </div>
-
-            {/* Tema */}
+            {/* Tema (bahasa sudah tampil langsung di header) */}
             <button
               type="button"
               onClick={() => { toggle(); }}
