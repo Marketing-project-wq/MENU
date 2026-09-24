@@ -55,6 +55,10 @@ body {
   font-family: "Barlow Condensed", system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s ease, color 0.2s ease;
+  /* Jaring pengaman: cegah halaman ter-scroll horizontal di mobile kalau ada elemen yang
+     sedikit lebih lebar dari viewport (mis. strip carousel full-bleed). Pakai `clip`, BUKAN
+     `hidden`, supaya TIDAK bikin body jadi scroll-container -> header `sticky` tetap normal. */
+  overflow-x: clip;
 }
 
 /* ---- Lapisan latar untuk kaca (glass butuh sesuatu di belakangnya, bukan putih polos) ----
