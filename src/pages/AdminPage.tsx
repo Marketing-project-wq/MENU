@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ChangeEvent } from "react";
 import { useAuth } from "../lib/auth";
 import { useAdmin, adminApi, type Submission, type ArticleRow, type ArticleCreateInput, type AuditEntry, type AdminMember, type AdminRole, type AdminStats } from "../lib/admin";
 import { useLang, useRecipes } from "../lib/store";
@@ -796,9 +796,98 @@ function ArticleForm({
   const [err, setErr] = useState("");
   const [uploading, setUploading] = useState(false);
   const [coverErr, setCoverErr] = useState("");
+  // Generate AI + sisip gambar (WordPress-style).
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const [aiOpen, setAiOpen] = useState(!isEdit); // panel AI kebuka default saat tulis baru
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiNotes, setAiNotes] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiErr, setAiErr] = useState("");
+  const [coverOptions, setCoverOptions] = useState<string[]>([]);
+  const [insertingImg, setInsertingImg] = useState(false);
 
   function set<K extends keyof ArticleCreateInput>(key: K, val: ArticleCreateInput[K]) {
     setF((prev) => ({ ...prev, [key]: val }));
+  }
+
+  // Generate draft artikel dari AI: isi judul/slug/ringkasan/kategori/isi (ID+EN) + cari cover.
+  async function runGenerate() {
+    const topic = aiTopic.trim();
+    if (!topic) { setAiErr("Isi dulu topik / ide judulnya."); return; }
+    setAiErr("");
+    setAiBusy(true);
+    try {
+      const r = await adminApi.generateArticleAI({ topic, notes: aiNotes.trim(), category: f.category_id?.trim() });
+      setF((prev) => ({
+        ...prev,
+        title_id: r.title_id || prev.title_id,
+        title_en: r.title_en || prev.title_en,
+        excerpt_id: r.excerpt_id ?? prev.excerpt_id,
+        excerpt_en: r.excerpt_en ?? prev.excerpt_en,
+        body_md_id: r.body_md_id || prev.body_md_id,
+        body_md_en: r.body_md_en || prev.body_md_en,
+        category_id: r.category_id || prev.category_id,
+        category_en: r.category_en || prev.category_en,
+        slug: r.slug || prev.slug,
+      }));
+      if (r.slug) setSlugTouched(true); // pakai slug dari AI, jangan ditimpa dari judul
+      // Cover: cari foto stok Pexels dari kata kunci AI (opsional — jangan gagalkan generate).
+      if (r.image_query) {
+        try {
+          const photos = await adminApi.findStockPhotos(String(r.image_query));
+          setCoverOptions(photos.urls || []);
+          if (photos.url) setF((prev) => ({ ...prev, cover_url: prev.cover_url || (photos.url as string) }));
+        } catch { /* foto opsional */ }
+      }
+      setAiOpen(false);
+    } catch (e: any) {
+      setAiErr(e?.message || "Gagal generate artikel.");
+    } finally {
+      setAiBusy(false);
+    }
+  }
+
+  // Sisip gambar ke TENGAH artikel (ala WordPress): upload -> tulis ![alt](url) di posisi kursor.
+  async function insertBodyImage(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
+      setErr("Format gambar harus JPG, PNG, WEBP, atau GIF.");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErr("Ukuran gambar maksimal 5MB.");
+      e.target.value = "";
+      return;
+    }
+    setInsertingImg(true);
+    setErr("");
+    try {
+      const url = await adminApi.uploadCover(file); // pakai bucket article-covers (public) yang sama
+      const alt = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
+      const md = `\n\n![${alt}](${url})\n\n`;
+      const ta = bodyRef.current;
+      const cur = f[bodyKey] || "";
+      let caret = cur.length;
+      let next: string;
+      if (ta && typeof ta.selectionStart === "number") {
+        const s = ta.selectionStart, en = ta.selectionEnd;
+        next = cur.slice(0, s) + md + cur.slice(en);
+        caret = s + md.length;
+      } else {
+        next = cur + md;
+      }
+      set(bodyKey, next);
+      requestAnimationFrame(() => {
+        if (ta) { ta.focus(); try { ta.setSelectionRange(caret, caret); } catch { /* ignore */ } }
+      });
+    } catch (e2: any) {
+      setErr(e2?.message || "Gagal upload gambar.");
+    } finally {
+      setInsertingImg(false);
+      e.target.value = "";
+    }
   }
 
   const effectiveSlug = slugTouched ? f.slug : slugify(f.title_id);
@@ -898,6 +987,52 @@ function ArticleForm({
       <div className="mx-auto max-w-6xl gap-6 px-4 py-6 lg:flex">
         {/* Kolom tulis */}
         <main className="min-w-0 flex-1">
+          {/* Generate artikel dengan AI — isi semua field (ID+EN) + cari cover Pexels. */}
+          <div className="mb-4 rounded-xl border border-brand-red/25 bg-brand-red/[0.04] p-3">
+            <button
+              type="button"
+              onClick={() => setAiOpen((o) => !o)}
+              className="flex w-full items-center gap-2 text-left text-sm font-bold text-fg"
+            >
+              <span className="text-base">✨</span>
+              Generate artikel dengan AI
+              <Icon name="arrowRight" size={14} className={"ml-auto transition-transform " + (aiOpen ? "rotate-90" : "")} />
+            </button>
+            {aiOpen && (
+              <div className="mt-3 space-y-2">
+                <input
+                  className="field w-full"
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  placeholder="Topik / ide judul — mis. 'Manfaat sarapan tinggi protein'"
+                  disabled={aiBusy}
+                />
+                <textarea
+                  className="field w-full"
+                  rows={2}
+                  value={aiNotes}
+                  onChange={(e) => setAiNotes(e.target.value)}
+                  placeholder="Catatan tambahan (opsional) — sudut pandang, poin wajib, target pembaca…"
+                  disabled={aiBusy}
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={runGenerate}
+                    disabled={aiBusy || !aiTopic.trim()}
+                    className="btn-primary px-4 py-2 text-sm disabled:opacity-50"
+                  >
+                    {aiBusy ? "Menulis… (10–30 dtk)" : "✨ Generate draft"}
+                  </button>
+                  <span className="text-[11px] text-fg/45">
+                    Isi judul, slug, SEO, kategori & isi (ID+EN) + cari cover otomatis. Semua bisa diedit.
+                  </span>
+                </div>
+                {aiErr && <p className="text-[12px] font-medium text-brand-red">{aiErr}</p>}
+              </div>
+            )}
+          </div>
+
           <div className="mb-3 inline-flex rounded-lg bg-fg/5 p-1 text-sm font-semibold">
             {(["id", "en"] as const).map((l) => (
               <button
@@ -941,11 +1076,31 @@ function ArticleForm({
                 {v === "write" ? "Tulis" : "Preview"}
               </button>
             ))}
-            <span className="ml-auto text-[11px] text-fg/35">Markdown didukung</span>
+            {/* Sisipkan gambar ke tengah artikel (WordPress-style): upload -> ![](url) di kursor. */}
+            <label
+              className={`ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-semibold text-brand-red hover:bg-brand-red/10 ${
+                insertingImg ? "cursor-wait opacity-60" : ""
+              }`}
+              title="Sisipkan gambar ke posisi kursor"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" />
+              </svg>
+              {insertingImg ? "Mengunggah…" : "Sisipkan Gambar"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                disabled={insertingImg}
+                onChange={insertBodyImage}
+              />
+            </label>
+            <span className="ml-2 text-[11px] text-fg/35">Markdown</span>
           </div>
 
           {view === "write" ? (
             <textarea
+              ref={bodyRef}
               className="mt-3 w-full rounded-lg border border-fg/10 bg-card p-4 font-mono text-sm text-fg outline-none focus:border-brand-red/40"
               rows={18}
               value={f[bodyKey]}
@@ -1035,6 +1190,24 @@ function ArticleForm({
               />
             )}
             <p className="mt-1.5 text-[10px] text-fg/35">JPG / PNG / WEBP, maks 5MB.</p>
+            {coverOptions.length > 0 && (
+              <div className="mt-3">
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-fg/40">Pilihan foto (Pexels)</p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {coverOptions.map((u) => (
+                    <button
+                      key={u}
+                      type="button"
+                      onClick={() => set("cover_url", u)}
+                      className={"overflow-hidden rounded-md border-2 " + (f.cover_url === u ? "border-brand-red" : "border-transparent hover:border-fg/20")}
+                      title="Pakai foto ini"
+                    >
+                      <img src={u} alt="" className="h-14 w-full object-cover" loading="lazy" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className={cardCls}>
