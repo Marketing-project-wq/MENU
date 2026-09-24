@@ -10,6 +10,7 @@ import { GRABFOOD_HOME } from "../lib/constants";
 import { ArticleCard } from "../components/ArticleCard";
 import { RecipeCard } from "../components/RecipeCard";
 import { RecipeCarousel } from "../components/RecipeCarousel";
+import { Carousel } from "../components/Carousel";
 import { FoodTypeChips } from "../components/FoodTypeChips";
 import { Icon } from "../components/Icon";
 import { Spinner } from "../components/Spinner";
@@ -180,14 +181,17 @@ export function HomePage() {
         </HomeSection>
       )}
 
-      {/* Top 5 Artikel untuk dibaca hari ini -- kartu tampilkan "X min read" di depan. */}
+      {/* Artikel untuk dibaca hari ini -- carousel bisa digeser horizontal (samakan pola
+          "Resep Favorit"); kartu tampilkan "X min read" di depan. */}
       {articlePicks.length > 0 && (
         <HomeSection title={t("homeTopArticlesHeading")} desc={t("homeTopArticlesSub")} to="/artikel">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <Carousel label={t("homeTopArticlesHeading")}>
             {articlePicks.map((a) => (
-              <ArticleCard key={a.id} a={a} readMinutes={readMins[a.slug]} />
+              <div key={a.id} role="listitem" className="w-64 flex-none snap-start sm:w-72">
+                <ArticleCard a={a} readMinutes={readMins[a.slug]} />
+              </div>
             ))}
-          </div>
+          </Carousel>
         </HomeSection>
       )}
 
