@@ -5,18 +5,18 @@ import { useLang, useTheme } from "../lib/store";
 import { Icon } from "./Icon";
 import { AppSwitcher } from "./AppSwitcher";
 import { ProfileMenu } from "./ProfileMenu";
-import { LOGO_DARK } from "../lib/constants";
+import { LOGO_DARK, LOGO_LIGHT } from "../lib/constants";
 
 /**
- * Header "kaca ringan" -- tapi latarnya SELALU gelap (bukan ikut tema terang/gelap situs),
- * karena ini titik paling gampang gagal: foto makanan terang lewat di baliknya saat halaman
- * digulir (header sticky). Kaca terang + teks gelap gampang hilang di atas foto terang; latar
- * gelap + teks putih tetap terbaca apa pun yang lewat di belakang. Lihat .glass-header di
- * index.css. `is-scrolled` menambah kepadatan (hardening) begitu halaman mulai digulir.
+ * Header MINIMALIST & NETRAL yang MENYATU dgn address bar browser (seamless), ikut tema
+ * terang/gelap situs. Latar SOLID = warna --bg (lihat .glass-header di index.css) — bukan
+ * merah, bukan kaca gelap. Teks & kontrol pakai warna --fg (adaptif), brand-red HANYA sbg
+ * aksen (pill halaman aktif, tombol Masuk). theme-color di <head> disamakan --bg → browser
+ * bar & header satu warna. `is-scrolled` sekadar menegaskan garis bawah.
  *
- * MOBILE = SATU BAR saja: logo + [waffle produk][hamburger][profil/Masuk]. Nav halaman, tema,
- * dan bahasa dipindah ke DALAM drawer hamburger supaya bar-nya rapi & nggak penuh (dulu ada 2
- * bar bertumpuk). DESKTOP tetap: nav + semua kontrol tampil inline (hamburger disembunyikan).
+ * MOBILE = SATU BARIS: logo + [waffle produk][hamburger][profil/Masuk]. Nav halaman, tema,
+ * dan bahasa masuk ke DALAM drawer hamburger supaya tak pernah wrap ke baris kedua.
+ * DESKTOP: nav + semua kontrol tampil inline (hamburger disembunyikan).
  */
 export function Header() {
   const { t, lang, setLang } = useLang();
@@ -44,7 +44,7 @@ export function Header() {
     return () => document.removeEventListener("keydown", onKey);
   }, [menu]);
 
-  // Nav desktop: "pill" kecil inline.
+  // Nav desktop: "pill" kecil inline. Aktif = aksen brand-red (penanda halaman); sisanya netral.
   const navItem = (to: string, label: string) => {
     const active = to === "/" ? path === "/" : path.startsWith(to);
     return (
@@ -52,7 +52,7 @@ export function Header() {
         to={to}
         className={
           "shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors " +
-          (active ? "bg-brand-red text-white" : "text-white/70 hover:text-white")
+          (active ? "bg-brand-red text-white" : "text-fg/60 hover:text-fg")
         }
       >
         {label}
@@ -69,7 +69,7 @@ export function Header() {
         onClick={() => setMenu(null)}
         className={
           "block rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors " +
-          (active ? "bg-brand-red text-white" : "text-white/80 hover:bg-white/10")
+          (active ? "bg-brand-red text-white" : "text-fg/80 hover:bg-fg/10")
         }
       >
         {label}
@@ -81,8 +81,9 @@ export function Header() {
     <header className={"no-print sticky top-0 z-20 glass-header" + (scrolled ? " is-scrolled" : "")}>
       <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
-          <img src={LOGO_DARK} alt="20FIT" className="h-10 w-auto" />
-          <span className="text-sm font-bold tracking-tight text-white/80">Menu</span>
+          {/* Logo ikut tema: versi gelap (putih) di dark, versi terang (berwarna) di light. */}
+          <img src={theme === "dark" ? LOGO_DARK : LOGO_LIGHT} alt="20FIT" className="h-10 w-auto" />
+          <span className="text-sm font-bold tracking-tight text-fg/70">Menu</span>
         </Link>
 
         <nav className="ml-2 hidden items-center gap-1 sm:flex">
@@ -102,7 +103,7 @@ export function Header() {
           {/* Hamburger (mobile only) -- buka drawer berisi nav halaman + tema + bahasa. */}
           <button
             type="button"
-            className="grid h-8 w-8 place-items-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 sm:hidden"
+            className="grid h-8 w-8 place-items-center rounded-full border border-fg/15 text-fg transition-colors hover:bg-fg/10 sm:hidden"
             onClick={() => setMenu(menu === "nav" ? null : "nav")}
             aria-label="Menu"
             aria-haspopup="true"
@@ -115,7 +116,7 @@ export function Header() {
 
           {/* Toggle tema terang / gelap (desktop; di mobile pindah ke drawer hamburger) */}
           <button
-            className="hidden h-8 w-8 place-items-center rounded-full border border-white/20 text-sm text-white hover:bg-white/10 sm:grid"
+            className="hidden h-8 w-8 place-items-center rounded-full border border-fg/15 text-sm text-fg hover:bg-fg/10 sm:grid"
             onClick={toggle}
             aria-label="Ganti tema"
             title={theme === "dark" ? "Mode terang" : "Mode gelap"}
@@ -125,14 +126,14 @@ export function Header() {
 
           {/* Toggle bahasa [ID | EN] (desktop; di mobile pindah ke drawer hamburger) */}
           <div
-            className="hidden items-center rounded-full border border-white/20 p-0.5 text-xs font-bold sm:flex"
+            className="hidden items-center rounded-full border border-fg/15 p-0.5 text-xs font-bold sm:flex"
             role="group"
             aria-label="Bahasa / Language"
           >
             <button
               className={
                 "rounded-full px-2.5 py-1 transition-colors " +
-                (lang === "id" ? "bg-brand-red text-white" : "text-white/60 hover:text-white")
+                (lang === "id" ? "bg-brand-red text-white" : "text-fg/50 hover:text-fg")
               }
               onClick={() => setLang("id")}
               aria-pressed={lang === "id"}
@@ -142,7 +143,7 @@ export function Header() {
             <button
               className={
                 "rounded-full px-2.5 py-1 transition-colors " +
-                (lang === "en" ? "bg-brand-red text-white" : "text-white/60 hover:text-white")
+                (lang === "en" ? "bg-brand-red text-white" : "text-fg/50 hover:text-fg")
               }
               onClick={() => setLang("en")}
               aria-pressed={lang === "en"}
@@ -178,7 +179,7 @@ export function Header() {
             onClick={() => setMenu(null)}
             aria-hidden="true"
           />
-          <nav className="absolute inset-x-0 top-full z-50 border-t border-white/10 bg-[#141414] p-3 shadow-2xl">
+          <nav className="absolute inset-x-0 top-full z-50 border-t border-fg/10 bg-card p-3 shadow-xl">
             <div className="mx-auto max-w-6xl">
               {mobileNavRow("/", t("homeNav"))}
               {mobileNavRow("/resep", t("browse"))}
@@ -188,13 +189,13 @@ export function Header() {
               {mobileNavRow("/tersimpan", t("saved"))}
               {isAuthenticated && mobileNavRow("/submission-saya", t("mySubmissions"))}
 
-              <div className="my-2 border-t border-white/10" />
+              <div className="my-2 border-t border-fg/10" />
 
               {/* Tema */}
               <button
                 type="button"
                 onClick={toggle}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-fg/80 transition-colors hover:bg-fg/10"
               >
                 <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
                 {theme === "dark" ? "Mode terang" : "Mode gelap"}
@@ -202,16 +203,16 @@ export function Header() {
 
               {/* Bahasa */}
               <div className="flex items-center justify-between rounded-lg px-3 py-2">
-                <span className="text-sm font-semibold text-white/80">Bahasa</span>
+                <span className="text-sm font-semibold text-fg/80">Bahasa</span>
                 <div
-                  className="flex items-center rounded-full border border-white/20 p-0.5 text-xs font-bold"
+                  className="flex items-center rounded-full border border-fg/15 p-0.5 text-xs font-bold"
                   role="group"
                   aria-label="Bahasa / Language"
                 >
                   <button
                     className={
                       "rounded-full px-2.5 py-1 transition-colors " +
-                      (lang === "id" ? "bg-brand-red text-white" : "text-white/60 hover:text-white")
+                      (lang === "id" ? "bg-brand-red text-white" : "text-fg/50 hover:text-fg")
                     }
                     onClick={() => setLang("id")}
                     aria-pressed={lang === "id"}
@@ -221,7 +222,7 @@ export function Header() {
                   <button
                     className={
                       "rounded-full px-2.5 py-1 transition-colors " +
-                      (lang === "en" ? "bg-brand-red text-white" : "text-white/60 hover:text-white")
+                      (lang === "en" ? "bg-brand-red text-white" : "text-fg/50 hover:text-fg")
                     }
                     onClick={() => setLang("en")}
                     aria-pressed={lang === "en"}

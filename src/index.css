@@ -99,33 +99,24 @@ body {
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .glass-solid { background-color: rgb(var(--glass-solid-bg) / 0.94); }
     .glass-light { background-color: rgb(var(--glass-light-bg) / 0.9); }
-    .glass-header { background-color: rgb(20 20 20 / 0.92) !important; }
   }
 
-  /* ---- Header: titik paling gampang gagal -- foto makanan TERANG lewat di belakangnya
-     saat digulir (header sticky, konten lewat di baliknya). Latar SELALU gelap (bukan ikut
-     tema terang/gelap situs) + teks putih, supaya kontras terjamin apa pun yang lewat di
-     belakang -- bukan cuma "kaca terang + teks gelap" yang gampang hilang di atas foto
-     terang. `--scrolled` menambah padat (hardening) begitu halaman digulir. */
+  /* ---- Header: MINIMALIST & NETRAL yang MENYATU dgn address bar browser (seamless).
+     Latar SOLID = warna --bg (ikut tema terang/gelap situs), BUKAN kaca gelap/merah. Karena
+     solid (bukan tembus), foto makanan yang lewat di baliknya saat scroll tetap TERTUTUP, jadi
+     teks header selalu kebaca tanpa perlu latar gelap paksa. Tanpa shadow, gradient, atau blur.
+     Garis bawah 1px sangat tipis (nyaris tak terlihat). theme-color di <head> disamakan dgn
+     --bg supaya browser bar & header jadi satu warna. */
   .glass-header {
-    /* alpha 0.65 (bukan 0.55) -- diuji nyata (Playwright, hitung kontras WCAG): 0.55 cuma
-       dapat 4.07:1 kalau foto TERANG PENUH (putih) lewat di belakangnya, di bawah target
-       4.5:1. 0.65 -> 5.72:1, ada margin aman. */
-    background-color: rgb(20 20 20 / 0.65);
-    -webkit-backdrop-filter: blur(14px) saturate(1.2);
-    backdrop-filter: blur(14px) saturate(1.2);
-    border-bottom: 1px solid rgb(255 255 255 / 0.08);
-    transition: background-color 0.25s ease, backdrop-filter 0.25s ease;
+    background-color: rgb(var(--bg));
+    border-bottom: 1px solid rgb(var(--fg) / 0.08);
+    /* Isi area notch/status bar (viewport-fit=cover) dgn warna header → benar-benar seamless. */
+    padding-top: env(safe-area-inset-top, 0px);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
   }
   .glass-header.is-scrolled {
-    background-color: rgb(20 20 20 / 0.88);
-  }
-  @media (prefers-reduced-transparency: reduce) {
-    .glass-header {
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-      background-color: rgb(20 20 20 / 0.94);
-    }
+    /* Saat digulir, tegaskan garisnya sedikit biar batas header terasa (tetap tanpa shadow). */
+    border-bottom-color: rgb(var(--fg) / 0.12);
   }
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors bg-brand-red text-white hover:bg-[#a30d01] disabled:opacity-50 disabled:cursor-not-allowed;

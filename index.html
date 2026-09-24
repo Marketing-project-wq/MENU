@@ -2,19 +2,24 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover: header bisa pakai safe-area-inset (notch iPhone) & seamless. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="Katalog resep sehat 20FIT — jelajahi resep resmi & kontribusi member. Submit resepmu, direview admin sebelum tayang." />
-    <!-- Terapkan tema sebelum paint (hindari kedip) -->
+    <!-- theme-color = warna header, supaya address bar browser MENYATU dgn header (seamless).
+         SATU meta yang di-set via JS (bukan media query) supaya ikut toggle manual, bukan cuma
+         preferensi sistem. Nilai awal disamakan tema aktif di pre-paint script di bawah. -->
+    <meta name="theme-color" content="#f7f5f0" id="theme-color-meta" />
+    <!-- Terapkan tema + theme-color sebelum paint (hindari kedip). -->
     <script>
       try {
-        if (localStorage.getItem("menu20fit_theme") === "dark")
-          document.documentElement.classList.add("dark");
+        var dark = localStorage.getItem("menu20fit_theme") === "dark";
+        if (dark) document.documentElement.classList.add("dark");
+        var tcm = document.getElementById("theme-color-meta");
+        if (tcm) tcm.setAttribute("content", dark ? "#0e0f0b" : "#f7f5f0");
       } catch (e) {}
     </script>
     <title>Menu 20FIT — Resep Sehat</title>
     <link rel="icon" type="image/png" href="https://media.20fit.id/wp-content/uploads/2026/05/Logo-20fit.png" />
-    <meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0e0f0b" media="(prefers-color-scheme: dark)" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
