@@ -108,15 +108,31 @@ body {
      Garis bawah 1px sangat tipis (nyaris tak terlihat). theme-color di <head> disamakan dgn
      --bg supaya browser bar & header jadi satu warna. */
   .glass-header {
-    background-color: rgb(var(--bg));
-    border-bottom: 1px solid rgb(var(--fg) / 0.08);
-    /* Isi area notch/status bar (viewport-fit=cover) dgn warna header → benar-benar seamless. */
+    /* MELAYANG (floating): ada jarak dari tepi, sudut membulat, bayangan tipis, dan KACA
+       (blur). Latar semi-transparan (85% --bg) + backdrop-blur -> konten yang lewat di
+       baliknya terbaur halus. theme-color di <head> = --bg (warna sekitar header) supaya
+       address bar browser menyatu dgn latar halaman di sekeliling header yang melayang. */
+    margin: 8px 12px 0;
+    border: 1px solid rgb(var(--fg) / 0.08);
+    border-radius: 14px;
+    background-color: rgb(var(--bg) / 0.85);
+    -webkit-backdrop-filter: blur(12px) saturate(1.1);
+    backdrop-filter: blur(12px) saturate(1.1);
+    box-shadow: 0 2px 14px rgb(0 0 0 / 0.06);
     padding-top: env(safe-area-inset-top, 0px);
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
   }
   .glass-header.is-scrolled {
-    /* Saat digulir, tegaskan garisnya sedikit biar batas header terasa (tetap tanpa shadow). */
-    border-bottom-color: rgb(var(--fg) / 0.12);
+    /* Digulir: latar lebih padat + bayangan sedikit lebih dalam (tetap melayang). */
+    background-color: rgb(var(--bg) / 0.95);
+    box-shadow: 0 4px 20px rgb(0 0 0 / 0.09);
+  }
+  @media (max-width: 640px) {
+    .glass-header { margin: 6px 8px 0; border-radius: 12px; }
+  }
+  /* Browser tanpa dukungan backdrop-filter -> latar hampir padat biar teks tetap terbaca. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-header { background-color: rgb(var(--bg) / 0.98); }
   }
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors bg-brand-red text-white hover:bg-[#a30d01] disabled:opacity-50 disabled:cursor-not-allowed;
