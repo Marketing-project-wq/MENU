@@ -88,8 +88,8 @@ export function ProfileMenu({
         aria-expanded={open}
         title={email || "Akun 20FIT"}
         className={
-          "grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-brand-red text-xs font-bold text-white ring-1 ring-white/25 transition hover:ring-white/50 " +
-          (open ? "ring-white/60" : "")
+          "grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-brand-red text-xs font-bold text-white ring-1 ring-fg/15 transition hover:ring-fg/30 " +
+          (open ? "ring-fg/40" : "")
         }
       >
         {avatarUrl ? <img src={avatarUrl} alt="" className="h-8 w-8 object-cover" /> : initial}
@@ -99,7 +99,7 @@ export function ProfileMenu({
         <div
           role="menu"
           aria-label="Menu akun"
-          className="absolute right-0 z-50 mt-2 w-[min(300px,92vw)] rounded-2xl border border-black/10 bg-white p-3 text-neutral-900 shadow-2xl"
+          className="absolute right-0 z-50 mt-2 w-[min(300px,92vw)] rounded-2xl border border-fg/10 bg-card p-3 text-fg shadow-2xl"
         >
           {/* Header akun: avatar + nama + email */}
           <div className="flex items-center gap-3 px-1 pb-2">
@@ -108,30 +108,30 @@ export function ProfileMenu({
             </span>
             <div className="min-w-0">
               <div className="truncate text-sm font-bold leading-tight">{name}</div>
-              {email && <div className="truncate text-xs text-neutral-500">{email}</div>}
+              {email && <div className="truncate text-xs text-fg/50">{email}</div>}
             </div>
           </div>
 
-          <div className="my-1 border-t border-neutral-100" />
+          <div className="my-1 border-t border-fg/10" />
 
           {ACCOUNT_LINKS.map((item) => (
             <button
               key={item.label}
               role="menuitem"
               onClick={() => go(item.url)}
-              className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-neutral-50"
+              className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-fg/5"
             >
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-neutral-100 text-neutral-600">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-fg/5 text-fg/60">
                 <LineIcon name={item.icon} />
               </span>
               <span className="min-w-0">
                 <span className="block text-[13px] font-semibold leading-tight">{item.label}</span>
-                <span className="block truncate text-[11px] text-neutral-500">{item.desc}</span>
+                <span className="block truncate text-[11px] text-fg/50">{item.desc}</span>
               </span>
             </button>
           ))}
 
-          <div className="my-1 border-t border-neutral-100" />
+          <div className="my-1 border-t border-fg/10" />
 
           <button
             role="menuitem"

@@ -107,6 +107,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     if (theme === "dark") root.classList.add("dark");
     else root.classList.remove("dark");
+    // Samakan warna address bar browser dgn header (seamless), ikut toggle manual — bukan
+    // cuma preferensi sistem. Nilai = --bg tiap tema (lihat index.css / index.html).
+    try {
+      const meta = document.getElementById("theme-color-meta");
+      if (meta) meta.setAttribute("content", theme === "dark" ? "#0e0f0b" : "#f7f5f0");
+    } catch {
+      /* ignore */
+    }
     try {
       localStorage.setItem(THEME_KEY, theme);
     } catch {

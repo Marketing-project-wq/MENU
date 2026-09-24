@@ -102,8 +102,8 @@ export function AppSwitcher({
         aria-expanded={open}
         title="Aplikasi 20FIT"
         className={
-          "grid h-8 w-8 place-items-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 " +
-          (open ? "bg-white/15" : "")
+          "grid h-8 w-8 place-items-center rounded-full border border-fg/15 text-fg transition-colors hover:bg-fg/10 " +
+          (open ? "bg-fg/10" : "")
         }
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -117,11 +117,11 @@ export function AppSwitcher({
         <div
           role="menu"
           aria-label="Aplikasi 20FIT"
-          className="absolute right-0 z-50 mt-2 max-h-[80vh] w-[min(440px,92vw)] overflow-y-auto rounded-2xl border border-black/10 bg-white p-3 text-neutral-900 shadow-2xl"
+          className="absolute right-0 z-50 mt-2 max-h-[80vh] w-[min(440px,92vw)] overflow-y-auto rounded-2xl border border-fg/10 bg-card p-3 text-fg shadow-2xl"
         >
           {SECTIONS.map((sec) => (
             <div key={sec.title || "all"} className="mb-2 last:mb-0">
-              <div className="mb-1 px-1 text-[10px] font-bold uppercase tracking-wide text-neutral-400">
+              <div className="mb-1 px-1 text-[10px] font-bold uppercase tracking-wide text-fg/40">
                 {sec.title || "Semua Produk 20FIT"}
               </div>
               <div className="grid grid-cols-3 gap-1">
@@ -147,8 +147,8 @@ export function AppSwitcher({
                       className={
                         "flex flex-col items-center gap-1 rounded-xl border-2 px-1.5 py-2.5 text-center transition-colors " +
                         (active
-                          ? "cursor-default border-neutral-900 bg-neutral-100"
-                          : "border-transparent hover:bg-neutral-100")
+                          ? "cursor-default border-fg/70 bg-fg/5"
+                          : "border-transparent hover:bg-fg/5")
                       }
                     >
                       <img
@@ -162,7 +162,7 @@ export function AppSwitcher({
                         className="h-14 w-14 object-contain"
                       />
                       <span className="text-xs font-bold leading-tight">{app.label}</span>
-                      <span className="text-[10px] leading-tight text-neutral-500">{app.description}</span>
+                      <span className="text-[10px] leading-tight text-fg/50">{app.description}</span>
                       {active && <span className="text-[9px] font-bold text-green-600">● Kamu di sini</span>}
                     </a>
                   );
