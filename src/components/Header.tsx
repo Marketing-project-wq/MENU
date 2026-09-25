@@ -12,9 +12,10 @@ import { LOGO_DARK, LOGO_LIGHT } from "../lib/constants";
  * Latar solid = --bg (lihat .glass-header), bukan merah/kaca. Bukan wrap ke baris kedua.
  *
  * KIRI  = logo + TAB halaman (underline merah = tab aktif, sisanya muted).
- * KANAN = [waffle produk] [tema+label] [bahasa ID|EN] [profil+nama].
- * MOBILE (satu baris) = logo + [waffle] [profil] [More ⋮]. Tab + tema + bahasa pindah ke
- * dropdown "More" (⋮) supaya tak pernah penuh. brand-red HANYA aksen (tab aktif, Masuk).
+ * KANAN = [waffle produk] [tema] [bahasa ID|EN] [profil+nama].
+ * MOBILE (satu baris) = logo + [More ⋮] [waffle produk] [bahasa ID|EN] [profil]. Tab + tema
+ * ada di dropdown "More" (⋮); BAHASA selalu tampil di header (bukan di dropdown). brand-red
+ * HANYA aksen (tab aktif, Daftar).
  */
 export function Header() {
   const { t, lang, setLang } = useLang();
@@ -94,10 +95,7 @@ export function Header() {
 
         {/* ── KANAN: utilities ── */}
         <div className="ml-auto flex shrink-0 items-center gap-2">
-          {/* Produk lain (waffle) -- icon only */}
-          <AppSwitcher open={menu === "apps"} onOpenChange={(o) => setMenu(o ? "apps" : null)} />
-
-          {/* More (⋮) — mobile only, DI SAMPING waffle produk: berisi tab halaman + tema. */}
+          {/* More (⋮) — mobile only, PALING DEPAN (sebelum waffle): berisi tab halaman + tema. */}
           <button
             type="button"
             className={utilBtn + " sm:hidden"}
@@ -110,6 +108,9 @@ export function Header() {
               <circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" />
             </svg>
           </button>
+
+          {/* Produk lain (waffle) -- icon only */}
+          <AppSwitcher open={menu === "apps"} onOpenChange={(o) => setMenu(o ? "apps" : null)} />
 
           {/* Tema — desktop: ICON SAJA (SVG sun/moon), tanpa teks/emoji. Mobile: masuk ke More */}
           <button
