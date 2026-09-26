@@ -93,8 +93,8 @@ export function ProfileMenu({
           (open ? "sm:bg-fg/10" : "")
         }
       >
-        <span className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-red text-xs font-bold text-white">
-          {avatarUrl ? <img src={avatarUrl} alt="" className="h-7 w-7 object-cover" /> : initial}
+        <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-red text-sm font-bold text-white">
+          {avatarUrl ? <img src={avatarUrl} alt="" className="h-9 w-9 object-cover" /> : initial}
         </span>
         <span className="hidden max-w-[7rem] truncate text-xs font-semibold text-fg sm:inline">{firstName}</span>
       </button>

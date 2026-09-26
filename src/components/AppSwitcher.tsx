@@ -102,8 +102,8 @@ export function AppSwitcher({
         aria-expanded={open}
         title="Aplikasi 20FIT"
         className={
-          "grid h-8 w-8 place-items-center rounded-full border border-fg/15 text-fg transition-colors hover:bg-fg/10 " +
-          (open ? "bg-fg/10" : "")
+          "grid h-9 w-9 place-items-center rounded-xl text-fg/70 transition-colors " +
+          (open ? "bg-fg/10" : "bg-fg/5 hover:bg-fg/10")
         }
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
