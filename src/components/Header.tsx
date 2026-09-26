@@ -13,9 +13,9 @@ import { LOGO_DARK, LOGO_LIGHT } from "../lib/constants";
  *
  * KIRI  = logo + TAB halaman (underline merah = tab aktif, sisanya muted).
  * KANAN = [waffle produk] [tema] [bahasa ID|EN] [profil+nama].
- * MOBILE (satu baris) = logo + [More ⋮] [waffle produk] [bahasa ID|EN] [profil]. Tab + tema
- * ada di dropdown "More" (⋮); BAHASA selalu tampil di header (bukan di dropdown). brand-red
- * HANYA aksen (tab aktif, Daftar).
+ * MOBILE (satu baris) = logo + [More ⋮] [waffle produk] [bahasa ID/EN] [avatar]. Tombol util
+ * SERAGAM: kotak membulat isi abu tipis (bg-fg/5), tanpa garis tepi. Tab + tema ada di dropdown
+ * "More" (⋮); BAHASA selalu tampil di header sbg SATU pill (klik = ganti). brand-red HANYA aksen.
  */
 export function Header() {
   const { t, lang, setLang } = useLang();
@@ -72,8 +72,11 @@ export function Header() {
     </Link>
   );
 
+  // Tombol utilitas seragam: kotak membulat isi abu tipis (bg-fg/5), tanpa garis tepi —
+  // menyatu seperti chip. Dipakai ⋮ More, tema (desktop), dan pill bahasa. (waffle & avatar
+  // pakai gaya senada di komponennya masing-masing.)
   const utilBtn =
-    "grid h-8 w-8 place-items-center rounded-full border border-fg/15 text-fg transition-colors hover:bg-fg/10";
+    "grid h-9 w-9 place-items-center rounded-xl bg-fg/5 text-fg/70 transition-colors hover:bg-fg/10";
 
   return (
     <header className={"no-print sticky top-2 z-20 glass-header" + (scrolled ? " is-scrolled" : "")}>
@@ -114,7 +117,7 @@ export function Header() {
 
           {/* Tema — desktop: ICON SAJA (SVG sun/moon), tanpa teks/emoji. Mobile: masuk ke More */}
           <button
-            className="hidden h-8 w-8 place-items-center rounded-full border border-fg/15 text-fg transition-colors hover:bg-fg/10 sm:grid"
+            className="hidden h-9 w-9 place-items-center rounded-xl bg-fg/5 text-fg/70 transition-colors hover:bg-fg/10 sm:grid"
             onClick={toggle}
             aria-label={theme === "dark" ? "Mode terang" : "Mode gelap"}
             title={theme === "dark" ? "Mode terang" : "Mode gelap"}
@@ -122,33 +125,17 @@ export function Header() {
             <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
           </button>
 
-          {/* Bahasa [ID|EN] — SELALU tampil (mobile + desktop). Aktif = netral (bukan merah). */}
-          <div
-            className="flex items-center rounded-lg border border-fg/15 p-0.5 text-[11px] font-bold"
-            role="group"
-            aria-label="Bahasa / Language"
+          {/* Bahasa — SELALU tampil di header (bukan di ⋮). Satu pill ringkas berisi bahasa
+              AKTIF (ID/EN), segaya tombol util; klik = ganti bahasa (cuma 2 pilihan). */}
+          <button
+            type="button"
+            className={utilBtn + " text-[11px] font-extrabold tracking-wide"}
+            onClick={() => setLang(lang === "id" ? "en" : "id")}
+            aria-label={lang === "id" ? "Ganti bahasa ke Inggris" : "Switch language to Indonesian"}
+            title={lang === "id" ? "Bahasa: Indonesia — klik untuk English" : "Language: English — click for Indonesia"}
           >
-            <button
-              className={
-                "rounded-md px-2.5 py-1 transition-colors " +
-                (lang === "id" ? "bg-fg text-bg" : "text-fg/50 hover:text-fg")
-              }
-              onClick={() => setLang("id")}
-              aria-pressed={lang === "id"}
-            >
-              ID
-            </button>
-            <button
-              className={
-                "rounded-md px-2.5 py-1 transition-colors " +
-                (lang === "en" ? "bg-fg text-bg" : "text-fg/50 hover:text-fg")
-              }
-              onClick={() => setLang("en")}
-              aria-pressed={lang === "en"}
-            >
-              EN
-            </button>
-          </div>
+            {lang === "id" ? "ID" : "EN"}
+          </button>
 
           {/* Profil (avatar + nama depan di desktop) atau Masuk */}
           {isAuthenticated ? (
