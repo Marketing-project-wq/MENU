@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ChangeEvent } from "react";
 import { useAuth } from "../lib/auth";
 import { useAdmin, adminApi, type Submission, type ArticleRow, type ArticleCreateInput, type AuditEntry, type AdminMember, type AdminRole, type AdminStats } from "../lib/admin";
-import { useLang, useRecipes } from "../lib/store";
+import { useLang, useRecipes, useTheme } from "../lib/store";
+import { OfficialRecipesTab } from "./admin/OfficialRecipesTab";
+import { DeliveryTab } from "./admin/DeliveryTab";
+import { ADMIN_BODY_FONT, HEAD, Seg, Tabs } from "./admin/ui";
 import { supabase } from "../lib/supabase";
 import { Spinner } from "../components/Spinner";
 import { Icon } from "../components/Icon";
 import { Link } from "../router";
 import { renderMarkdown } from "../lib/markdown";
 
-type Tab = "stats" | "submissions" | "articles" | "audit" | "admins";
 
 function AdminHeader({ email, onLogout }: { email?: string; onLogout: () => void }) {
   return (
@@ -173,10 +175,7 @@ export function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f5f0] dark:bg-[#0e0f0b]">
-      <AdminHeader email={user?.email} onLogout={logout} />
-      <AdminDashboard role={role!} userId={user!.id} userEmail={user?.email ?? ""} />
-    </div>
+    <AdminDashboard role={role!} userId={user!.id} userEmail={user?.email ?? ""} onLogout={logout} />
   );
 }
 
@@ -270,63 +269,252 @@ function ForceChangePassword({ email, onLogout }: { email: string; onLogout: () 
   );
 }
 
+type Section = "menu" | "articles" | "stats" | "audit" | "admins";
+type MenuTab = "official" | "member" | "delivery";
+
+const SECTIONS: Section[] = ["menu", "articles", "stats", "audit", "admins"];
+const MENU_TABS: MenuTab[] = ["official", "member", "delivery"];
+
+// Section/tab disimpan di query (?section=menu&tab=official) seperti admin-v2 my.20fit, supaya
+// reload / bagikan link langsung ke tab yang sama.
+function readQuery(): { section: Section; tab: MenuTab } {
+  const sp = new URLSearchParams(window.location.search);
+  const sec = sp.get("section") as Section;
+  const tab = sp.get("tab") as MenuTab;
+  return {
+    section: SECTIONS.includes(sec) ? sec : "menu",
+    tab: MENU_TABS.includes(tab) ? tab : "official",
+  };
+}
+function writeQuery(section: Section, tab: MenuTab) {
+  const sp = new URLSearchParams(window.location.search);
+  sp.set("section", section);
+  if (section === "menu") sp.set("tab", tab);
+  else sp.delete("tab");
+  window.history.replaceState(null, "", `${window.location.pathname}?${sp.toString()}`);
+}
+
+// Font isi admin-v2 (Manrope) dimuat hanya saat CMS dibuka — halaman publik tak ikut menanggung.
+function useAdminFont() {
+  useEffect(() => {
+    const id = "admin-manrope-font";
+    if (document.getElementById(id)) return;
+    const l = document.createElement("link");
+    l.id = id;
+    l.rel = "stylesheet";
+    l.href = "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap";
+    document.head.appendChild(l);
+  }, []);
+}
+
+const SECTION_META: Record<Section, { kicker: string; title: string; desc: string }> = {
+  menu: {
+    kicker: "Kelola",
+    title: "Menu Diet & Eat Now",
+    desc: "Kelola katalog resep official, moderasi kontribusi member, dan tautan Eat Now (pesan-antar) per menu. Data sama dengan admin my.20fit — ubah di sini atau di sana, keduanya ikut berubah.",
+  },
+  articles: {
+    kicker: "Konten",
+    title: "Artikel",
+    desc: "Tulis, edit, dan terbitkan artikel resep (ID + EN) yang tampil di recipe.20fit.",
+  },
+  stats: {
+    kicker: "Analitik",
+    title: "Statistik",
+    desc: "Ringkasan kontribusi resep, artikel, dan minat menu.",
+  },
+  audit: {
+    kicker: "Sistem",
+    title: "Audit Log",
+    desc: "Jejak aksi admin di CMS recipe (approve/reject, artikel, admin).",
+  },
+  admins: {
+    kicker: "Sistem",
+    title: "Kelola Admin",
+    desc: "Akun yang boleh masuk CMS recipe.20fit.",
+  },
+};
+
 function AdminDashboard({
   role,
   userId,
   userEmail,
+  onLogout,
 }: {
   role: string;
   userId: string;
   userEmail: string;
+  onLogout: () => void;
 }) {
-  const [tab, setTab] = useState<Tab>("stats");
+  useAdminFont();
+  const { lang, setLang } = useLang();
+  const { theme, setTheme } = useTheme();
+  const [{ section, tab }, setState] = useState(readQuery);
+  const [navOpen, setNavOpen] = useState(false);
+  const [pending, setPending] = useState(0);
 
-  const navItems: { key: Tab; label: string }[] = [
-    { key: "stats", label: "Statistik" },
-    { key: "submissions", label: "Resep" },
-    { key: "articles", label: "Artikel" },
-    { key: "audit", label: "Audit Log" },
-    ...(role === "superadmin" ? [{ key: "admins" as Tab, label: "Kelola Admin" }] : []),
+  const go = (sec: Section, t: MenuTab = tab) => {
+    const next = sec === "admins" && role !== "superadmin" ? "menu" : sec;
+    setState({ section: next, tab: t });
+    writeQuery(next, t);
+    setNavOpen(false);
+  };
+  useEffect(() => writeQuery(section, tab), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Badge jumlah kontribusi member yang menunggu review (tab "Kontribusi member").
+  useEffect(() => {
+    adminApi
+      .getSubmissions("pending")
+      .then((x) => setPending(x.length))
+      .catch(() => setPending(0));
+  }, [section, tab]);
+
+  const groups: { label: string; items: { key: Section; label: string; badge?: number }[] }[] = [
+    { label: "Menu & F&B", items: [{ key: "menu", label: "Menu Diet & Eat Now", badge: pending }] },
+    { label: "Konten", items: [{ key: "articles", label: "Artikel" }] },
+    { label: "Analitik", items: [{ key: "stats", label: "Statistik" }] },
+    {
+      label: "Sistem",
+      items: [
+        { key: "audit", label: "Audit Log" },
+        ...(role === "superadmin" ? [{ key: "admins" as Section, label: "Kelola Admin" }] : []),
+      ],
+    },
   ];
+  const meta = SECTION_META[section];
 
-  const activeLabel = navItems.find((n) => n.key === tab)?.label ?? "";
+  const sidebar = (
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 flex w-[264px] max-w-[84vw] flex-col border-r border-fg/10 bg-card transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0 ${
+        navOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
+      }`}
+    >
+      <div className="border-b border-fg/10 px-5 pb-4 pt-5">
+        <div className="flex items-baseline gap-1.5">
+          <span className={`${HEAD} text-[22px] font-extrabold tracking-tight text-fg`}>20FIT</span>
+          <span className="text-[12px] text-fg/50">Recipe Admin</span>
+        </div>
+        <a href="/" className="mt-1 inline-block text-[12px] text-fg/50 underline hover:text-brand-red">
+          ← Ke recipe.20fit.id
+        </a>
+      </div>
+      <nav className="flex-1 overflow-y-auto py-2">
+        {groups.map((g) => (
+          <div key={g.label} className="px-3 pb-2 pt-3">
+            <p className={`${HEAD} px-2 pb-1.5 text-[11px] font-bold text-fg/40`}>{g.label}</p>
+            {g.items.map((it) => (
+              <button
+                key={it.key}
+                type="button"
+                onClick={() => go(it.key)}
+                aria-current={section === it.key ? "page" : undefined}
+                className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-[14px] transition-colors ${
+                  section === it.key ? "bg-brand-red/10 font-semibold text-brand-red" : "text-fg/80 hover:bg-fg/[0.05]"
+                }`}
+              >
+                {it.label}
+                {!!it.badge && (
+                  <span className="rounded-full bg-brand-red px-1.5 text-[11px] font-bold leading-5 text-white">{it.badge}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        ))}
+      </nav>
+      <div className="border-t border-fg/10 px-5 py-4">
+        <p className="truncate text-[12.5px] font-semibold text-fg">{userEmail}</p>
+        <p className={`${HEAD} text-[11px] font-bold text-fg/45`}>{role}</p>
+        <button
+          type="button"
+          onClick={onLogout}
+          className="mt-2 rounded-full bg-fg/[0.06] px-3 py-1.5 text-[12px] font-semibold text-fg/70 hover:bg-fg/10"
+        >
+          Keluar
+        </button>
+      </div>
+    </aside>
+  );
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 lg:flex lg:gap-6">
-      {/* Sidebar: baris pill di mobile, kolom kiri di desktop */}
-      <aside className="lg:w-56 lg:flex-none">
-        <div className="mb-4 hidden lg:block">
-          <h1 className="text-lg font-extrabold tracking-tight text-fg">Admin CMS</h1>
-          <p className="mt-0.5 truncate text-xs text-fg/45">{userEmail}</p>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-fg/35">{role}</p>
-        </div>
-        <nav className="flex gap-1 overflow-x-auto rounded-xl bg-fg/5 p-1 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:rounded-none lg:bg-transparent lg:p-0">
-          {navItems.map((n) => (
-            <button
-              key={n.key}
-              type="button"
-              onClick={() => setTab(n.key)}
-              className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition lg:w-full lg:text-left ${
-                tab === n.key
-                  ? "bg-card text-fg shadow-sm lg:bg-brand-red/10 lg:text-brand-red lg:shadow-none"
-                  : "text-fg/50 hover:text-fg/70 lg:hover:bg-fg/5"
-              }`}
-            >
-              {n.label}
-            </button>
-          ))}
-        </nav>
-      </aside>
+    <div className="min-h-screen bg-[#f3f2f2] text-fg dark:bg-[#171615] lg:flex" style={ADMIN_BODY_FONT}>
+      {sidebar}
+      {navOpen && <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={() => setNavOpen(false)} aria-hidden="true" />}
 
-      {/* Konten */}
-      <main className="mt-5 min-w-0 flex-1 lg:mt-0">
-        <h2 className="mb-4 text-xl font-extrabold tracking-tight text-fg lg:text-2xl">{activeLabel}</h2>
-        {tab === "stats" && <StatsTab />}
-        {tab === "submissions" && <SubmissionsTab userId={userId} />}
-        {tab === "articles" && <ArticlesTab userId={userId} />}
-        {tab === "audit" && <AuditTab />}
-        {tab === "admins" && role === "superadmin" && <AdminManagementTab currentUserId={userId} />}
-      </main>
+      <div className="min-w-0 flex-1">
+        {/* Kepala halaman (sticky) — kicker, judul besar, deskripsi, batas role, toggle bahasa/tema */}
+        <header className="z-20 border-b border-fg/10 bg-[#f3f2f2]/95 px-4 pb-4 pt-4 backdrop-blur dark:bg-[#171615]/95 sm:px-8 sm:pt-6 lg:sticky lg:top-0">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex min-w-0 items-start gap-3">
+              <button
+                type="button"
+                onClick={() => setNavOpen(true)}
+                className="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-fg/10 bg-card lg:hidden"
+                aria-label="Buka menu"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
+                </svg>
+              </button>
+              <div className="min-w-0">
+                <p className={`${HEAD} text-[12px] font-bold text-fg/50`}>{meta.kicker}</p>
+                <h1 className={`${HEAD} mt-0.5 text-[28px] font-extrabold leading-none tracking-tight text-fg sm:text-[34px]`}>
+                  {meta.title}
+                </h1>
+                <p className="mt-2 max-w-[62ch] text-[13px] leading-relaxed text-fg/60">{meta.desc}</p>
+                <p className="mt-3 inline-flex items-baseline gap-2 border-l-2 border-brand-red pl-3 text-[12px] text-fg/60">
+                  <span className={`${HEAD} font-bold text-fg/70`}>Batas role</span>
+                  {role === "superadmin" ? "SUPERADMIN · Akses penuh" : "ADMIN · Tanpa kelola admin"}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Seg
+                label="Bahasa konten"
+                value={lang}
+                onChange={(v) => setLang(v)}
+                options={[
+                  { value: "id", label: "ID" },
+                  { value: "en", label: "EN" },
+                ]}
+              />
+              <Seg
+                label="Tema"
+                value={theme === "dark" ? "dark" : "light"}
+                onChange={(v) => setTheme(v)}
+                options={[
+                  { value: "light", label: "Terang" },
+                  { value: "dark", label: "Gelap" },
+                ]}
+              />
+            </div>
+          </div>
+        </header>
+
+        <main className="px-4 pb-16 pt-6 sm:px-8">
+          {section === "menu" && (
+            <>
+              <Tabs
+                value={tab}
+                onChange={(t) => go("menu", t)}
+                options={[
+                  { value: "official", label: "Resep official" },
+                  { value: "member", label: "Kontribusi member", badge: pending },
+                  { value: "delivery", label: "Eat Now / pesan-antar" },
+                ]}
+              />
+              <div className="pt-5">
+                {tab === "official" && <OfficialRecipesTab />}
+                {tab === "member" && <SubmissionsTab userId={userId} />}
+                {tab === "delivery" && <DeliveryTab />}
+              </div>
+            </>
+          )}
+          {section === "articles" && <ArticlesTab userId={userId} />}
+          {section === "stats" && <StatsTab />}
+          {section === "audit" && <AuditTab />}
+          {section === "admins" && role === "superadmin" && <AdminManagementTab currentUserId={userId} />}
+        </main>
+      </div>
     </div>
   );
 }

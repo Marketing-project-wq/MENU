@@ -25,6 +25,10 @@ export function LangProvider({ children }: { children: ReactNode }) {
     persistLang(l);
     setLangState(l);
   };
+  // Samakan atribut <html lang> dgn bahasa aktif (aksesibilitas, screen reader, terjemah browser).
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
   const value = useMemo(() => ({ lang, setLang, t: makeT(lang) }), [lang]);
   return <LangContext.Provider value={value}>{children}</LangContext.Provider>;
 }

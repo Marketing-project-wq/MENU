@@ -62,7 +62,9 @@ export interface SavedResponse {
 export const api = {
   /** Resep resmi 20FIT (satu sumber = js/recipes.js di my.20fit.id). */
   async getCatalog(): Promise<OfficialRecipe[]> {
-    const r = await fetch(`${API_BASE}${API.CATALOG}`);
+    // no-cache = revalidasi ke server tiap muat (ETag -> 304 kalau tak berubah), supaya edit
+    // admin di CMS (my.20fit / recipe) langsung tampil, bukan tertahan cache browser 5 menit.
+    const r = await fetch(`${API_BASE}${API.CATALOG}`, { cache: "no-cache" });
     const j = await jsonOrThrow(r);
     return j.recipes ?? j.data ?? [];
   },
