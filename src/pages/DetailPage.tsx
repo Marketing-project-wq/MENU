@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "../router";
+import { Link, useRouter, recipeHref } from "../router";
 import { useRecipes, useLang } from "../lib/store";
 import { buildVMs } from "../lib/normalize";
 import { scaleIngredientGroups } from "../lib/scaleIngredients";
@@ -18,7 +18,7 @@ import { LogCalorieButton } from "../components/LogCalorieButton";
 import { Icon } from "../components/Icon";
 import { api } from "../lib/api";
 import { catLabel, dietLabel } from "../lib/i18n";
-import type { RecipeVM } from "../lib/types";
+import type { Lang, RecipeVM } from "../lib/types";
 
 const MIN_PORTIONS = 1;
 const MAX_PORTIONS = 12;
@@ -27,10 +27,26 @@ export function DetailPage({ slug }: { slug: string }) {
   const { official, members, loading } = useRecipes();
   const { lang, t } = useLang();
 
-  const recipe: RecipeVM | undefined = useMemo(() => {
+  const { navigate } = useRouter();
+
+  // Slug dibentuk dari nama resep sesuai bahasa aktif, jadi link versi ID (mis.
+  // /resep/burger-sapi-lean-roti-gandum) tidak cocok saat UI berbahasa EN, dan sebaliknya
+  // (juga saat user ganti bahasa di halaman detail). Cari dulu di bahasa aktif; kalau tidak
+  // ketemu, cari di bahasa lain lalu pakai resep yang sama (by key) versi bahasa aktif.
+  const { recipe, canonicalSlug } = useMemo(() => {
     const vms = buildVMs(official, members, lang);
-    return vms.find((r) => r.slug === slug);
+    const direct = vms.find((r) => r.slug === slug);
+    if (direct) return { recipe: direct as RecipeVM | undefined, canonicalSlug: direct.slug };
+    const other: Lang = lang === "en" ? "id" : "en";
+    const alt = buildVMs(official, members, other).find((r) => r.slug === slug);
+    const match = alt ? vms.find((r) => r.key === alt.key) : undefined;
+    return { recipe: match, canonicalSlug: match?.slug };
   }, [official, members, lang, slug]);
+
+  // Samakan URL dgn slug bahasa aktif (replace, tanpa menumpuk riwayat).
+  useEffect(() => {
+    if (canonicalSlug && canonicalSlug !== slug) navigate(recipeHref(canonicalSlug), { replace: true });
+  }, [canonicalSlug, slug, navigate]);
 
   // Kontrol porsi (F1) -- basis = porsi asli resep (default 1 bila tidak diisi). Skala ANGKA
   // gizi saja (kcal/makro); teks bahan sengaja TIDAK ikut diskalakan otomatis (lihat i18n.ts).
