@@ -123,6 +123,14 @@ function stepsFromJson(j: RecipeStep[] | null | undefined): RecipeStep[] | null 
   return out.length ? out : null;
 }
 
+/** Teks opsional resep official: katalog statik lama = objek {en,id}; katalog DB (CMS
+ *  my.20fit/recipe, kolom tunggal) = string biasa. Terima keduanya. */
+function pickLang(v: { en: string; id: string } | string | null | undefined, lang: Lang): string | null {
+  if (!v) return null;
+  if (typeof v === "string") return v.trim() || null;
+  return v[lang] || v.en || v.id || null;
+}
+
 export function normalizeOfficial(r: OfficialRecipe, lang: Lang): RecipeVM {
   const ingredients = r.ing?.[lang] || r.ing?.en || "";
   const steps = r.steps?.[lang] || r.steps?.en || "";
@@ -143,10 +151,11 @@ export function normalizeOfficial(r: OfficialRecipe, lang: Lang): RecipeVM {
     servings: typeof r.servings === "number" ? r.servings : null,
     cookMinutes: typeof r.cookMinutes === "number" ? r.cookMinutes : null,
     prepMinutes: typeof r.prepMinutes === "number" ? r.prepMinutes : null,
-    equipment: r.equipment?.[lang] || r.equipment?.en || null,
-    prepNote: r.prepNote?.[lang] || r.prepNote?.en || null,
-    commonMistake: r.commonMistake?.[lang] || r.commonMistake?.en || null,
-    photoUrl: null,
+    equipment: pickLang(r.equipment, lang),
+    prepNote: pickLang(r.prepNote, lang),
+    commonMistake: pickLang(r.commonMistake, lang),
+    // Foto yang diunggah admin (CMS) menang; tanpa itu -> foto otomatis dari q/nama.
+    photoUrl: typeof r.photo_url === "string" && /^https:\/\//i.test(r.photo_url) ? r.photo_url : null,
     photoQ: r.q || null,
     photoName: r.nm?.en || r.nm?.id || r.id,
     emoji: r.emoji || "🍽️",

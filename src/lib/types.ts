@@ -48,9 +48,10 @@ export interface OfficialRecipe {
   // pasif (marinasi, dinginkan di kulkas semalaman, dll) -- itu dijelaskan di prepNote.
   prepMinutes?: number; // menit PERSIAPAN aktif (motong, ulek bumbu, dll), terpisah dari cookMinutes
   // -- opsional, diisi progresif per Tahap 3 (mulai 3 resep percontohan).
-  equipment?: { en: string; id: string }; // alat dapur yang dibutuhkan, disebut di AWAL bukan step ke-7
-  prepNote?: { en: string; id: string }; // apa yang perlu dipotong/direndam/didiamkan SEBELUM mulai masak
-  commonMistake?: { en: string; id: string }; // 1-2 baris kesalahan umum pemula
+  equipment?: { en: string; id: string } | string; // (string = katalog DB/CMS) alat dapur yang dibutuhkan, disebut di AWAL bukan step ke-7
+  prepNote?: { en: string; id: string } | string; // (string = katalog DB/CMS) apa yang perlu dipotong/direndam/didiamkan SEBELUM mulai masak
+  commonMistake?: { en: string; id: string } | string; // (string = katalog DB/CMS) 1-2 baris kesalahan umum pemula
+  photo_url?: string | null; // foto resmi yg diunggah admin (CMS my.20fit / recipe) -- prioritas di atas foto otomatis
 }
 
 /** Kontribusi user approved+published (via GET /api/menu/published) — tanpa PII. */
