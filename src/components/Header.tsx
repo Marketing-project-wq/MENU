@@ -125,17 +125,31 @@ export function Header() {
             <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
           </button>
 
-          {/* Bahasa — SELALU tampil di header (bukan di ⋮). Satu pill ringkas berisi bahasa
-              AKTIF (ID/EN), segaya tombol util; klik = ganti bahasa (cuma 2 pilihan). */}
-          <button
-            type="button"
-            className={utilBtn + " text-[11px] font-extrabold tracking-wide"}
-            onClick={() => setLang(lang === "id" ? "en" : "id")}
-            aria-label={lang === "id" ? "Ganti bahasa ke Inggris" : "Switch language to Indonesian"}
-            title={lang === "id" ? "Bahasa: Indonesia — klik untuk English" : "Language: English — click for Indonesia"}
+          {/* Bahasa — SELALU tampil di header (bukan di ⋮). Dua tombol eksplisit "ID | EN":
+              klik ID = Bahasa Indonesia, klik EN = English (bukan toggle, jadi label = hasil klik).
+              Yang aktif disorot. */}
+          <div
+            role="group"
+            aria-label="Bahasa / Language"
+            className="flex h-9 items-center gap-0.5 rounded-xl bg-fg/5 p-0.5"
           >
-            {lang === "id" ? "ID" : "EN"}
-          </button>
+            {(["id", "en"] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                aria-pressed={lang === l}
+                aria-label={l === "id" ? "Bahasa Indonesia" : "English"}
+                title={l === "id" ? "Bahasa Indonesia" : "English"}
+                className={
+                  "grid h-8 min-w-[32px] place-items-center rounded-[10px] px-1.5 text-[11px] font-extrabold tracking-wide transition-colors " +
+                  (lang === l ? "bg-brand-red text-white shadow-sm" : "text-fg/50 hover:bg-fg/10 hover:text-fg")
+                }
+              >
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
 
           {/* Profil (avatar + nama depan di desktop) atau Masuk */}
           {isAuthenticated ? (
